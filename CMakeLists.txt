@@ -43,9 +43,17 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(adlmidi inih)
 
-find_package(SDL2 REQUIRED CONFIG REQUIRED COMPONENTS SDL2)
-find_package(SDL2 REQUIRED CONFIG COMPONENTS SDL2main)
-find_package(SDL2_mixer REQUIRED CONFIG REQUIRED COMPONENTS SDL2_mixer)
+if(PLATFORM_DREAMCAST)
+	find_package(SDL2 REQUIRED CONFIG REQUIRED)
+	find_package(SDL2_mixer REQUIRED CONFIG REQUIRED)
+	# HACK
+	add_library(SDL2_mixer::SDL2_mixer ALIAS SDL2_mixer::SDL2_mixer-static)
+	target_compile_definitions(ADLMIDI_static PRIVATE DOSBOX_NO_MUTEX)
+else()
+	find_package(SDL2 REQUIRED CONFIG REQUIRED COMPONENTS SDL2)
+	find_package(SDL2 REQUIRED CONFIG COMPONENTS SDL2main)
+	find_package(SDL2_mixer REQUIRED CONFIG REQUIRED COMPONENTS SDL2_mixer)
+endif()
 
 set(AUDIOLIB_SOURCES
 	${PROJECT_SOURCE_DIR}/src/audiolib/fx_man.c

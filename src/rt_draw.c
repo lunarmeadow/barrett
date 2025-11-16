@@ -111,7 +111,7 @@ const int dirangle16[16] = {0,
 //
 
 short tantable[FINEANGLES];
-int sintable[FINEANGLES + FINEANGLEQUAD + 1],
+fixed sintable[FINEANGLES + FINEANGLEQUAD + 1],
 	*costable = sintable + (FINEANGLES / 4);
 
 //

@@ -228,7 +228,7 @@ void DisplayTextSplash(byte* text, int l)
 	printf("\033[m");
 }
 
-#if !defined(__CYGWIN__) && !defined(__MINGW32__) && !defined(__ANDROID__)
+#if !defined(__CYGWIN__) && !defined(__MINGW32__) && !defined(__ANDROID__) && !defined(__DREAMCAST__)
 #include <execinfo.h>
 
 void print_stack(int level)
@@ -270,3 +270,24 @@ void crash_print()
 	atexit(SDL_Quit);
 	exit(1);
 }
+
+#ifdef __DREAMCAST__
+
+// kOS doesnt have this for some reason
+
+int access(const char *path, int t)
+{
+	FILE *f = fopen(path, "rb");
+	if (!f)
+	{
+		return -1;
+	}
+	else
+	{
+		fclose(f);
+		return 0;
+	}
+}
+
+#endif
+
