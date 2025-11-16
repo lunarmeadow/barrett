@@ -40,12 +40,29 @@ Place all those files in the same directory as the barrett executable.
 
 ## Building
 
-To build the project, you'll need the SDL2.0 development libraries  
-(https://www.libsdl.org/download-2.0.php) as well as the SDL_mixer developement  
-libaries (https://www.libsdl.org/projects/SDL_mixer/, under Binary).
+To build the project, you will need to install devkitpro pacman.
 
-For Linux users, install the respective SDL2 dependencies through your distro's package manager.  
-Barrett can be compiled with either GCC or Clang. On Windows, use something such as MinGW's GCC.
+Run `sudo dkp-pacman -S 3ds-dev 3ds-portlibs`
+
+Next, you will need to manually build SDL2 and SDL_mixer.
+
+SDL:
+
+```sh
+git clone --single-branch --branch SDL2 https://github.com/libsdl-org/SDL.git && cd SDL
+cmake -S. -Bbuild -DCMAKE_TOOLCHAIN_FILE="$DEVKITPRO/cmake/3DS.cmake" -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+sudo cmake --install build
+```
+
+SDL_mixer:
+
+```sh
+git clone --single-branch --branch SDL2 https://github.com/libsdl-org/SDL_mixer.git && cd SDL_mixer
+cmake -S. -Bbuild -DCMAKE_TOOLCHAIN_FILE="$DEVKITPRO/cmake/3DS.cmake" -DCMAKE_BUILD_TYPE=Release -DSDL2MIXER_DEPS_SHARED=OFF -DSDL2MIXER_BUILD_SHARED_LIBS=OFF -DSDL2MIXER_MIDI_FLUIDSYNTH=OFF -DSDL2MIXER_WAVPACK=OFF
+cmake --build build
+sudo cmake --install build
+```
 
 This project currently uses CMake. You can create a build target and then build with the commands
 
@@ -71,6 +88,8 @@ Copyright (C) 2025 erysdren (it/its)
 
 The full license text for the GPLv2 can be found within `COPYING` in the root directory of this project.  
 The full license text for Rise of the Triad: Dark War can be found within `ROTTLICENSE` in the root directory of this project.
+
+The license for [3ds-cmake](https://github.com/Xtansia/3ds-cmake) can be found in `LICENSES`.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License

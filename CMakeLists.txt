@@ -2,9 +2,12 @@ cmake_minimum_required(VERSION 3.10)
 project(barrett
 	DESCRIPTION "A Rise of the Triad source port tailored towards moddability and QoL."
 	HOMEPAGE_URL "https://github.com/lunarmeadow/barrett"
-	LANGUAGES C CXX
+	LANGUAGES ASM C CXX
 )
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+
+find_package(CTRULIB REQUIRED)
+find_package(CITRO3D REQUIRED)
 
 # only ONE of these may be active at a time (or none for the default registered version)
 option(BARRETT_SHAREWARE "Shareware" OFF)
@@ -43,9 +46,17 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(adlmidi inih)
 
+if(3DS)
+find_package(SDL2 REQUIRED CONFIG REQUIRED)
+find_package(SDL2_mixer REQUIRED CONFIG REQUIRED)
+
+add_library(SDL2_mixer::SDL2_mixer ALIAS SDL2_mixer::SDL2_mixer-static)
+target_compile_definitions(ADLMIDI_static PRIVATE DOSBOX_NO_MUTEX)
+else()
 find_package(SDL2 REQUIRED CONFIG REQUIRED COMPONENTS SDL2)
 find_package(SDL2 REQUIRED CONFIG COMPONENTS SDL2main)
 find_package(SDL2_mixer REQUIRED CONFIG REQUIRED COMPONENTS SDL2_mixer)
+endif()
 
 set(AUDIOLIB_SOURCES
 	${PROJECT_SOURCE_DIR}/src/audiolib/fx_man.c
@@ -128,7 +139,7 @@ set(BARRETT_SOURCES
 
 add_executable(barrett ${BARRETT_SOURCES})
 target_include_directories(barrett PRIVATE ${inih_SOURCE_DIR})
-target_link_libraries(barrett PRIVATE $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main> SDL2::SDL2 SDL2_mixer::SDL2_mixer ADLMIDI)
+target_link_libraries(barrett PRIVATE $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main> SDL2::SDL2 SDL2_mixer::SDL2_mixer ADLMIDI 3ds::ctrulib 3ds::citro3d)
 target_link_libraries(barrett PRIVATE audiolib)
 target_link_libraries(barrett PUBLIC $<$<BOOL:${BARRETT_USEASAN}>:ASAN::ASAN>)
 target_compile_definitions(barrett PRIVATE SHAREWARE=$<BOOL:${BARRETT_SHAREWARE}>)
