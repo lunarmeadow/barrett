@@ -6,8 +6,13 @@
 
 // typedef unsigned char byte;
 
+#ifdef __DREAMCAST__
+int iGLOBAL_SCREENWIDTH = 320;	// bna val 800
+int iGLOBAL_SCREENHEIGHT = 200; // bna val 600
+#else
 int iGLOBAL_SCREENWIDTH = 640;	// bna val 800
 int iGLOBAL_SCREENHEIGHT = 480; // bna val 600
+#endif
 int iGLOBAL_SCREENBWIDE;
 int iG_SCREENWIDTH; // default screen width in bytes
 

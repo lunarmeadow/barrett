@@ -676,11 +676,13 @@ long LoadFile(char* filename, void** bufferptr)
 
 void SaveFile(char* filename, void* buffer, long count)
 {
+#ifndef __DREAMCAST__
 	int handle;
 
 	handle = SafeOpenWrite(filename);
 	SafeWrite(handle, buffer, count);
 	close(handle);
+#endif
 }
 
 void FixFilePath(char* filename)

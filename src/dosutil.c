@@ -67,6 +67,7 @@ extern char ApogeePath[256];
 
 int setup_homedir(void)
 {
+#ifndef __DREAMCAST__
 	char fetchCWD[160];
 	getcwd(fetchCWD, sizeof(fetchCWD));
 
@@ -85,6 +86,7 @@ int setup_homedir(void)
 	}
 #else
 	sprintf(ApogeePath, "./data/");;
+#endif
 #endif
 
 	return 0;

@@ -118,8 +118,8 @@ void GraphicsMode(void)
 
 	SDL_SetSurfaceRLE(sdl_surface, 1);
 
-	SDL_RenderSetLogicalSize(renderer, iGLOBAL_SCREENWIDTH,
-							 iGLOBAL_SCREENHEIGHT);
+	SDL_RenderSetLogicalSize(renderer, 320,
+							 240);
 }
 
 /*
@@ -362,8 +362,7 @@ void DisableScreenStretch(void)
 	page2start = sdl_surface->pixels;
 	page3start = sdl_surface->pixels;
 	StretchScreen = 0;
-	SDL_RenderSetLogicalSize(renderer, iGLOBAL_SCREENWIDTH,
-							 iGLOBAL_SCREENHEIGHT);
+	SDL_RenderSetLogicalSize(renderer, 320, 240);
 	// SDL_RenderSetLogicalSize(renderer, 320, 200);
 }
 

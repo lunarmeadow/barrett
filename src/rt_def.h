@@ -80,7 +80,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //***************************************************************************
 
 #ifndef DATADIR
+#ifdef __DREAMCAST__
+#define DATADIR "/cd/"
+#else
 #define DATADIR ""
+#endif
 #endif
 
 #undef PI

@@ -191,7 +191,9 @@ int MUSIC_Init(void)
 
 	SDL_SetHint("SDL_HINT_AUDIO_RESAMPLING_MODE", "best");
 
+#ifndef __DREAMCAST__
 	OPL_Init();
+#endif
 
     if (soundfonts)
     {
