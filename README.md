@@ -50,8 +50,8 @@ Barrett can be compiled with either GCC or Clang. On Windows, use something such
 This project currently uses CMake. You can create a build target and then build with the commands
 
 ```sh
-cmake -Bcmake-build-barrett -DCMAKE_BUILD_TYPE=Release -S.
-cmake --build cmake-build-barrett
+cmake -Bcmake-build-3ds -DCMAKE_TOOLCHAIN_FILE=DevkitArm3DS.cmake -DCMAKE_BUILD_TYPE=Release -S.
+cmake --build cmake-build-3ds
 ```
 
 For CMAKE_BUILD_TYPE, please refer to the [CMake docs](https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html).  
