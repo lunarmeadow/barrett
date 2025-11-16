@@ -6,6 +6,8 @@ project(barrett
 )
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
+include(Tools3DS)
+
 find_package(CTRULIB REQUIRED)
 find_package(CITRO3D REQUIRED)
 
