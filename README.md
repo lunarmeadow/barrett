@@ -51,7 +51,7 @@ SDL:
 ```sh
 git clone --single-branch --branch SDL2 https://github.com/libsdl-org/SDL.git && cd SDL
 cmake -S. -Bbuild -DCMAKE_TOOLCHAIN_FILE="$DEVKITPRO/cmake/3DS.cmake" -DCMAKE_BUILD_TYPE=Release
-cmake --build build
+cmake --build build -j
 sudo cmake --install build
 ```
 
@@ -60,7 +60,7 @@ SDL_mixer:
 ```sh
 git clone --single-branch --branch SDL2 https://github.com/libsdl-org/SDL_mixer.git && cd SDL_mixer
 cmake -S. -Bbuild -DCMAKE_TOOLCHAIN_FILE="$DEVKITPRO/cmake/3DS.cmake" -DCMAKE_BUILD_TYPE=Release -DSDL2MIXER_DEPS_SHARED=OFF -DSDL2MIXER_BUILD_SHARED_LIBS=OFF -DSDL2MIXER_MIDI_FLUIDSYNTH=OFF -DSDL2MIXER_WAVPACK=OFF
-cmake --build build
+cmake --build build -j
 sudo cmake --install build
 ```
 
