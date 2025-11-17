@@ -17,6 +17,9 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+#include <SDL_mouse.h>
+#include <SDL_stdinc.h>
+#include <SDL_video.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -83,6 +86,8 @@ static word sdl_sticks_joybits = 0;
 // hashtable if possible
 static HashTable* scancodes;
 extern boolean sdl_fullscreen;
+
+extern SDL_Window* window;
 
 //   'q','w','e','r','t','y','u','i','o','p','[',']','\\', 0 ,'a','s',
 
@@ -368,8 +373,11 @@ void IN_PumpEvents(void)
 void INL_GetMouseDelta(int* x, int* y)
 {
 	IN_PumpEvents();
-
-	SDL_GetRelativeMouseState(x, y);
+	
+	if((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0)
+		SDL_GetRelativeMouseState(x, y);
+	else
+		*x = *y = 0;
 }
 
 //******************************************************************************
@@ -386,7 +394,10 @@ word IN_GetMouseButtons(void)
 
 	IN_PumpEvents();
 
-	buttons = sdl_mouse_button_mask;
+	if((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0)
+		buttons = sdl_mouse_button_mask;
+	else
+	 	buttons = 0;
 
 	return (buttons);
 }

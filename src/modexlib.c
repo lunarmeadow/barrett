@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <SDL_video.h>
 #include <stdarg.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -91,13 +92,13 @@ void GraphicsMode(void)
 		Error("Could not initialize SDL\n");
 	}
 
-	SDL_SetRelativeMouseMode(SDL_TRUE);
+	// SDL_SetRelativeMouseMode(SDL_TRUE);
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 	if (sdl_fullscreen)
 		flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
 
-	window = SDL_CreateWindow("Rise of the Triad", SDL_WINDOWPOS_UNDEFINED,
+	window = SDL_CreateWindow("Barrett", SDL_WINDOWPOS_UNDEFINED,
 							  SDL_WINDOWPOS_UNDEFINED, iGLOBAL_SCREENWIDTH,
 							  iGLOBAL_SCREENHEIGHT, flags);
 
@@ -483,22 +484,26 @@ void sdl_handle_window_events(void)
 	{
 		switch (event.window.type)
 		{
-		case SDL_WINDOWEVENT_FOCUS_LOST:
-			SDL_SetRelativeMouseMode(SDL_FALSE);
-			break;
-		case SDL_WINDOWEVENT_FOCUS_GAINED:
-			SDL_SetRelativeMouseMode(SDL_TRUE);
-			break;
-		case SDL_WINDOWEVENT_MINIMIZED:
-			SDL_SetRelativeMouseMode(SDL_FALSE);
-			break;
-		case SDL_WINDOWEVENT_RESTORED:
-			SDL_SetRelativeMouseMode(SDL_TRUE);
-			break;
-		case SDL_WINDOWEVENT_CLOSE:
-			event.type = SDL_QUIT;
-			SDL_PushEvent(&event);
-			break;
+			case SDL_WINDOWEVENT_FOCUS_LOST:
+				SDL_SetRelativeMouseMode(SDL_FALSE);
+				SDL_SetWindowMouseGrab(window, SDL_FALSE);
+				break;
+			case SDL_WINDOWEVENT_FOCUS_GAINED:
+				SDL_SetRelativeMouseMode(SDL_TRUE);
+				SDL_SetWindowMouseGrab(window, SDL_TRUE);
+				break;
+			case SDL_WINDOWEVENT_MINIMIZED:
+				SDL_SetRelativeMouseMode(SDL_FALSE);
+				SDL_SetWindowMouseGrab(window, SDL_FALSE);
+				break;
+			case SDL_WINDOWEVENT_RESTORED:
+				SDL_SetRelativeMouseMode(SDL_TRUE);
+				SDL_SetWindowMouseGrab(window, SDL_TRUE);
+				break;
+			case SDL_WINDOWEVENT_CLOSE:
+				event.type = SDL_QUIT;
+				SDL_PushEvent(&event);
+				break;
 		}
 	}
 }
