@@ -137,7 +137,7 @@ target_compile_definitions(barrett PRIVATE SITELICENSE=$<BOOL:${BARRETT_SITELICE
 target_compile_definitions(barrett PRIVATE PLATFORM_UNIX=1)
 set_target_properties(barrett PROPERTIES C_STANDARD_REQUIRED ON C_STANDARD 17)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "CLANG")
-	target_compile_options(barrett PRIVATE -Wall -Wextra -Wshadow -Wpedantic)
+	target_compile_options(barrett PRIVATE -Wall -Wextra -Wshadow -Wpedantic -rdynamic)
 endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
