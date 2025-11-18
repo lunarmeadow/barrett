@@ -64,7 +64,7 @@ FetchContent_MakeAvailable(adlmidi inih spng miniz parson)
 
 add_library(inih STATIC ${inih_SOURCE_DIR}/ini.c)
 target_link_directories(inih PUBLIC ${inih_SOURCE_DIR})
-target_include_directories(inih PRIVATE ${inih_SOURCE_DIR})
+target_include_directories(inih PUBLIC ${inih_SOURCE_DIR})
 
 find_package(SDL2 REQUIRED CONFIG REQUIRED COMPONENTS SDL2)
 find_package(SDL2 REQUIRED CONFIG COMPONENTS SDL2main)
