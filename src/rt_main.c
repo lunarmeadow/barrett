@@ -1100,7 +1100,6 @@ void GameLoop(void)
 			AdjustMenuStruct();
 
 			CalcTics();
-			CalcTics();
 
 			playstate = ex_titles;
 		}
@@ -1119,7 +1118,6 @@ void GameLoop(void)
 
 				for (i = 0; i < 0x300; i++)
 					dimpal[i] = origpal[i] >> 2;
-				CalcTics();
 				CalcTics();
 				IN_ClearKeysDown();
 				while (IN_GetMouseButtons())

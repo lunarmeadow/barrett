@@ -1348,6 +1348,7 @@ void AdaptDetail(void)
 =====================
 */
 
+
 void CalcTics(void)
 {
 
@@ -1367,7 +1368,7 @@ void CalcTics(void)
 	//
 	// calculate tics since last refresh for adaptive timing
 	//
-
+	
 	tc = GetTicCount();
 	while (tc == oldtime)
 	{
@@ -2757,7 +2758,6 @@ void DoLoadGameSequence(void)
 	FlipPage();
 	SafeFree(destscreen);
 	CalcTics();
-	CalcTics();
 	// bna++ section
 	shape = (pic_t*)W_CacheLumpName("backtile", PU_CACHE, Cvt_pic_t, 1);
 	DrawTiledRegion(0, 16, iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT - 32, 0,
@@ -2984,7 +2984,6 @@ void ScaleAndRotateBuffer(int startangle, int endangle, int startscale,
 	scale = (startscale << 6);
 
 	CalcTics();
-	CalcTics();
 	// SDL_SetRelativeMouseMode(SDL_FALSE);
 
 	for (i = 0; i < time; i += tics)
@@ -3010,7 +3009,6 @@ void ScaleAndRotateBuffer(int startangle, int endangle, int startscale,
 	FlipPage();
 	DrawRotatedScreen(Xh, Yh, (byte*)bufferofs, endangle & (FINEANGLES - 1),
 					  endscale, 0);
-	CalcTics();
 	CalcTics();
 	// I_Delay (240);//bna++
 	// bna++ section
@@ -3077,7 +3075,6 @@ void RotateScreenScaleFloat(float startAngle, float endAngle, float startScale,
 	// printf("scalestep: %f \n", scalestep);
 	// printf("startingScale: %f \n", scale);
 
-	CalcTics();
 	CalcTics();
 
 	int i;
@@ -3330,7 +3327,6 @@ void ApogeeTitle(void)
 	int time;
 
 	CalcTics();
-	CalcTics();
 	IN_ClearKeysDown();
 	viewwidth = 320;
 	viewheight = 200;
@@ -3397,7 +3393,6 @@ void ApogeeTitle(void)
 			goto apogeeexit;
 	}
 	CalcTics();
-	CalcTics();
 	VL_DrawPostPic(W_GetNumForName("ap_wrld"));
 	DrawRotatedScreen(x, y >> 16, (byte*)bufferofs, 0, APOGEESCALEEND, 1);
 	FlipPage();
@@ -3424,7 +3419,6 @@ void DopefishTitle(void)
 	int height;
 
 	shapenum = W_GetNumForName("scthead1");
-	CalcTics();
 	CalcTics();
 	IN_ClearKeysDown();
 	MU_StartSong(song_secretmenu);
@@ -3475,7 +3469,6 @@ void RotationFunSDL(void)
 	// StartupRotateBuffer (0);
 
 	CalcTics();
-	CalcTics();
 
 	SDL_Texture* currScreen =
 		SDL_CreateTextureFromSurface((SDL_Renderer*)GetRenderer(), sdl_surface);
@@ -3517,7 +3510,6 @@ void RotationFunSDL(void)
 	SDL_DestroyTexture(currScreen);
 
 	CalcTics();
-	CalcTics();
 	Keyboard[sc_Escape] = 0;
 
 	// ShutdownRotateBuffer ();
@@ -3544,7 +3536,6 @@ void RotationFun(void)
 	StartupRotateBuffer(0);
 
 	CalcTics();
-	CalcTics();
 	while (!Keyboard[sc_Escape])
 	{
 		IN_UpdateKeyboard();
@@ -3566,7 +3557,6 @@ void RotationFun(void)
 			scale += 30;
 		}
 	}
-	CalcTics();
 	CalcTics();
 	Keyboard[sc_Escape] = 0;
 
@@ -4445,7 +4435,6 @@ void DoTransmitterExplosion(void)
 	back = SafeMalloc(800 * linewidth);
 
 	CalcTics();
-	CalcTics();
 	DrawNormalSprite(0, 0, W_GetNumForName("transmit"));
 	PrepareBackground(back);
 	SetupTransmitterExplosions();
@@ -4683,7 +4672,6 @@ void DestroyEarth(void)
 	VL_ClearVideo(0);
 	back = SafeMalloc(800 * linewidth);
 
-	CalcTics();
 	CalcTics();
 	DrawNormalSprite(0, 0, W_GetNumForName("ourearth"));
 	PrepareBackground(back);
