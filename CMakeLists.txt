@@ -141,5 +141,5 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "CLANG")
 endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT WIN32)
-    add_compile_options(barrett PRIVATE -g -O0 -fno-omit-frame-pointer -rdynamic)
+    add_compile_options(barrett PRIVATE -g -O0 -fno-omit-frame-pointer -rdynamic -pg)
 endif()
