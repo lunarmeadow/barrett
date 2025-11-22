@@ -1117,7 +1117,7 @@ void R_DrawColumn(byte* buf)
 	int frac, fracstep;
 	byte* dest;
 
-	count = dc_yh - dc_yl + 1;
+	count = dc_yh - dc_yl;
 
 	if (count < 0)
 		return;
