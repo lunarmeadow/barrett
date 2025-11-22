@@ -70,6 +70,8 @@ int iG_masked;
 
 int whereami = -1;
 
+int pixelOffset;
+
 byte* shadingtable;
 
 word tilemap[MAPSIZE][MAPSIZE]; // wall values only
@@ -287,6 +289,9 @@ void BuildTables(void)
 
 	// Check out VENDOR.DOC file
 	CheckVendor();
+
+	// set sub-pixel offset for coloured dot fix
+	pixelOffset = 0x10000 - (0x10000 / ((double)iGLOBAL_SCREENWIDTH/iGLOBAL_SCREENHEIGHT));
 
 	if (!quiet)
 		printf("RT_DRAW: Tables Initialized\n");
@@ -2296,7 +2301,7 @@ void InterpolateDoor(visobj_t* plane)
 					((pheight - nominalheight + p->topoffset) << SFRACBITS) +
 					(SFRACUNIT >> 1);
 				sprtopoffset =
-					centeryfrac - FixedMul(dc_texturemid, dc_invscale);
+					centeryfrac - FixedMul(dc_texturemid, dc_invscale) + pixelOffset;
 
 				texture = ((top / bot) + (plane->texturestart >> 4)) >> 6;
 				SetLightLevel(height >> DHEIGHTFRACTION);
@@ -2420,8 +2425,9 @@ void InterpolateMaskedWall(visobj_t* plane)
 				dc_texturemid =
 					((pheight - nominalheight + topoffset) << SFRACBITS) +
 					(SFRACUNIT >> 1);
+
 				sprtopoffset =
-					centeryfrac - FixedMul(dc_texturemid, dc_invscale);
+					(centeryfrac - FixedMul(dc_texturemid, dc_invscale)) + pixelOffset;
 
 				texture = ((top / bot) + (plane->texturestart >> 4)) >> 6;
 				SetLightLevel(height >> DHEIGHTFRACTION);
@@ -3307,7 +3313,7 @@ void DrawScaledPost(int height, byte* src, int offset, int x)
 	dc_iscale = (p->origsize << 16) / height;
 	dc_texturemid =
 		(((p->origsize >> 1) + p->topoffset) << SFRACBITS) + (SFRACUNIT >> 1);
-	sprtopoffset = centeryfrac - FixedMul(dc_texturemid, dc_invscale);
+	sprtopoffset = centeryfrac - FixedMul(dc_texturemid, dc_invscale) + pixelOffset;
 	shadingtable = colormap + (1 << 12);
 	ScaleMaskedPost(((p->collumnofs[offset]) + src), (byte*)bufferofs + x);
 }

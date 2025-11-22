@@ -57,6 +57,8 @@ byte* dc_source;
 int centeryclipped;
 int transparentlevel = 0;
 
+extern int pixelOffset;
+
 /*
 ==========================
 =
@@ -225,7 +227,7 @@ void ScaleMaskedPost(byte* src, byte* buf)
 		length = *(src++);
 		topscreen = sprtopoffset + (dc_invscale * offset);
 		bottomscreen = topscreen + (dc_invscale * length);
-		dc_yl = (topscreen + SFRACUNIT) >> SFRACBITS;
+		dc_yl = ((topscreen + SFRACUNIT) >> SFRACBITS);
 		dc_yh = ((bottomscreen - 1) >> SFRACBITS);
 		if (dc_yh >= viewheight)
 			dc_yh = viewheight - 1;
@@ -416,7 +418,7 @@ void ScaleShape(visobj_t* sprite)
 	dc_iscale = 0xffffffffu / (unsigned)dc_invscale;
 	dc_texturemid =
 		(((sprite->h1 << size) + p->topoffset) << SFRACBITS); //+(SFRACUNIT>>1);
-	sprtopoffset = centeryfrac - FixedMul(dc_texturemid, dc_invscale);
+	sprtopoffset = centeryfrac - FixedMul(dc_texturemid, dc_invscale) + pixelOffset;
 	shadingtable = sprite->colormap;
 
 	if (x1 < 0)
@@ -572,7 +574,7 @@ void ScaleTransparentShape(visobj_t* sprite)
 	dc_iscale = 0xffffffffu / (unsigned)dc_invscale;
 	dc_texturemid =
 		(((sprite->h1 << size) + p->topoffset) << SFRACBITS); //+(SFRACUNIT>>1);
-	sprtopoffset = centeryfrac - FixedMul(dc_texturemid, dc_invscale);
+	sprtopoffset = centeryfrac - FixedMul(dc_texturemid, dc_invscale) + pixelOffset;
 	shadingtable = sprite->colormap;
 
 	if (x1 < 0)
@@ -649,7 +651,7 @@ void ScaleSolidShape(visobj_t* sprite)
 	dc_iscale = 0xffffffffu / (unsigned)dc_invscale;
 	dc_texturemid =
 		(((sprite->h1 << size) + p->topoffset) << SFRACBITS); //+(SFRACUNIT>>1);
-	sprtopoffset = centeryfrac - FixedMul(dc_texturemid, dc_invscale);
+	sprtopoffset = centeryfrac - FixedMul(dc_texturemid, dc_invscale) + pixelOffset;
 	shadingtable = sprite->colormap;
 
 	if (x1 < 0)
@@ -726,7 +728,7 @@ void ScaleWeapon(int xoff, int y, int shapenum)
 	dc_texturemid =
 		(((p->origsize >> 1) + p->topoffset) << SFRACBITS) + (SFRACUNIT >> 2);
 	sprtopoffset =
-		(centeryclipped << 16) - FixedMul(dc_texturemid, dc_invscale);
+		(centeryclipped << 16) - FixedMul(dc_texturemid, dc_invscale) + pixelOffset;
 
 	//
 	// store information in a vissprite
@@ -889,7 +891,7 @@ void DrawPositionedScaledSprite(int x, int y, int shapenum, int height,
 	dc_texturemid =
 		(((32 << size) + p->topoffset) << SFRACBITS) + (SFRACUNIT >> 1);
 	sprtopoffset =
-		(centeryclipped << 16) - FixedMul(dc_texturemid, dc_invscale);
+		(centeryclipped << 16) - FixedMul(dc_texturemid, dc_invscale) + pixelOffset;
 
 	//
 	// store information in a vissprite
@@ -976,7 +978,7 @@ void DrawScreenSizedSprite(int lump)
 	dc_texturemid =
 		(((p->origsize >> 1) + p->topoffset) << SFRACBITS) + (SFRACUNIT >> 1);
 	sprtopoffset =
-		(centeryclipped << 16) - FixedMul(dc_texturemid, dc_invscale);
+		(centeryclipped << 16) - FixedMul(dc_texturemid, dc_invscale) + pixelOffset;
 
 	x2 = (viewwidth - 1);
 
@@ -1116,6 +1118,7 @@ void R_DrawColumn(byte* buf)
 	byte* dest;
 
 	count = dc_yh - dc_yl + 1;
+
 	if (count < 0)
 		return;
 
@@ -1126,7 +1129,6 @@ void R_DrawColumn(byte* buf)
 
 	while (count--)
 	{
-		//*dest = test++;
 		*dest = shadingtable[dc_source[(frac >> SFRACBITS)]];
 		dest += iGLOBAL_SCREENWIDTH;
 		frac += fracstep;
@@ -1138,7 +1140,7 @@ void R_TransColumn(byte* buf)
 	int count;
 	byte* dest;
 
-	count = dc_yh - dc_yl + 1;
+	count = dc_yh - dc_yl;
 	if (count < 0)
 		return;
 
@@ -1186,7 +1188,7 @@ void R_DrawClippedColumn(byte* buf)
 	byte* dest;
 	//		byte *b;int y;
 
-	count = dc_yh - dc_yl + 1;
+	count = dc_yh - dc_yl;
 	if (count < 0)
 		return;
 
@@ -1208,7 +1210,7 @@ void R_DrawSolidColumn(int color, byte* buf)
 	int count;
 	byte* dest;
 
-	count = dc_yh - dc_yl + 1;
+	count = dc_yh - dc_yl;
 	if (count < 0)
 		return;
 

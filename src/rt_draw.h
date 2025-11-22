@@ -55,6 +55,8 @@ extern int tics;
 extern int wstart;
 extern int fandc;
 
+extern int pixelOffset;
+
 //
 // math tables
 //
