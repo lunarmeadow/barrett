@@ -880,7 +880,7 @@ void A_Steal(objtype* ob)
 		PLAYERSTATE[0].missileweapon = -1;
 
 		if (SHOW_BOTTOM_STATUS_BAR())
-			DrawBarAmmo(false);
+			DrawNumAmmo(false);
 	}
 }
 
@@ -10004,7 +10004,9 @@ void DamagePlayerActor(objtype* ob, int damage)
 	{
 		damagecount += damage;
 		if (SHOW_BOTTOM_STATUS_BAR())
-			DrawBarHealth(false);
+		{
+			DrawNumHealth(false);
+		}
 	}
 
 	if (pstate->health <= 0)

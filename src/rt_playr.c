@@ -2518,7 +2518,7 @@ void ResetWeapons(objtype* ob)
 	pstate->attackframe = pstate->weaponframe = 0;
 
 	if ((ob == player) && SHOW_BOTTOM_STATUS_BAR())
-		DrawBarAmmo(false);
+		DrawNumAmmo(false);
 }
 
 void SaveWeapons(objtype* ob)
@@ -2683,7 +2683,7 @@ boolean GivePlayerMissileWeapon(objtype* ob, playertype* pstate,
 	else
 		pstate->ammo = check->ammo;
 	if ((ob == player) && SHOW_BOTTOM_STATUS_BAR())
-		DrawBarAmmo(false);
+		DrawNumAmmo(false);
 
 	return true;
 }
@@ -3340,7 +3340,7 @@ void DropWeapon(objtype* ob)
 	pstate->ammo = -1;
 	pstate->missileweapon = -1;
 	if ((ob == player) && SHOW_BOTTOM_STATUS_BAR())
-		DrawBarAmmo(false);
+		DrawNumAmmo(false);
 }
 
 /*
@@ -4294,7 +4294,7 @@ void T_Attack(objtype* ob)
 					WEAPONS[pstate->weapon].screenheight / GMOVE;
 
 				if ((ob == player) && SHOW_BOTTOM_STATUS_BAR())
-					DrawBarAmmo(false);
+					DrawNumAmmo(false);
 
 				return;
 			}
@@ -4358,7 +4358,7 @@ void T_Attack(objtype* ob)
 					pstate->ammo--;
 
 				if ((ob == player) && SHOW_BOTTOM_STATUS_BAR())
-					DrawBarAmmo(false);
+					DrawNumAmmo(false);
 			}
 #if (SHAREWARE == 0)
 			if (pstate->weapon == wp_kes)
@@ -4425,7 +4425,7 @@ void T_BatBlast(objtype* ob)
 			{
 				pstate->ammo--;
 				if ((ob == player) && SHOW_BOTTOM_STATUS_BAR())
-					DrawBarAmmo(false);
+					DrawNumAmmo(false);
 			}
 
 			if (!pstate->ammo)
@@ -4721,7 +4721,7 @@ void SetWhoHaveWeapons(void)
 				pstate->attackframe = pstate->weaponframe = pstate->batblast =
 					0;
 				if (i == consoleplayer)
-					DrawBarAmmo(false);
+					DrawNumAmmo(false);
 			}
 		}
 		else

@@ -51,7 +51,7 @@ TopYZANGLELIMIT
 		SD_PlaySoundRTP(SD_SELECTWPNSND, ob->x, ob->y);                        \
 		pstate->weapondowntics = WEAPONS[pstate->weapon].screenheight / GMOVE; \
 		if ((ob == player) && SHOW_BOTTOM_STATUS_BAR())                        \
-			DrawBarAmmo(false);                                                \
+			DrawNumAmmo(false);                                                \
 	}
 
 #define BULLETHOLEOFFSET 0x700

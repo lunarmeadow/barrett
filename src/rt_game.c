@@ -419,8 +419,10 @@ void DrawPlayScreen(boolean bufferofsonly)
 
 		//}
 
-		DrawBarAmmo(bufferofsonly);
-		DrawBarHealth(bufferofsonly);
+		DrawNumAmmo(bufferofsonly);
+		//DrawBarHealth(bufferofsonly);
+
+		DrawNumHealth(bufferofsonly);
 
 		if (demoplayback)
 		{
@@ -504,7 +506,7 @@ void DrawPlayScreen(boolean bufferofsonly)
 				  shape->width, shape->height - powerupheight, powerupheight,
 				  (byte*)&shape->data, bufferofsonly);
 	}
-
+	
 	if (locplayerstate->protectiontime)
 	{
 		if (player->flags & FL_BPV)
@@ -1122,7 +1124,9 @@ void HealPlayer(int points, objtype* ob)
 
 	if ((SHOW_BOTTOM_STATUS_BAR()) && (ob == player))
 	{
-		DrawBarHealth(false);
+		// DrawBarHealth(false);
+		
+		DrawNumHealth(false);
 	}
 }
 
@@ -1260,7 +1264,7 @@ void GiveWeapon(objtype* ob, int weapon)
 		pstate->weapondowntics = WEAPONS[pstate->weapon].screenheight / GMOVE;
 		if ((ob == player) && (SHOW_BOTTOM_STATUS_BAR()))
 		{
-			DrawBarAmmo(false);
+			DrawNumAmmo(false);
 		}
 	}
 
@@ -1840,6 +1844,26 @@ void DrawBarHealth(boolean bufferofsonly)
 				 16, (byte*)&erase->data, 10 - oldpercenthealth, true,
 				 bufferofsonly);
 	}
+}
+
+void DrawNumHealth(boolean bufferofsonly)
+{
+	DrawPPic(iGLOBAL_HEALTH_X, iGLOBAL_HEALTH_Y, 8 >> 2, 16, (byte*)&erase->data,
+				 3, true, bufferofsonly);
+
+	char buf[30];
+	CurrentFont = (font_t*)W_CacheLumpName("newfnt1", PU_STATIC, Cvt_font_t, 1);
+	DrawGameString(iGLOBAL_HEALTH_X, iGLOBAL_HEALTH_Y, strupr(itoa(locplayerstate->health, &buf[0], 10)), bufferofsonly);
+}
+
+void DrawNumAmmo(boolean bufferofsonly)
+{
+	DrawPPic(iGLOBAL_AMMO_X - 16, iGLOBAL_AMMO_Y, 8 >> 2, 16, (byte*)&erase->data,
+				 2, true, bufferofsonly);
+				 
+	char buf[30];
+	CurrentFont = (font_t*)W_CacheLumpName("newfnt1", PU_STATIC, Cvt_font_t, 1);
+	DrawGameString(iGLOBAL_AMMO_X - 16, iGLOBAL_AMMO_Y, strupr(itoa(locplayerstate->ammo, &buf[0], 10)), bufferofsonly);
 }
 
 //****************************************************************************

@@ -128,6 +128,8 @@ void DrawTriads(boolean bufferofsonly);
 void DrawStats(void);
 void DrawBarHealth(boolean bufferonly);
 void DrawBarAmmo(boolean bufferonly);
+void DrawNumHealth(boolean bufferofsonly);
+void DrawNumAmmo(boolean bufferofsonly);
 void GM_DrawBonus(int which);
 
 void DrawEpisodeLevel(int x, int y);
