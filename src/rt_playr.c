@@ -331,7 +331,6 @@ void CheckWeaponChange(objtype* ob);
 void PlayerMissileAttack(objtype*);
 void Cmd_Use(objtype*);
 // void     ComError (char *error, ...);
-int FinddTopYZANGLELIMITvalue(objtype* ob);
 
 statetype s_free = {false, 0, 0, T_Free, 0, &s_free};
 statetype s_inelevator = {false, 0, 420, T_Player, 0, &s_player};
@@ -3663,7 +3662,6 @@ void SetNormalHorizon(objtype* ob)
 ===================
 */
 extern int iG_playerTilt;
-extern double dTopYZANGLELIMIT;
 
 boolean IsPlayerFalling(objtype* ob)
 {
@@ -3718,15 +3716,15 @@ void PlayerTiltHead(objtype* ob)
 		MY *= -1;
 		if(MY > 0)
 		{
-			if(yzangle + MY > 768)
-				yzangle = 768;
+			if((yzangle + MY) - HORIZONYZOFFSET > YZANGLELIMIT)
+				yzangle = HORIZONYZOFFSET + YZANGLELIMIT;
 			else
 				yzangle += MY;
 		}
 		if(MY < 0)
 		{
-			if(yzangle + MY < 256)
-				yzangle = 256;
+			if((yzangle + MY) - HORIZONYZOFFSET < -YZANGLELIMIT)
+				yzangle = HORIZONYZOFFSET - YZANGLELIMIT;
 			else
 				yzangle += MY;
 		}
@@ -3770,31 +3768,6 @@ void PlayerTiltHead(objtype* ob)
 	}
 	else
 	{
-		// replaced by look up/down, horizon button is now for flying
-		// if (pstate->buttonstate[bt_horizonup])
-		// {
-		// 	if (yzangle != pstate->horizon)
-		// 	{
-		// 		SetPlayerHorizon(pstate, yzangle - HORIZONYZOFFSET);
-		// 	}
-		// 	else
-		// 	{
-		// 		SetPlayerHorizon(pstate, (pstate->horizon - HORIZONYZOFFSET +
-		// 								  YZHORIZONSPEED));
-		// 	}
-		// }
-		// else if (pstate->buttonstate[bt_horizondown])
-		// {
-		// 	if (yzangle != pstate->horizon)
-		// 	{
-		// 		SetPlayerHorizon(pstate, yzangle - HORIZONYZOFFSET);
-		// 	}
-		// 	else
-		// 	{
-		// 		SetPlayerHorizon(pstate, (pstate->horizon - HORIZONYZOFFSET -
-		// 								  YZHORIZONSPEED));
-		// 	}
-		// }
 		if (pstate->buttonstate[bt_lookup])
 		{
 			dyz = YZTILTSPEED;
@@ -3839,152 +3812,16 @@ void PlayerTiltHead(objtype* ob)
 
 	// SetTextMode();
 
-	if (yzangle != 512)
-	{
-		FinddTopYZANGLELIMITvalue(ob);
-	}
-
 	yzangle += dyz;
 	if (yzangle - HORIZONYZOFFSET > YZANGLELIMIT)
 		yzangle = HORIZONYZOFFSET + YZANGLELIMIT;
-	/*   else if (yzangle-HORIZONYZOFFSET<-TopYZANGLELIMIT)//bnafix
-		   yzangle=HORIZONYZOFFSET-TopYZANGLELIMIT;//bnafix
-	dTopYZANGLELIMIT*/
-	else if (yzangle - HORIZONYZOFFSET < -dTopYZANGLELIMIT) // bnafix
-		yzangle = HORIZONYZOFFSET - dTopYZANGLELIMIT;		// bnafix
+	else if (yzangle - HORIZONYZOFFSET < -YZANGLELIMIT) // bnafix
+		yzangle = HORIZONYZOFFSET - YZANGLELIMIT;		// bnafix
 	ob->yzangle = yzangle - HORIZONYZOFFSET;
 	Fix(ob->yzangle);
 
 	iG_playerTilt = ob->yzangle;
 }
-
-//----------------------------------------------------------------------
-// bna added function
-// if a player is to close to wall, looking down max
-//,this func limit the dTopYZANGLELIMIT value when
-// facing a wall
-#define SMALLANGLE 90
-// there is small angles where didnt work
-// so we check for them to = 90/2048 = aprox, 15 degrees
-int FinddTopYZANGLELIMITvalue(objtype* ob)
-{ /*
-
-
-  checkx = ob->tilex + 1;
-  checky = ob->tiley + 1;
-  if (actorat[checkx][checky]){
-  return 0;
-  }
-  return 1;
-
-  checkx = ob->tilex ;
-  checky = ob->tiley;
-
-  // find which direction the player is facing
-  //and check if it is a wall
-
-  */
-
-	// use lowest down angle
-	dTopYZANGLELIMIT = (26 * FINEANGLES / 360);
-
-	if (ob->angle < 256 || ob->angle > 1792)
-	{
-		if ((tilemap[ob->tilex + 1][ob->tiley]) != 0)
-		{
-
-			return 0;
-		}
-		// ob->dir = east;
-	}
-	else if (ob->angle < 768)
-	{
-		if ((tilemap[ob->tilex][ob->tiley - 1]) != 0)
-		{
-			return 0;
-		}
-	}
-	else if (ob->angle < 1280)
-	{
-		if ((tilemap[ob->tilex - 1][ob->tiley]) != 0)
-		{
-			return 0;
-		}
-	}
-	else
-	{
-		if ((tilemap[ob->tilex][ob->tiley + 1]) != 0)
-		{
-			return 0;
-		}
-	}
-
-	// use middle down angle
-	dTopYZANGLELIMIT = (42 * FINEANGLES / 360);
-
-	if ((ob->angle > 768 - SMALLANGLE) && (ob->angle <= 768))
-	{
-		if ((tilemap[ob->tilex - 1][ob->tiley]) != 0)
-		{ // ob->tiley-1
-			return 0;
-		}
-	}
-	if ((ob->angle < 1280 + SMALLANGLE) && (ob->angle >= 1280))
-	{
-		if ((tilemap[ob->tilex - 1][ob->tiley]) != 0)
-		{ // ob->tiley+1
-			return 0;
-		}
-	}
-	if ((ob->angle > 256) && (ob->angle <= 256 + SMALLANGLE))
-	{
-		if ((tilemap[ob->tilex + 1][ob->tiley]) != 0)
-		{ // ob->tiley-1
-			return 0;
-		}
-	}
-	if ((ob->angle < 1792) && (ob->angle >= 1792 - SMALLANGLE))
-	{
-		if ((tilemap[ob->tilex + 1][ob->tiley]) != 0)
-		{ // ob->tiley+1
-			return 0;
-		}
-	}
-	if ((ob->angle < 1280) && (ob->angle >= 1280 - SMALLANGLE))
-	{
-		if ((tilemap[ob->tilex][ob->tiley + 1]) != 0)
-		{ // ob->tilex-1
-			return 0;
-		}
-	}
-	if ((ob->angle > 1792) && (ob->angle <= 1792 + SMALLANGLE))
-	{
-		if ((tilemap[ob->tilex][ob->tiley + 1]) != 0)
-		{ // ob->tiley+1
-			return 0;
-		}
-	}
-	if ((ob->angle > 768) && (ob->angle <= 768 + SMALLANGLE))
-	{
-		if ((tilemap[ob->tilex][ob->tiley - 1]) != 0)
-		{ // ob->tiley-1
-			return 0;
-		}
-	}
-	if ((ob->angle < 256) && (ob->angle >= 256 - SMALLANGLE))
-	{
-		if ((tilemap[ob->tilex][ob->tiley - 1]) != 0)
-		{ // ob->tiley-1
-			return 0;
-		}
-	}
-
-	// use max down angle
-	dTopYZANGLELIMIT = (90 * FINEANGLES / 360);
-	return 1;
-}
-// bna added function end
-//----------------------------------------------------------------------
 
 /*
 ===================
