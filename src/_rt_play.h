@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "rt_fixed.h"
 
-#define YZANGLELIMIT	(60 * FINEANGLES / 360) // bna--(30*FINEANGLES/360)
+#define YZANGLELIMIT	(42 * FINEANGLES / 360) // bna--(30*FINEANGLES/360)
 
 #define YZTILTSPEED		10
 #define SNAPBACKSPEED	10
@@ -76,7 +76,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	(FixedMulShift((x1 - x2), (x1 - x2), 16) +                                 \
 	 FixedMulShift((y1 - y2), (y1 - y2), 16))
 
-#define TILTLIMIT	   95
 #define PLAYERSTEPTIME 0xf000
 
 #define HITWALLSPEED 0x2800

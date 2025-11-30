@@ -25,12 +25,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define VAAPT			 24
 #define GODHAPT			 1024
 #define GODVAPT			 1024
-#define MAXDELTAYZSHOOT	 (((5 * FINEANGLES) / 360))
-#define MAXDELTAYZSEE	 (((15 * FINEANGLES) / 360))
-#define MAXSHOOTOFFSET	 (((15 * FINEANGLES) / 360))
+#define MAXSHOOTOFFSET	 (((42 * FINEANGLES) / 360))
 #define MAXSHOOTSHIFT	 (1)
 #define MAXDAMAGE		 (64)
-#define MAXYZANGLE		 (((30 * FINEANGLES) / 360))
+#define MAXYZANGLE		 (((42 * FINEANGLES) / 360))
 #define SMOKEWALLOFFSET	 (0x800)
 #define MZADJUST		 0x30000;
 #define MAXSTEPHEIGHT	 24
