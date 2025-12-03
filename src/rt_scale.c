@@ -171,6 +171,10 @@ void ScaleTransparentPost(byte* src, byte* buf, int level)
 	byte* oldlevel;
 	byte* seelevel;
 
+	int count;
+	int frac, fracstep;
+	byte* dest;
+
 	whereami = 25;
 
 	seelevel = colormap + (((level + 64) >> 2) << 8);
@@ -191,7 +195,20 @@ void ScaleTransparentPost(byte* src, byte* buf, int level)
 		{
 			shadingtable = seelevel;
 			if (dc_yl <= dc_yh)
-				R_TransColumn(buf);
+			{
+				// R_TransColumn
+				count = dc_yh - dc_yl + 1;
+				if (count >= 0)
+				{
+					dest = buf + ylookup[dc_yl];
+
+					while (count--)
+					{
+						*dest = shadingtable[*dest];
+						dest += iGLOBAL_SCREENWIDTH;
+					}
+				}
+			}
 			src++;
 			offset = *(src++);
 			shadingtable = oldlevel;
@@ -201,7 +218,23 @@ void ScaleTransparentPost(byte* src, byte* buf, int level)
 			if (dc_yl <= dc_yh)
 			{
 				dc_source = src - offset;
-				R_DrawColumn(buf);
+				
+				// R_DrawColumn
+				count = dc_yh - dc_yl + 1;
+				if (count < 0)
+					return;
+
+				dest = buf + ylookup[dc_yl];
+
+				fracstep = dc_iscale;
+				frac = dc_texturemid + (dc_yl - centery) * fracstep;
+
+				while (count--)
+				{
+					*dest = shadingtable[dc_source[(frac >> SFRACBITS)]];
+					dest += iGLOBAL_SCREENWIDTH;
+					frac += fracstep;
+				}
 			}
 			src += length;
 			offset = *(src++);
@@ -217,6 +250,10 @@ void ScaleMaskedPost(byte* src, byte* buf)
 	int length;
 	int topscreen;
 	int bottomscreen;
+
+	int count;
+	int frac, fracstep;
+	byte* dest;
 
 	whereami = 26;
 	offset = *(src++);
@@ -234,7 +271,23 @@ void ScaleMaskedPost(byte* src, byte* buf)
 		if (dc_yl <= dc_yh)
 		{
 			dc_source = src - offset;
-			R_DrawColumn(buf);
+			count = dc_yh - dc_yl + 1;
+			if (count >= 0)
+			{
+				// R_DrawColumn
+				dest = buf + ylookup[dc_yl];
+
+				fracstep = dc_iscale;
+				frac = dc_texturemid + (dc_yl - centery) * fracstep;
+
+				while (count--)
+				{
+					//*dest = test++;
+					*dest = shadingtable[dc_source[(frac >> SFRACBITS)]];
+					dest += iGLOBAL_SCREENWIDTH;
+					frac += fracstep;
+				}
+			}
 		}
 		src += length;
 		offset = *(src++);
@@ -247,6 +300,10 @@ void ScaleClippedPost(byte* src, byte* buf)
 	int length;
 	int topscreen;
 	int bottomscreen;
+
+	int count;
+	int frac, fracstep;
+	byte* dest;
 
 	whereami = 27;
 	offset = *(src++);
@@ -263,8 +320,23 @@ void ScaleClippedPost(byte* src, byte* buf)
 			dc_yl = 0;
 		if (dc_yl <= dc_yh)
 		{
+			// R_DrawClippedColumn
 			dc_source = src - offset;
-			R_DrawClippedColumn(buf);
+			count = dc_yh - dc_yl + 1;
+			if (count >= 0)
+			{
+				dest = buf + ylookup[dc_yl];
+
+				fracstep = dc_iscale;
+				frac = dc_texturemid + (dc_yl - centeryclipped) * fracstep;
+
+				while (count--)
+				{
+					*dest = shadingtable[dc_source[(((unsigned)frac) >> SFRACBITS)]];
+					dest += iGLOBAL_SCREENWIDTH;
+					frac += fracstep;
+				}
+			}
 		}
 		src += length;
 		offset = *(src++);
@@ -277,6 +349,9 @@ void ScaleSolidMaskedPost(int color, byte* src, byte* buf)
 	int length;
 	int topscreen;
 	int bottomscreen;
+	
+	int count;
+	byte* dest;
 
 	whereami = 28;
 	offset = *(src++);
@@ -293,8 +368,19 @@ void ScaleSolidMaskedPost(int color, byte* src, byte* buf)
 			dc_yl = 0;
 		if (dc_yl <= dc_yh)
 		{
+			// R_DrawSolidColumn
 			dc_source = src - offset;
-			R_DrawSolidColumn(color, buf);
+			count = dc_yh - dc_yl + 1;
+			if (count >= 0)
+			{
+				dest = buf + ylookup[dc_yl];
+
+				while (count--)
+				{
+					*dest = (byte)color;
+					dest += iGLOBAL_SCREENWIDTH;
+				}
+			}
 		}
 		src += length;
 		offset = *(src++);
@@ -309,6 +395,10 @@ void ScaleTransparentClippedPost(byte* src, byte* buf, int level)
 	int bottomscreen;
 	byte* oldlevel;
 	byte* seelevel;
+
+	int count;
+	int frac, fracstep;
+	byte* dest;
 
 	whereami = 29;
 
@@ -330,7 +420,20 @@ void ScaleTransparentClippedPost(byte* src, byte* buf, int level)
 		{
 			shadingtable = seelevel;
 			if (dc_yl <= dc_yh)
-				R_TransColumn(buf);
+			{
+				// R_TransColumn
+				count = dc_yh - dc_yl + 1;
+				if (count >= 0)
+				{
+					dest = buf + ylookup[dc_yl];
+
+					while (count--)
+					{
+						*dest = shadingtable[*dest];
+						dest += iGLOBAL_SCREENWIDTH;
+					}
+				}
+			}
 			src++;
 			offset = *(src++);
 			shadingtable = oldlevel;
@@ -339,8 +442,23 @@ void ScaleTransparentClippedPost(byte* src, byte* buf, int level)
 		{
 			if (dc_yl <= dc_yh)
 			{
+				// R_DrawClippedColumn
 				dc_source = src - offset;
-				R_DrawClippedColumn(buf);
+				count = dc_yh - dc_yl + 1;
+				if (count >= 0)
+				{
+					dest = buf + ylookup[dc_yl];
+
+					fracstep = dc_iscale;
+					frac = dc_texturemid + (dc_yl - centeryclipped) * fracstep;
+
+					while (count--)
+					{
+						*dest = shadingtable[dc_source[(((unsigned)frac) >> SFRACBITS)]];
+						dest += iGLOBAL_SCREENWIDTH;
+						frac += fracstep;
+					}
+				}
 			}
 			src += length;
 			offset = *(src++);
@@ -1115,22 +1233,7 @@ void R_DrawColumn(byte* buf)
 	int frac, fracstep;
 	byte* dest;
 
-	count = dc_yh - dc_yl + 1;
-	if (count < 0)
-		return;
-
-	dest = buf + ylookup[dc_yl];
-
-	fracstep = dc_iscale;
-	frac = dc_texturemid + (dc_yl - centery) * fracstep;
-
-	while (count--)
-	{
-		//*dest = test++;
-		*dest = shadingtable[dc_source[(frac >> SFRACBITS)]];
-		dest += iGLOBAL_SCREENWIDTH;
-		frac += fracstep;
-	}
+	
 }
 
 void R_TransColumn(byte* buf)
