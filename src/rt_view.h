@@ -102,6 +102,7 @@ extern int fulllight;
 extern byte* colormap;
 extern byte* greenmap;
 extern byte* redmap;
+extern byte* blckmap;
 extern int weaponscale;
 extern int viewsize;
 extern int focalwidth;
