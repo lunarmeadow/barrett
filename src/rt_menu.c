@@ -544,7 +544,7 @@ CP_MenuNames ExtOptionsNames[] = {
 	"MOUSELOOK", "INVERSE MOUSE",		 "ALLOW Y AXIS MOUSE", "CROSS HAIR",
 	"AUTOAIM MISSILE WEPS", "ENABLE AUTOAIM",	   "USE OPL MUSIC"};
 
-CP_MenuNames ExtGameOptionsNames[] = {"LOW MEMORY MODE", "BLACK WEAPONS", "DOOM BOBBING"}; // erysdren added
+CP_MenuNames ExtGameOptionsNames[] = {"LOW MEMORY MODE", "WEAPON RECOLOURS", "DOOM BOBBING"}; // erysdren added
 
 CP_MenuNames VisualOptionsNames[] = {"SCREEN RESOLUTION", "ADJUST FOCAL WIDTH",
 									 "HUD SCALING", "DISPLAY OPTIONS"};
@@ -4954,7 +4954,7 @@ void DrawExtOptionsButtons(void)
 }
 static char* ExtGameOptionsDesc[sizeof(ExtGameOptionsItems)] = {
 	"If enabled, emulate DOS ROTT's \"low memory\" mode.",
-	"Removes the blue tinting from weapon sprites.",
+	"Removes the blue tinting from weapon sprites. (EXPERIMENTAL)",
 	"Implements DOOM's 2D weapon and view bobbing algorithm."
 };
 

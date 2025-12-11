@@ -2054,7 +2054,7 @@ void WallRefresh(void)
 		pheight = player->z + locplayerstate->playerheight +
 				  locplayerstate->heightoffset;
 		nonbobpheight = pheight;
-		if (((player->z == nominalheight) ||
+		if (((player->z == nominalheight || doombobbing) ||
 			 (IsPlatform(player->tilex, player->tiley)) ||
 			 (DiskAt(player->tilex, player->tiley))) &&
 			(!(player->flags & FL_DOGMODE)) && (BobbinOn == true) &&
@@ -2068,6 +2068,10 @@ void WallRefresh(void)
 			int bobyshift = 26;
 			int pheightshift = doombobbing == true ? 27 : 28;
 
+			// reduce midair head-bobbing, because you are not in fact "walking on sunshine"
+			if(player->z != nominalheight && doombobbing)
+				pheightshift = 28;
+
 			pheight +=
 				FixedMulShift(mag, sintable[(GetTicCount() << 7) & 2047], pheightshift);
 
@@ -2078,6 +2082,10 @@ void WallRefresh(void)
 			weaponboby = FixedMulShift(
 				mag, sintable[((GetTicCount() << 5)) & ((FINEANGLES / 2) - 1)],
 				bobyshift);
+
+			// weaponframe non-zero = not idle frame
+			if((locplayerstate->weaponframe || locplayerstate->buttonheld[bt_attack]) && doombobbing)
+				weaponbobx = weaponboby = 0;
 		}
 		else
 		{
