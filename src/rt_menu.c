@@ -544,7 +544,7 @@ CP_MenuNames ExtOptionsNames[] = {
 	"MOUSELOOK", "INVERSE MOUSE",		 "ALLOW Y AXIS MOUSE", "CROSS HAIR",
 	"AUTOAIM MISSILE WEPS", "ENABLE AUTOAIM",	   "USE OPL MUSIC"};
 
-CP_MenuNames ExtGameOptionsNames[] = {"LOW MEMORY MODE", "BLACK WEAPONS"}; // erysdren added
+CP_MenuNames ExtGameOptionsNames[] = {"LOW MEMORY MODE", "BLACK WEAPONS", "DOOM BOBBING"}; // erysdren added
 
 CP_MenuNames VisualOptionsNames[] = {"SCREEN RESOLUTION", "ADJUST FOCAL WIDTH",
 									 "HUD SCALING", "DISPLAY OPTIONS"};
@@ -589,7 +589,7 @@ CP_iteminfo ExtOptionsItems = {20, MENU_Y,			7,			 0,
 							   43, ExtOptionsNames, mn_largefont};
 
 CP_iteminfo ExtGameOptionsItems = {
-	20, MENU_Y, 2, 0, 43, ExtGameOptionsNames, mn_largefont}; // LT added
+	20, MENU_Y, 3, 0, 43, ExtGameOptionsNames, mn_largefont}; // LT added
 
 CP_iteminfo DisplayOptionsMenu = {
 	20, MENU_Y, 3, 0, 43, DisplayOptionsNames, mn_largefont}; // LT added
@@ -612,7 +612,8 @@ CP_itemtype ExtOptionsMenu[] = {
 
 CP_itemtype ExtGameMenu[] = {
 	{1, "", 'L', NULL},
-	{1, "", 'B', NULL}
+	{1, "", 'B', NULL},
+	{1, "", 'D', NULL},
 };
 
 // bna added end
@@ -4953,7 +4954,8 @@ void DrawExtOptionsButtons(void)
 }
 static char* ExtGameOptionsDesc[sizeof(ExtGameOptionsItems)] = {
 	"If enabled, emulate DOS ROTT's \"low memory\" mode.",
-	"Removes the blue tinting from weapon sprites."
+	"Removes the blue tinting from weapon sprites.",
+	"Implements DOOM's 2D weapon and view bobbing algorithm."
 };
 
 void DrawExtGameOptionsButtons(void)
@@ -4984,6 +4986,12 @@ void DrawExtGameOptionsButtons(void)
 				break;
 			case 1:
 				if (blackwpns == 1)
+				{
+					on = 1;
+				}
+				break;
+			case 2:
+				if (doombobbing == 1)
 				{
 					on = 1;
 				}
@@ -5068,6 +5076,10 @@ void CP_ExtGameOptionsMenu(void)
 			break;
 		case 1:
 			blackwpns ^= 1;
+			DrawExtGameOptionsButtons();
+			break;
+		case 2:
+			doombobbing ^= 1;
 			DrawExtGameOptionsButtons();
 			break;
 		}

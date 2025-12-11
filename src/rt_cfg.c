@@ -76,6 +76,7 @@ boolean mouseenabled = 1;
 boolean usemouselook = 0;
 boolean useoplmusic = 0;
 boolean blackwpns = 0;
+boolean doombobbing = 0;
 int inverse_mouse = 1; // set  to -1 to invert mouse
 boolean sdl_fullscreen = 1;
 boolean borderWindow = 0;
