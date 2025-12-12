@@ -176,22 +176,18 @@ void SD_UpdateIncomingSound(byte* ptr, word length)
 // SD_UpdateRecordingSound - Update recording a sound in chunks
 //
 //***************************************************************************
-extern int whereami;
 void SD_UpdateRecordingSound(char* ptr, int length)
 {
 	int amount;
 
-	whereami = 69;
 	if (Recording == false)
 	{
 		return;
 	}
-	whereami = 70;
 	amount = length;
 	if (RecordingPointer + length > RECORDINGBUFFERSIZE)
 		amount = RECORDINGBUFFERSIZE - RecordingPointer;
 	memcpy(&RecordingBuffer[RecordingPointer], ptr, amount);
-	whereami = 71;
 	RecordingPointer = (RecordingPointer + amount) & (RECORDINGBUFFERSIZE - 1);
 
 	if (length != amount)
@@ -202,18 +198,15 @@ void SD_UpdateRecordingSound(char* ptr, int length)
 		RecordingPointer =
 			(RecordingPointer + amount) & (RECORDINGBUFFERSIZE - 1);
 	}
-	whereami = 72;
 	if (Feeder == false)
 	{
 		Feeder = true;
 	}
 
-	whereami = 73;
 	if (RecordingPointer == FeederPointer)
 	{
 		Recording = false;
 	}
-	whereami = 74;
 }
 
 //***************************************************************************

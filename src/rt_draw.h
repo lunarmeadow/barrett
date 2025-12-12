@@ -30,8 +30,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define MAXVISIBLE 256
 
-extern int whereami;
-
 extern byte* shadingtable; // Shading table for DrawPost
 
 typedef struct

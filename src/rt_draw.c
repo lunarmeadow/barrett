@@ -68,7 +68,6 @@ Global Variables GLOBAL VARIABLES
 
 int iG_masked;
 
-int whereami = -1;
 
 byte* shadingtable;
 
@@ -611,7 +610,6 @@ int CalcHeight(void)
 	fixed gxt, gyt, nx;
 	long gx, gy;
 
-	whereami = 0;
 
 	gx = xintercept - viewx;
 	gxt = FixedMul(gx, viewcos);
@@ -642,7 +640,6 @@ int StatRotate(statobj_t* temp)
 	int angle;
 	int dx, dy;
 
-	whereami = 2;
 
 	dx = temp->x - player->x;
 	dy = player->y - temp->y;
@@ -672,7 +669,6 @@ int CalcRotate(objtype* ob)
 	int dx, dy;
 	int rotation;
 
-	whereami = 1;
 
 	// this isn't exactly correct, as it should vary by a trig value'
 	// but it is close enough with only eight rotations
@@ -736,7 +732,6 @@ int CalcRotate(objtype* ob)
 int CompareHeights(s1p, s2p)
 visobj_t **s1p, **s2p;
 {
-	whereami = 3;
 	return SGN((*s1p)->viewheight - (*s2p)->viewheight);
 }
 
@@ -744,7 +739,6 @@ void SwitchPointers(s1p, s2p) visobj_t **s1p, **s2p;
 {
 	visobj_t* temp;
 
-	whereami = 4;
 	temp = *s1p;
 	*s1p = *s2p;
 	*s2p = temp;
@@ -754,7 +748,6 @@ void SortVisibleList(int numvisible, visobj_t* vlist)
 {
 	int i;
 
-	whereami = 5;
 	for (i = 0; i < numvisible; i++)
 		sortedvislist[i] = &(vlist[i]);
 	hsort((char*)&(sortedvislist[0]), numvisible, sizeof(visobj_t*),
@@ -785,7 +778,6 @@ void DrawScaleds(void)
 	objtype* obj;
 	maskedwallobj_t* tmwall;
 
-	whereami = 6;
 
 	//
 	// place maskwall objects
@@ -1117,7 +1109,6 @@ void DrawPlayerWeapon(void)
 	int female, black;
 	int altshape = 0;
 
-	whereami = 7;
 
 	SoftError("\n attackframe: %d, weaponframe: %d, weapondowntics: %d"
 			  " weaponuptics: %d",
@@ -1312,7 +1303,6 @@ void AdaptDetail(void)
 	return;
 #else
 
-	whereami = 8;
 	if ((preindex < 0) || (preindex > 2))
 		Error("preindex out of range\n");
 	pretics[preindex] =
@@ -1356,7 +1346,6 @@ void CalcTics(void)
 #else
 	volatile int tc;
 
-	whereami = 9;
 	//   SoftError("InCalcTics\n");
 	//   SoftError("CT GetTicCount()=%ld\n",GetTicCount());
 	//   SoftError("CT oldtime=%ld\n",oldtime);
@@ -1408,7 +1397,6 @@ void SetSpriteLightLevel(int x, int y, visobj_t* sprite, int dir,
 	int lv;
 	int intercept;
 
-	whereami = 10;
 
 	if (MISCVARS->GASON == 1)
 	{
@@ -1472,7 +1460,6 @@ void SetColorLightLevel(int x, int y, visobj_t* sprite, int dir, int color,
 	int height;
 	byte* map;
 
-	whereami = 11;
 	height = sprite->viewheight << 1;
 	map = playermaps[color];
 	if (MISCVARS->GASON == 1)
@@ -1533,7 +1520,6 @@ void SetWallLightLevel(wallcast_t* post)
 	int lv;
 	int i;
 
-	whereami = 12;
 	if (MISCVARS->GASON == 1)
 	{
 		shadingtable = greenmap + (MISCVARS->gasindex << 8);
@@ -1623,7 +1609,6 @@ void DrawWallPost(wallcast_t* post, byte* buf)
 	byte* src;
 	byte* src2;
 
-	whereami = 42;
 	if (post->lump)
 		src = W_CacheLumpNum(post->lump, PU_CACHE, CvtNull, 1);
 	if (post->alttile != 0)
@@ -1735,7 +1720,6 @@ void DrawWalls(void)
 	int plane;
 	wallcast_t* post;
 
-	whereami = 13;
 
 	plane = 0;
 
@@ -1783,7 +1767,6 @@ void TransformDoors(void)
 	int gx, gy;
 	visobj_t visdoorlist[MAXVISIBLEDOORS], *doorptr;
 
-	whereami = 14;
 	doorptr = &visdoorlist[0];
 	//
 	// place door objects
@@ -1870,7 +1853,6 @@ void TransformPushWalls(void)
 	int numvisible;
 	boolean result;
 
-	whereami = 15;
 	savedptr = visptr;
 	//
 	// place pwall objects
@@ -2017,7 +1999,6 @@ void WallRefresh(void)
 	int mag;
 	int yzangle;
 
-	whereami = 16;
 	firstcoloffset = (firstcoloffset + (tics << 8)) & 65535;
 
 	if (missobj)
@@ -2201,7 +2182,6 @@ void InterpolateWall(visobj_t* plane)
 	int dx;
 	int height;
 
-	whereami = 17;
 	dx = (plane->x2 - plane->x1 + 1);
 	if (plane->h1 <= 0 || plane->h2 <= 0 || dx == 0)
 		return;
@@ -2265,7 +2245,6 @@ void InterpolateDoor(visobj_t* plane)
 	byte* buf;
 	patch_t* p;
 
-	whereami = 18;
 	dx = (plane->x2 - plane->x1 + 1);
 	if (plane->h1 <= 0 || plane->h2 <= 0 || dx == 0)
 		return;
@@ -2360,7 +2339,6 @@ void InterpolateMaskedWall(visobj_t* plane)
 	boolean drawbottom, drawmiddle, drawtop;
 	int topoffset;
 
-	whereami = 19;
 	dx = (plane->x2 - plane->x1 + 1);
 	if (plane->h1 <= 0 || plane->h2 <= 0 || dx == 0)
 		return;
@@ -2468,7 +2446,6 @@ void DrawPlayerLocation(void)
 
 	CurrentFont = tinyfont;
 
-	whereami = 20;
 	for (i = 0; i < 18; i++)
 		memset((byte*)bufferofs + (ylookup[i + PLY]) + PLX, 0, 6);
 	px = PLX;
@@ -2502,7 +2479,6 @@ void ThreeDRefresh(void)
 {
 	objtype* tempptr;
 
-	whereami = 21;
 	tempptr = player;
 
 	//
@@ -2623,7 +2599,6 @@ void ThreeDRefresh(void)
 
 void FlipPage(void)
 {
-	whereami = 22;
 
 	if ((SHAKETICS != 0xFFFF) && (!inmenu) && (!GamePaused) && (!fizzlein))
 	{
