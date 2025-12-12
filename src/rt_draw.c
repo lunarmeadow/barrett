@@ -960,9 +960,11 @@ void DrawScaleds(void)
 		//
 		// could be in any of the nine surrounding tiles
 		//
-		if (*visspot || (*(visspot - 1)) || (*(visspot + 1)) ||
-			(*(visspot - 129)) || (*(visspot - 128)) || (*(visspot - 127)) ||
-			(*(visspot + 129)) || (*(visspot + 128)) || (*(visspot + 127)))
+		// spotvis is 128x128, ensure that min/max bounds check doesn't under or overflow.
+		if(visspot + 129 <= &spotvis[0][0] + 16384 && visspot - 129 >= &spotvis[0][0])
+		if(visspot[0] 	  || visspot[-1]   || visspot[1]     ||
+	 	  (visspot[-129]  || visspot[-128] || visspot[-127]) ||
+		  (visspot[129]   || visspot[128]  || visspot[127])   )
 		{
 
 			//        result = TransformObject (obj->drawx,
