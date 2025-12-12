@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include "rt_def.h"
+#include "rt_cfg.h"
 #include "rt_fixed.h"
 #include <stdio.h>
 #include <string.h>
@@ -1176,6 +1177,9 @@ void R_DrawClippedColumn(byte* buf)
 
 	fracstep = dc_iscale;
 	frac = dc_texturemid + (dc_yl - centeryclipped) * fracstep;
+
+	if(blackwpns)
+		shadingtable = blckmap + (1 << 12);
 
 	while (count--)
 	{

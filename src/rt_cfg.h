@@ -41,6 +41,8 @@ extern boolean joystickenabled;
 extern boolean joypadenabled;
 extern boolean autoAimMissileWeps;
 extern boolean autoAim;
+extern boolean blackwpns;
+extern boolean doombobbing;
 
 extern int joystickport;
 extern int mouseadjustment;

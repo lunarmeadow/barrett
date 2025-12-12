@@ -1271,11 +1271,15 @@ void DrawPlayerWeapon(void)
 
 			temp = weaponscale;
 			delta = FixedMul((weaponbobx << 9), weaponscale);
-			weaponscale += delta;
+
+			// was += delta, this sets it to zero when doom bobbing is enabled (disables 3D motion)
+			weaponscale += doombobbing == false ? delta : 0;
 			ScaleWeapon(xdisp - weaponbobx,
 						ydisp + weaponboby + locplayerstate->weaponheight,
 						shapenum);
-			weaponscale -= delta;
+			
+			// was -= delta, this sets it to zero when doom bobbing is enabled (disables 3D motion)
+			weaponscale -= doombobbing == false ? delta : 0;
 			ScaleWeapon(weaponbobx - 80,
 						ydisp + weaponboby + locplayerstate->weaponheight,
 						altshape);
@@ -1288,7 +1292,7 @@ void DrawPlayerWeapon(void)
 
 			temp = weaponscale;
 			delta = FixedMul((weaponbobx << 9), weaponscale);
-			weaponscale -= delta;
+			weaponscale -= doombobbing == false ? delta : 0;
 			ScaleWeapon(xdisp + weaponbobx,
 						ydisp + weaponboby + locplayerstate->weaponheight,
 						shapenum);
@@ -2033,7 +2037,7 @@ void WallRefresh(void)
 		pheight = player->z + locplayerstate->playerheight +
 				  locplayerstate->heightoffset;
 		nonbobpheight = pheight;
-		if (((player->z == nominalheight) ||
+		if (((player->z == nominalheight || doombobbing) ||
 			 (IsPlatform(player->tilex, player->tiley)) ||
 			 (DiskAt(player->tilex, player->tiley))) &&
 			(!(player->flags & FL_DOGMODE)) && (BobbinOn == true) &&
@@ -2043,14 +2047,28 @@ void WallRefresh(void)
 
 			mag = (player->speed > MAXBOB ? MAXBOB : player->speed);
 
-			pheight +=
-				FixedMulShift(mag, sintable[(GetTicCount() << 7) & 2047], 28);
+			int bobxshift = doombobbing == true ? 26 : 27;
+			int bobyshift = 26;
+			int pheightshift = doombobbing == true ? 27 : 28;
 
+			// reduce midair head-bobbing, because you are not in fact "walking on sunshine"
+			if(player->z != nominalheight && doombobbing)
+				pheightshift = 28;
+
+			pheight +=
+				FixedMulShift(mag, sintable[(GetTicCount() << 7) & 2047], pheightshift);
+
+			// bob calc itself is basically mathematically equivalent to doom bobbing, 
+			// just need to disable 3d scaling and normalize shift values to be numerically equivalent.
 			weaponbobx = FixedMulShift(
-				mag, costable[((GetTicCount() << 5)) & (FINEANGLES - 1)], 27);
+				mag, costable[((GetTicCount() << 5)) & (FINEANGLES - 1)], bobxshift);
 			weaponboby = FixedMulShift(
 				mag, sintable[((GetTicCount() << 5)) & ((FINEANGLES / 2) - 1)],
-				26);
+				bobyshift);
+
+			// weaponframe non-zero = not idle frame
+			if((locplayerstate->weaponframe || locplayerstate->buttonheld[bt_attack]) && doombobbing)
+				weaponbobx = weaponboby = 0;
 		}
 		else
 		{

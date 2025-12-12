@@ -75,6 +75,7 @@ int fulllight;
 int weaponscale;
 int viewsize;
 byte* colormap;
+byte* blckmap;
 byte* redmap;
 byte* greenmap;
 byte* playermaps[MAXPLAYERCOLORS];
@@ -428,6 +429,12 @@ void LoadColorMap(void)
 	colormap = SafeMalloc(length);
 	colormap = (byte*)(((long)colormap + 255) & ~0xff);
 	W_ReadLump(lump, colormap);
+
+	lump = W_GetNumForName("blckmap");
+	length = W_LumpLength(lump) + 255;
+	blckmap = SafeMalloc(length);
+	blckmap = (byte*)(((long)blckmap + 255) & ~0xff);
+	W_ReadLump(lump, blckmap);
 
 	// Fix fire colors in colormap
 
