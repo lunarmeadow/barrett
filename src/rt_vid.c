@@ -193,7 +193,6 @@ void DrawTiledRegion(int x, int y, int width, int height, int offx, int offy,
 	while (plane > 0)
 	{
 		origdest = start + (4 - plane);
-
 		sourcey = offy;
 		sourceoff = source + startoffset;
 		HeightIndex = height;
@@ -206,7 +205,10 @@ void DrawTiledRegion(int x, int y, int width, int height, int offx, int offy,
 			while (WidthIndex--)
 			{
 				*dest = sourceoff[sourcex];
-				dest += 4;
+
+				// ashley added: fix asan detection (clamp dest to not overflow on X-axis)
+				if(dest + 4 < origdest + iGLOBAL_SCREENWIDTH)
+					dest += 4;
 
 				sourcex++;
 				if (sourcex >= sourcewidth)
