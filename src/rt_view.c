@@ -17,6 +17,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #include "rt_def.h"
 #include "rt_view.h"
 #include "z_zone.h"
@@ -411,10 +412,15 @@ void SetupScreen(boolean flip)
 	}
 }
 
+// ashley added: this table remaps blue palette indexes to another palette index for weapon recolours.
+// blue palette is 26 entries long, thus the length
+byte bluRemapper[26] = {35, 16, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 35, 36, 36, 0};
+
 void LoadColorMap(void)
 {
 	int i, j;
 	int lump, length;
+	byte colour;
 
 	if (ColorMapLoaded == 1)
 		Error("Called LoadColorMap twice\n");
@@ -430,17 +436,44 @@ void LoadColorMap(void)
 	colormap = (byte*)(((long)colormap + 255) & ~0xff);
 	W_ReadLump(lump, colormap);
 
-	lump = W_GetNumForName("blckmap");
-	length = W_LumpLength(lump) + 255;
-	blckmap = SafeMalloc(length);
-	blckmap = (byte*)(((long)blckmap + 255) & ~0xff);
-	W_ReadLump(lump, blckmap);
-
 	// Fix fire colors in colormap
 
 	for (i = 31; i >= 16; i--)
 		for (j = 0xea; j < 0xf9; j++)
 			colormap[i * 256 + j] = colormap[(((i - 16) / 4 + 16)) * 256 + j];
+
+	// -- ashley added: get black colourmap for weapon recolouring
+
+	blckmap = SafeMalloc(length);
+
+	// first and last blu palette entries in PAL
+	int firstblu = 142;
+	int lastblu = 168;
+
+	int blusize = lastblu - firstblu;
+
+	for(int idx = 0; idx < length; idx++)
+	{
+		colour = colormap[idx];
+
+		// copy colormap palette index without remapping for all non-blu colours
+		if(colour < firstblu || colour > lastblu)
+		{
+			blckmap[idx] = colormap[idx];
+		}
+
+		// remappin time (colour is blue)
+		if(colour >= firstblu && colour <= lastblu)
+		{
+			// grab wrapped index into blu palette table (colour - firstblu). index is relative to base pointer of blue table
+			// modulo by size to wrap relative pointer back into table in case of overflows.
+			colour = bluRemapper[(colour - firstblu) % blusize];
+			
+			blckmap[idx] = colour;			
+		}
+	}
+
+	// -- ashley end
 
 	// Get special maps
 
