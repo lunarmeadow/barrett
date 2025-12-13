@@ -1459,6 +1459,10 @@ void SpawnSolidStatic(statobj_t* temp)
 
 void PreCacheStaticSounds(int itemnumber)
 {
+	// ashley added: fix asan detection
+	const int MAX_ITEM_NUMBER = sizeof(stats) / sizeof(stats[0]);
+	if(itemnumber < 0 || itemnumber > MAX_ITEM_NUMBER)
+		return;
 
 	if (stats[itemnumber].flags & FL_SHOOTABLE)
 		SD_PreCacheSound(SD_ITEMBLOWSND);
