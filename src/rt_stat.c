@@ -452,8 +452,10 @@ void DeactivateLight(long light)
 
 void TurnOnLight(int i, int j)
 {
-
-	LightsInArea[MAPSPOT(i, j, 0) - AREATILE]++;
+	// ashley added: fix asan detection
+	if( ((MAPSPOT(i, j, 0) - AREATILE) + 1) <  48 &&
+		((MAPSPOT(i, j, 0) - AREATILE) + 1) >= 0)
+		LightsInArea[MAPSPOT(i, j, 0) - AREATILE]++;
 
 	if (lightsource == 0)
 		return;
