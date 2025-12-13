@@ -162,7 +162,7 @@ void SetViewDelta(void)
 	// divide heightnumerator by a posts distance to get the posts height for
 	// the heightbuffer.  The pixel height is height>>HEIGHTFRACTION
 	//
-	heightnumerator = (((int)((double)focalwidth / 10) * centerx * 4096) << HEIGHTFRACTION);
+	heightnumerator = ((int)(((double)focalwidth / 10) * centerx * 4096) * 64);
 }
 
 /*
