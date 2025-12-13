@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "rt_fixed.h"
 
-#define YZANGLELIMIT	(42 * FINEANGLES / 360) // bna--(30*FINEANGLES/360)
+#define YZANGLELIMIT	(30 * FINEANGLES / 360) // bna--(30*FINEANGLES/360)
 
 #define YZTILTSPEED		10
 #define SNAPBACKSPEED	10
