@@ -4649,13 +4649,16 @@ void CheckWeaponStates(objtype* ob)
 	 (ob->state == &s_serialdog3) || (ob->state == &s_serialdog4))
 
 static int dyingvolume = 255;
+
+extern boolean disablelowhpsnd;
+
 void CheckSpecialSounds(objtype* ob, playertype* pstate)
 {
 	int shift;
 
 	if ((!BATTLEMODE) && (ob == player))
 	{
-		if (pstate->health < MaxHitpointsForCharacter(locplayerstate) / 5)
+		if (pstate->health < MaxHitpointsForCharacter(locplayerstate) / 5 && !disablelowhpsnd)
 		{
 			pstate->healthtime++;
 			if (pstate->healthtime > 2 * VBLCOUNTER)
