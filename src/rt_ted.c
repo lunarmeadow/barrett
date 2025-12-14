@@ -537,13 +537,16 @@ void PreCacheActor(int actor, int which)
 		end = W_GetNumForName("MONFIRE4");
 		PreCacheGroup(start, end, cache_patch_t);
 
-		if (IS_ALTERNATE_ACTOR(new))
-		{
-			start = W_GetNumForName("MRKKSH1");
-			end = W_GetNumForName("MRKDEAD7");
-		}
-
-		else
+		// ashley added: fix asan detection.
+		// the alternate actor lumps for this class don't exist, 
+		// and there is no index in deathshapeoffset for dfiremonkobj.
+		// this is likely vestigial, but is kept in case.
+		// if (IS_ALTERNATE_ACTOR(new))
+		// {
+		// 	start = W_GetNumForName("MRKKSH1");
+		// 	end = W_GetNumForName("MRKDEAD7");
+		// }
+		// else
 		{
 			start = W_GetNumForName("ALLKSH1");
 			end = W_GetNumForName("ALLDEAD7");
