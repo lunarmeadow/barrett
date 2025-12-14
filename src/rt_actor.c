@@ -8458,11 +8458,15 @@ void T_OrobotChase(objtype* ob)
 					prev = dirorder16[ob->dir][PREV];
 					ob->targettilex = (angletodir[atan2_appx(dx, dy)] << 1);
 
-					if (dirdiff16[prev][ob->targettilex] <
-						dirdiff16[next][ob->targettiley])
-						ob->temp3 = PREV;
-					else
-						ob->temp3 = NEXT;
+					if(prev < 16 && ob->targettilex < 16 && next < 16 && ob->targettiley < 16)
+					{
+						if (dirdiff16[prev][ob->targettilex] <
+							dirdiff16[next][ob->targettiley])
+							ob->temp3 = PREV;
+						else
+							ob->temp3 = NEXT;
+					}
+
 					NewState(ob, &s_NMEspinfire);
 				}
 				else
