@@ -6709,6 +6709,10 @@ void PushWallMove(int num)
 
 	areanumber = AREANUMBER(trytilex, trytiley);
 
+	// ashley added: fix asan detection
+	if(areanumber < 0 || areanumber >= 48)
+		return;
+
 	for (temp = firstareaactor[areanumber]; temp; temp = temp->nextinarea)
 	{
 		tcl = temp->obclass;
