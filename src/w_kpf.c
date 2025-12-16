@@ -33,7 +33,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "rt_png.h"
 
 #include "w_kpf.h"
+#include "rt_util.h"
 #include "w_kpfdat.h"
+#include "z_zone.h"
 
 static mz_zip_archive kpfArc;
 static boolean isMounted;
@@ -72,7 +74,7 @@ void ShutdownKPF(void)
     mz_zip_reader_end(&kpfArc);
 
     for(int i = 0; i < numWalls; i++)
-        free(wallCache[i]);
+        Z_Free(wallCache[i]);
 
     free(wallSize);
 }
@@ -117,9 +119,10 @@ void KPF_CacheBetaWalls(void)
 
         mz_zip_reader_file_stat(&kpfArc, fileIdx, &fileStat);
         
-        // this should roughly equate to the size of the wall
+        // this should roughly equate to the size of the wall. still freaks me out a bit
         wallSize[i] = fileStat.m_uncomp_size + sizeof(patch_t);
-
+        wallCache[i] = Z_Malloc(wallSize[i], PU_STATIC, NULL);
+    
         if(fileIdx < 0)
         {
             if(mz_zip_reader_is_file_a_directory(&kpfArc, fileIdx))
