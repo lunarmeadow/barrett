@@ -236,7 +236,6 @@ typedef struct objstruct
 	struct objstruct *next, *prev;
 	struct objstruct *nextactive, *prevactive;
 	struct objstruct *nextinarea, *previnarea;
-	int resurrectAtTime;
 } objtype;
 
 typedef struct b_struct
@@ -409,8 +408,5 @@ void RayShoot(objtype* shooter, int damage, int accuracy);
 void FindEmptyTile(int* stilex, int* stiley);
 void T_Wind(objtype* ob);
 void StopWind(void);
-void SetReverseDeathState(objtype* actor);
-
-void ResurrectEnemies();
 
 #endif

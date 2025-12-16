@@ -537,13 +537,16 @@ void PreCacheActor(int actor, int which)
 		end = W_GetNumForName("MONFIRE4");
 		PreCacheGroup(start, end, cache_patch_t);
 
-		if (IS_ALTERNATE_ACTOR(new))
-		{
-			start = W_GetNumForName("MRKKSH1");
-			end = W_GetNumForName("MRKDEAD7");
-		}
-
-		else
+		// ashley added: fix asan detection.
+		// the alternate actor lumps for this class don't exist, 
+		// and there is no index in deathshapeoffset for dfiremonkobj.
+		// this is likely vestigial, but is kept in case.
+		// if (IS_ALTERNATE_ACTOR(new))
+		// {
+		// 	start = W_GetNumForName("MRKKSH1");
+		// 	end = W_GetNumForName("MRKDEAD7");
+		// }
+		// else
 		{
 			start = W_GetNumForName("ALLKSH1");
 			end = W_GetNumForName("ALLDEAD7");
@@ -5352,25 +5355,6 @@ void DoLowMemoryConversion(void)
 	DoLowMemoryConversionIconPlane();
 }
 
-// int freeSlot = 0;
-// Queue enemiesToRes;
-Queue* enemiesToRes[8]; // 8 "Organic enemy Types"
-
-void SetupZomROTTStuff()
-{
-	int x;
-	for (x = 0; x < 8; x++)
-	{
-		// if (enemiesToRes[x]->head != NULL && enemiesToRes[x]->tail != NULL)
-		//{
-		// clearQueue(enemiesToRes[x]);
-		//}
-		Queue* enemyQueue = malloc(sizeof(Queue));
-		InitQueue(enemyQueue, sizeof(objtype));
-		enemiesToRes[x] = enemyQueue;
-	}
-}
-
 /*
 ==================
 =
@@ -5378,8 +5362,6 @@ void SetupZomROTTStuff()
 =
 ==================
 */
-
-extern boolean enableZomROTT;
 
 void SetupGameLevel(void)
 {
@@ -5533,10 +5515,6 @@ void SetupGameLevel(void)
 	else
 	{
 		FixTiles();
-	}
-	if (enableZomROTT)
-	{
-		SetupZomROTTStuff();
 	}
 
 	if (gamestate.SpawnEluder || gamestate.SpawnDeluder)

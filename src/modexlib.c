@@ -18,6 +18,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <SDL_stdinc.h>
+#include <SDL_video.h>
 #include <stdarg.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -33,6 +35,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "rt_vid.h"
 #include "queue.h"
 #include "lumpy.h"
+#include "exeicon.c"
 
 static void StretchMemPicture();
 // GLOBAL VARIABLES
@@ -82,6 +85,24 @@ void DrawCenterAim();
 =
 ====================
 */
+
+// thank you - https://blog.gibson.sh/2015/04/13/how-to-integrate-your-sdl2-window-icon-or-any-image-into-your-executable/
+static void GetIconMasks(Uint32* r, Uint32* g, Uint32* b, Uint32* a)
+{
+	#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+		*shift = (my_icon.bytes_per_pixel == 3) ? 8 : 0;
+		*r = 0xff000000 >> shift;
+		*g = 0x00ff0000 >> shift;
+		*b = 0x0000ff00 >> shift;
+		*a = 0x000000ff >> shift;
+	#else
+		*r = 0x000000ff;
+		*g = 0x0000ff00;
+		*b = 0x00ff0000;
+		*a = (barrett_icon.bytes_per_pixel == 3) ? 0 : 0xff000000;
+	#endif
+}
+
 void GraphicsMode(void)
 {
 	Uint32 flags = 0;
@@ -91,13 +112,13 @@ void GraphicsMode(void)
 		Error("Could not initialize SDL\n");
 	}
 
-	SDL_SetRelativeMouseMode(SDL_TRUE);
+	// SDL_SetRelativeMouseMode(SDL_TRUE);
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 	if (sdl_fullscreen)
 		flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
 
-	window = SDL_CreateWindow("Rise of the Triad", SDL_WINDOWPOS_UNDEFINED,
+	window = SDL_CreateWindow("Barrett", SDL_WINDOWPOS_UNDEFINED,
 							  SDL_WINDOWPOS_UNDEFINED, iGLOBAL_SCREENWIDTH,
 							  iGLOBAL_SCREENHEIGHT, flags);
 
@@ -120,6 +141,18 @@ void GraphicsMode(void)
 
 	SDL_RenderSetLogicalSize(renderer, iGLOBAL_SCREENWIDTH,
 							 iGLOBAL_SCREENHEIGHT);
+
+	Uint32 r,g,b,a = 0;
+
+	GetIconMasks(&r, &g, &b, &a);
+
+	SDL_Surface* icon = SDL_CreateRGBSurfaceFrom((void*)barrett_icon.pixel_data,
+		barrett_icon.width, barrett_icon.height, barrett_icon.bytes_per_pixel*8,
+		barrett_icon.bytes_per_pixel*barrett_icon.width, r, g, b, a);
+
+	SDL_SetWindowIcon(window, icon);
+	
+	SDL_FreeSurface(icon);
 }
 
 /*
@@ -428,7 +461,7 @@ void DrawCenterAim()
 				iG_playerTilt = x / 2;
 			}
 			iG_buf_center =
-				(char*)(bufferofs + ((iG_Y_center - iG_playerTilt) *
+				(char*)(bufferofs + ((iG_Y_center) *
 									 iGLOBAL_SCREENWIDTH)); //+iG_X_center;
 
 			for (x = iG_X_center - 10; x <= iG_X_center - 4; x++)
@@ -483,22 +516,26 @@ void sdl_handle_window_events(void)
 	{
 		switch (event.window.type)
 		{
-		case SDL_WINDOWEVENT_FOCUS_LOST:
-			SDL_SetRelativeMouseMode(SDL_FALSE);
-			break;
-		case SDL_WINDOWEVENT_FOCUS_GAINED:
-			SDL_SetRelativeMouseMode(SDL_TRUE);
-			break;
-		case SDL_WINDOWEVENT_MINIMIZED:
-			SDL_SetRelativeMouseMode(SDL_FALSE);
-			break;
-		case SDL_WINDOWEVENT_RESTORED:
-			SDL_SetRelativeMouseMode(SDL_TRUE);
-			break;
-		case SDL_WINDOWEVENT_CLOSE:
-			event.type = SDL_QUIT;
-			SDL_PushEvent(&event);
-			break;
+			case SDL_WINDOWEVENT_FOCUS_LOST:
+				SDL_SetRelativeMouseMode(SDL_FALSE);
+				SDL_SetWindowMouseGrab(window, SDL_FALSE);
+				break;
+			case SDL_WINDOWEVENT_FOCUS_GAINED:
+				SDL_SetRelativeMouseMode(SDL_TRUE);
+				SDL_SetWindowMouseGrab(window, SDL_TRUE);
+				break;
+			case SDL_WINDOWEVENT_MINIMIZED:
+				SDL_SetRelativeMouseMode(SDL_FALSE);
+				SDL_SetWindowMouseGrab(window, SDL_FALSE);
+				break;
+			case SDL_WINDOWEVENT_RESTORED:
+				SDL_SetRelativeMouseMode(SDL_TRUE);
+				SDL_SetWindowMouseGrab(window, SDL_TRUE);
+				break;
+			case SDL_WINDOWEVENT_CLOSE:
+				event.type = SDL_QUIT;
+				SDL_PushEvent(&event);
+				break;
 		}
 	}
 }

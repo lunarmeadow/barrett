@@ -61,7 +61,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 //******************************************************************************
 
-extern int G_weaponscale;
 extern boolean iG_aimCross;
 extern int hudRescaleFactor;
 
@@ -75,21 +74,17 @@ int FXvolume = 196;
 
 boolean mouseenabled = 1;
 boolean usemouselook = 0;
-boolean oplmusicset = 0;
 boolean useoplmusic = 0;
+boolean blackwpns = 0;
+boolean doombobbing = 0;
+boolean disablelowhpsnd = 1;
 int inverse_mouse = 1; // set  to -1 to invert mouse
-boolean usejump = 0;
 boolean sdl_fullscreen = 1;
 boolean borderWindow = 0;
 boolean borderlessWindow = 0;
-
-boolean allowBlitzMoreMissileWeps = 0;
-boolean enableAmmoPickups = 0;
 boolean autoAimMissileWeps = 0;
 boolean autoAim = 1;
-boolean enableExtraPistolDrops = 0;
 boolean allowMovementWithMouseYAxis = 1;
-boolean enableZomROTT = 0;
 int FocalWidthOffset = 0;
 int ScreenHeightToWriteToCfg = 0;
 int HudScaleToWriteToCfg = 0;
@@ -412,24 +407,13 @@ boolean ParseConfigFile(void)
 
 	if (version == ROTTVERSION)
 	{
-		// Read in allowBlitzguardMoreMissileWeps
-		ReadBoolean("AllowBlitzguardMoreMissileWeps",
-					&allowBlitzMoreMissileWeps);
-
-		// Read in enableAmmoPickups
-		ReadBoolean("EnableAmmoPickups", &enableAmmoPickups);
-
 		// Read in AutoAim
 		ReadBoolean("AutoAim", &autoAim);
 
 		// Read in AutoAimMissileWeps
 		ReadBoolean("AutoAimMissileWeps", &autoAimMissileWeps);
 
-		// Read in EnableExtraPistolDrops
-		ReadBoolean("EnableExtraPistolDrops", &enableExtraPistolDrops);
-
 		// Read in scaleOffset
-
 		ReadInt("FocalWidthOffset", &FocalWidthOffset);
 
 		// Read in MouseEnabled
@@ -438,19 +422,13 @@ boolean ParseConfigFile(void)
 		// Read in UseMouseLook
 		ReadBoolean("UseMouseLook", &usemouselook);
 
-		// Read in OPLMusicSet
-		ReadBoolean("OPLMusicSet", &oplmusicset);
-
-		// lock useoplmusic to state on cfg read
-		useoplmusic = oplmusicset;
+		// Read in UseOPLMusic
+		ReadBoolean("UseOPLMusic", &useoplmusic);
 
 		ReadInt("InverseMouse", &inverse_mouse);
 
 		ReadBoolean("AllowMovementWithMouseYAxis",
 					&allowMovementWithMouseYAxis);
-
-		// Read in UseJump
-		ReadBoolean("UseJump", &usejump);
 
 		// Read in CrossHair
 		ReadBoolean("CrossHair", &iG_aimCross);
@@ -476,30 +454,7 @@ boolean ParseConfigFile(void)
 		ReadInt("ScreenHeight", &iGLOBAL_SCREENHEIGHT);
 
 		// Read in ViewSize
-
 		ReadInt("ViewSize", &viewsize);
-
-		// Read in Weaponscale
-		ReadInt("Weaponscale", &G_weaponscale); // bna added
-		if ((G_weaponscale < 150) || (G_weaponscale > 600))
-		{
-			if (iGLOBAL_SCREENWIDTH == 320)
-			{
-				G_weaponscale = 168;
-			}
-			else if (iGLOBAL_SCREENWIDTH == 640)
-			{
-				G_weaponscale = 299;
-			}
-			else if (iGLOBAL_SCREENWIDTH == 800)
-			{
-				G_weaponscale = 376;
-			}
-			else if (iGLOBAL_SCREENWIDTH == 1024)
-			{
-				G_weaponscale = 512;
-			}
-		}
 
 		// Read in HUDScale
 		ReadInt("HUDScale", &hudRescaleFactor);
@@ -1607,24 +1562,6 @@ void WriteConfig(void)
 
 	WriteParameter(file, "Version          ", ROTTVERSION);
 
-	// Write out AllowBlitzguardMoreMissileWeps
-
-	SafeWriteString(file, "\n;\n");
-	SafeWriteString(
-		file, "; 1 - Allows Blitzguards to have Random Missile weapons\n");
-	SafeWriteString(file, "; 0 - Disallows the above (ROTT Default)\n");
-	WriteParameter(file, "AllowBlitzguardMoreMissileWeps    ",
-				   allowBlitzMoreMissileWeps);
-
-	// Write out enableAmmoPickups
-
-	SafeWriteString(file, "\n;\n");
-	SafeWriteString(file,
-					"; 1 - Allows players to refill their missile weapons by "
-					"running over one a matching one on the ground\n");
-	SafeWriteString(file, "; 0 - Disables the above (ROTT default)\n");
-	WriteParameter(file, "EnableAmmoPickups     ", enableAmmoPickups);
-
 	// Write out autoAim
 
 	SafeWriteString(file, "\n;\n");
@@ -1641,15 +1578,6 @@ void WriteConfig(void)
 	SafeWriteString(file, "; 0 - Missile weapons are not automatically aimed "
 						  "at targets. (ROTT default)\n");
 	WriteParameter(file, "AutoAimMissileWeps    ", autoAimMissileWeps);
-
-	// Write out enableExtraPistolDrops
-
-	SafeWriteString(file, "\n;\n");
-	SafeWriteString(file, "; 1 - Enemies equipped with pistols have a chance "
-						  "of dropping an extra pistol when killed.\n");
-	SafeWriteString(
-		file, "; 0 - Enemies will not drop extra pistols at all. (Default)\n");
-	WriteParameter(file, "EnableExtraPistolDrops     ", enableExtraPistolDrops);
 
 	// Write out scaleOffset
 	SafeWriteString(file, "\n;\n");
@@ -1669,11 +1597,11 @@ void WriteConfig(void)
 	SafeWriteString(file, "; 0 - UseMouseLook Disabled\n");
 	WriteParameter(file, "UseMouseLook     ", usemouselook);
 
-	// Write out OPLMusicSet
+	// Write out UseOPLMusic
 	SafeWriteString(file, "\n;\n");
-	SafeWriteString(file, "; 1 - OPLMusicSet Enabled\n");
-	SafeWriteString(file, "; 0 - OPLMusicSet Disabled\n");
-	WriteParameter(file, "OPLMusicSet      ", oplmusicset);
+	SafeWriteString(file, "; 1 - UseOPLMusic Enabled\n");
+	SafeWriteString(file, "; 0 - UseOPLMusic Disabled\n");
+	WriteParameter(file, "UseOPLMusic      ", useoplmusic);
 
 
 	// Write out InverseMouse
@@ -1688,12 +1616,6 @@ void WriteConfig(void)
 	SafeWriteString(file, "; 0 - Allow only X movement with Mouse.\n");
 	WriteParameter(file, "allowMovementWithMouseYAxis    ",
 				   allowMovementWithMouseYAxis);
-
-	// Write out UseJump
-	SafeWriteString(file, "\n;\n");
-	SafeWriteString(file, "; 1 - usejump Enabled\n");
-	SafeWriteString(file, "; 0 - usejump Disabled\n");
-	WriteParameter(file, "UseJump          ", usejump);
 
 	// Write out CrossHair
 	SafeWriteString(file, "\n;\n");
@@ -1763,34 +1685,6 @@ void WriteConfig(void)
 	SafeWriteString(file, "; Size of View port.\n");
 	SafeWriteString(file, "; (smallest) 0 - 10 (largest)\n");
 	WriteParameter(file, "ViewSize         ", viewsize);
-
-	// Write out WEAPONSCALE  bna added
-
-	SafeWriteString(file, "\n;\n");
-	SafeWriteString(file, "; Size of Weaponscale.\n");
-	SafeWriteString(file, "; (smallest) 150 - 600 (largest)\n");
-	G_weaponscale = (weaponscale * 168) / 65536;
-
-	if ((G_weaponscale < 150) || (G_weaponscale > 600))
-	{
-		if (iGLOBAL_SCREENWIDTH == 320)
-		{
-			G_weaponscale = 168;
-		}
-		else if (iGLOBAL_SCREENWIDTH == 640)
-		{
-			G_weaponscale = 299;
-		}
-		else if (iGLOBAL_SCREENWIDTH == 800)
-		{
-			G_weaponscale = 376;
-		}
-		else if (iGLOBAL_SCREENWIDTH == 1024)
-		{
-			G_weaponscale = 512;
-		}
-	}
-	WriteParameter(file, "Weaponscale         ", G_weaponscale);
 
 	// Write out HUD Scale
 	SafeWriteString(file, "\n;\n");

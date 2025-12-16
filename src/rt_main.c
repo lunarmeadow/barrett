@@ -17,6 +17,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+#include "opl.h"
 #include "rt_def.h"
 #include "lumpy.h"
 #include <stdio.h>
@@ -544,7 +545,6 @@ void CheckCommandLineParameters(void)
 		printf("         Shift            - Run/Turn faster\n");
 		printf("         E                - Use/Open\n");
 		printf("         1-4              - Choose Weapon\n");
-		printf("         5-6              - Scale Weapon Up/Down\n");
 		printf("         Enter            - Swap Weapon\n");
 		printf("         Backspace        - Turn 180\n");
 		printf("         Delete           - Drop Weapon\n");
@@ -1049,8 +1049,6 @@ int NumberOfTeams(void)
 	return (count);
 }
 
-extern boolean allowBlitzMoreMissileWeps;
-extern boolean enableZomROTT;
 extern boolean doRescaling;
 
 void GameLoop(void)
@@ -1610,6 +1608,7 @@ void ShutDown(void)
 	MU_Shutdown();
 	I_ShutdownTimer();
 	SD_Shutdown();
+	OPL_Free();
 	IN_Shutdown();
 	ShutdownSoftError();
 	Z_ShutDown();
@@ -1677,7 +1676,6 @@ void InitCharacter(void)
 	UpdateScore(gamestate.score);
 }
 
-extern boolean enableZomROTT;
 void UpdateGameObjects(void)
 {
 	int j;
@@ -1707,10 +1705,6 @@ void UpdateGameObjects(void)
 		UpdateLightning();
 		TriggerStuff();
 		CheckCriticalStatics();
-		if (enableZomROTT && gamestate.killcount > 0)
-		{
-			ResurrectEnemies();
-		}
 
 		for (j = 0; j < numclocks; j++)
 			if (Clocks[j].time1 && ((gamestate.TimeCount == Clocks[j].time1) ||

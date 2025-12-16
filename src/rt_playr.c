@@ -55,8 +55,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define FLYINGZMOM 350000
 
-extern boolean usejump;
-
 specials CurrentSpecialsTimes = {
 	60 * VBLCOUNTER, // god
 	60 * VBLCOUNTER, // dog
@@ -333,7 +331,6 @@ void CheckWeaponChange(objtype* ob);
 void PlayerMissileAttack(objtype*);
 void Cmd_Use(objtype*);
 // void     ComError (char *error, ...);
-int FinddTopYZANGLELIMITvalue(objtype* ob);
 
 statetype s_free = {false, 0, 0, T_Free, 0, &s_free};
 statetype s_inelevator = {false, 0, 420, T_Player, 0, &s_player};
@@ -1608,7 +1605,6 @@ void PlayNoWaySound(void)
 ===============
 */
 
-boolean AreJumping = false; // bna added
 int oldzval;
 int donttilt = 0;
 
@@ -1694,30 +1690,6 @@ void Cmd_Use(objtype* ob)
 	//       tempsprite = sprites[checkx][checky];
 	if (doorn == (elevatorstart + 6))
 		return;
-
-	// bna ++ jumpmode
-	// SetTextMode (  );
-	if (!BATTLEMODE)
-	{ // dont use jump in battle, spoils sync
-		if (usejump == true)
-		{
-			if (pstate->buttonheld[bt_use])
-			{
-				if ((AreJumping == false) && (ob->z > 0) && (doorn == 0))
-				{
-					oldzval = ob->z;
-					ob->z -= 15;
-					ob->momentumz += GRAVITY;
-					AreJumping = true;
-					donttilt = 10;
-					return;
-				}
-				AreJumping = false;
-				return;
-			}
-		}
-	}
-	// bna
 
 	if (pstate->buttonheld[bt_use])
 		return;
@@ -1876,29 +1848,6 @@ void Cmd_Use(objtype* ob)
 	else if ((tempwall) && (tempwall->which == WALL) && (ob == player))
 	{
 		PlayNoWaySound();
-		// bna ++ jumpmode
-		// SetTextMode (  );
-		if (!BATTLEMODE)
-		{ // dint use jump in battle, spoils sync
-			if (usejump == true)
-			{
-				if (pstate->buttonheld[bt_use])
-				{
-					if ((AreJumping == false) && (ob->z > 0) && (doorn == 0))
-					{
-						oldzval = ob->z;
-						ob->z -= 15;
-						ob->momentumz += GRAVITY;
-						AreJumping = true;
-						donttilt = 10;
-						return;
-					}
-					AreJumping = false;
-					return;
-				}
-			}
-		}
-		// bna
 	}
 	//      else
 	//         SD_PlaySoundRTP (SD_NOWAYSND,ob->x,ob->y);
@@ -2213,7 +2162,8 @@ void PollKeyboardMove(void)
 
 #define MOUSE_SENSITIVITY_SCALE 1024
 
-int mouse_x_inscale = -65536;
+// For some reason inputs are inverted if this isn't negative, the x-angle space must be inverted somehow
+int mousex_tofracangle = -SFRACUNIT;
 
 extern int inverse_mouse;
 extern boolean allowMovementWithMouseYAxis;
@@ -2227,18 +2177,18 @@ void PollMouseMove(void)
 	MX = 0;
 	MY = 0;
 
+	// Player X angle is a fixed point value, convert integer representation of mouse movement to fixed-point
+	// fractional units of 1 (x*65536/65536) and then multiply it by a 1024*y scalar. For instance, if
+	// mouseadjustment was 16, this would be 16384, which is equivalent to quartering the mouse input.
 	if (abs(mousexmove))
-	{
-		MX += FixedMul(mousexmove * mouse_x_inscale, mouseadjustment * MOUSE_SENSITIVITY_SCALE);
-	}
+		MX = FixedMul(mousexmove * mousex_tofracangle, mouseadjustment * MOUSE_SENSITIVITY_SCALE);
 
-	if (abs(mouseymove))
-	{
-		if (usemouselook || allowMovementWithMouseYAxis)
-		{
-			MY += FixedMul(mouseymove, mouseadjustment * MOUSE_SENSITIVITY_SCALE);
-		}
-	}
+	// Player Y angle/horizon is stored as a whole integer value and doesn't use fractional components.
+	// As such, it isn't converted to a fractional value, 
+	// but the same FixedMul still scales the integer as expected.
+	// This ensures linearity between X/Y axis and with respect to mouse motion.
+	if (abs(mouseymove) && (usemouselook || allowMovementWithMouseYAxis))
+		MY = FixedMul(mouseymove * inverse_mouse, mouseadjustment * MOUSE_SENSITIVITY_SCALE);
 }
 
 //******************************************************************************
@@ -2543,20 +2493,6 @@ void PollControls(void)
 	{
 		AddExitCommand();
 	}
-	// bna section
-	if (Keyboard[sc_5])
-	{
-		//	 SetTextMode (  );
-		weaponscale += 1000;
-		// testval++;
-	}
-	if (Keyboard[sc_6])
-	{
-		//	 SetTextMode (  );
-		weaponscale -= 1000;
-		//  testval--;
-	}
-	// bna section end
 
 	for (i = (NUMTXBUTTONS - 1); i >= 0; i--)
 	{
@@ -2709,9 +2645,6 @@ boolean DetermineAmmoPickup(playertype* pstate, statobj_t* check)
 	}
 }
 
-extern boolean enableAmmoPickups;
-boolean wasAmmoPickup = false;
-
 boolean GivePlayerMissileWeapon(objtype* ob, playertype* pstate,
 								statobj_t* check)
 {
@@ -2729,21 +2662,6 @@ boolean GivePlayerMissileWeapon(objtype* ob, playertype* pstate,
 	else if ((GetWeaponForItem(check->itemnumber) == pstate->missileweapon) &&
 			 (check->ammo == stats[check->itemnumber].ammo) &&
 			 (pstate->ammo >= stats[check->itemnumber].ammo))
-		return false;
-
-	// LT added, this bit here handles ammo pickups if that option's enabled
-	if (enableAmmoPickups && DetermineAmmoPickup(pstate, check))
-	{
-		wasAmmoPickup = true;
-		GivePlayerAmmo(ob, check, GetWeaponForItem(check->itemnumber));
-		if ((ob == player) && SHOW_BOTTOM_STATUS_BAR())
-			DrawBarAmmo(false);
-		SD_PlaySoundRTP(SD_GETWEAPONSND, ob->x, ob->y);
-		return true;
-	}
-
-	else if ((GetWeaponForItem(check->itemnumber) == pstate->missileweapon) &&
-			 (pstate->ammo >= check->ammo) && enableAmmoPickups)
 		return false;
 
 	SD_PlaySoundRTP(SD_GETWEAPONSND, ob->x, ob->y);
@@ -3011,12 +2929,14 @@ randomlabel:
 	case stat_twopistol:
 		if (GiveBulletWeapon(ob, wp_twopistol, check) == false)
 			return;
+
 		LocalBonusMessage("You got an extra pistol.");
 
 		break;
 	case stat_mp40:
 		if (GiveBulletWeapon(ob, wp_mp40, check) == false)
 			return;
+
 		LocalBonusMessage("You picked up an MP40.");
 
 		break;
@@ -3024,113 +2944,65 @@ randomlabel:
 	case stat_bazooka:
 		if (GivePlayerMissileWeapon(ob, pstate, check) == false)
 			return;
-		if (wasAmmoPickup)
-		{
-			LocalBonusMessage("You bagged more Bazooka rounds!");
-		}
-		else
-		{
-			LocalBonusMessage("You bagged a bazooka!");
-		}
-		wasAmmoPickup = false;
+
+		LocalBonusMessage("You bagged a bazooka!");
+
 		break;
 
 	case stat_firebomb:
 		if (GivePlayerMissileWeapon(ob, pstate, check) == false)
 			return;
-		if (wasAmmoPickup)
-		{
-			LocalBonusMessage("You got more Firebomb rounds!");
-		}
-		else
-		{
-			LocalBonusMessage("You found a Firebomb!");
-		}
-		wasAmmoPickup = false;
+
+		LocalBonusMessage("You found a Firebomb!");
+
 		break;
 
 	case stat_heatseeker:
 		if (GivePlayerMissileWeapon(ob, pstate, check) == false)
 			return;
-		if (wasAmmoPickup)
-		{
-			LocalBonusMessage("You got more Heatseeker rounds!");
-		}
-		else
-		{
-			LocalBonusMessage("You have a Heat-seeker!");
-		}
-		wasAmmoPickup = false;
+
+		LocalBonusMessage("You have a Heat-seeker!");
+
 		break;
 
 	case stat_drunkmissile:
 		if (GivePlayerMissileWeapon(ob, pstate, check) == false)
 			return;
-		if (wasAmmoPickup)
-		{
-			LocalBonusMessage("You recovered more Drunk missiles!");
-		}
-		else
-		{
-			LocalBonusMessage("You recovered a Drunk Missile!");
-		}
-		wasAmmoPickup = false;
+
+		LocalBonusMessage("You recovered a Drunk Missile!");
+
 		break;
 
 	case stat_firewall:
 		if (GivePlayerMissileWeapon(ob, pstate, check) == false)
 			return;
-		if (wasAmmoPickup)
-		{
-			LocalBonusMessage("You filched more FlameWalls!");
-		}
-		else
-		{
-			LocalBonusMessage("You filched a FlameWall!");
-		}
-		wasAmmoPickup = false;
+
+		LocalBonusMessage("You filched a FlameWall!");
+
 		break;
 
 	case stat_splitmissile:
 		if (GivePlayerMissileWeapon(ob, pstate, check) == false)
 			return;
-		if (wasAmmoPickup)
-		{
-			LocalBonusMessage("You snagged more Split Missiles!");
-		}
-		else
-		{
-			LocalBonusMessage("You snagged a Split Missile!");
-		}
-		wasAmmoPickup = false;
+
+		LocalBonusMessage("You snagged a Split Missile!");
+
 		break;
 
 	case stat_kes:
 		if (GivePlayerMissileWeapon(ob, pstate, check) == false)
 			return;
-		if (wasAmmoPickup)
-		{
-			LocalBonusMessage("You got more Dark Staff rounds!");
-		}
-		else
-		{
-			LocalBonusMessage("You wield the Dark Staff!");
-		}
-		wasAmmoPickup = false;
+
+		LocalBonusMessage("You wield the Dark Staff!");
+
 		break;
 
 	case stat_bat:
 		if (GivePlayerMissileWeapon(ob, pstate, check) == false)
 			return;
-		if (wasAmmoPickup)
-		{
-			LocalBonusMessage("You got more bat blast rounds!");
-		}
-		else
-		{
-			LocalBonusMessage("You picked up the Excalibat.");
-		}
-		wasAmmoPickup = false;
+
+		LocalBonusMessage("You picked up the Excalibat.");
+
 		break;
 
 	case stat_lifeitem1:
@@ -3790,7 +3662,6 @@ void SetNormalHorizon(objtype* ob)
 ===================
 */
 extern int iG_playerTilt;
-extern double dTopYZANGLELIMIT;
 
 boolean IsPlayerFalling(objtype* ob)
 {
@@ -3821,13 +3692,6 @@ void PlayerTiltHead(objtype* ob)
 	int dyz = 0;
 	int yzangle;
 
-	// bna++   jumpmode
-	if ((donttilt > 0))
-	{
-		donttilt--;
-		return;
-	}
-
 	M_LINKSTATE(ob, pstate);
 
 	yzangle = ob->yzangle + HORIZONYZOFFSET;
@@ -3852,15 +3716,15 @@ void PlayerTiltHead(objtype* ob)
 		MY *= -1;
 		if(MY > 0)
 		{
-			if(yzangle + MY > 768)
-				yzangle = 768;
+			if((yzangle + MY) - HORIZONYZOFFSET > YZANGLELIMIT)
+				yzangle = HORIZONYZOFFSET + YZANGLELIMIT;
 			else
 				yzangle += MY;
 		}
 		if(MY < 0)
 		{
-			if(yzangle + MY < 256)
-				yzangle = 256;
+			if((yzangle + MY) - HORIZONYZOFFSET < -YZANGLELIMIT)
+				yzangle = HORIZONYZOFFSET - YZANGLELIMIT;
 			else
 				yzangle += MY;
 		}
@@ -3904,31 +3768,6 @@ void PlayerTiltHead(objtype* ob)
 	}
 	else
 	{
-		// replaced by look up/down, horizon button is now for flying
-		// if (pstate->buttonstate[bt_horizonup])
-		// {
-		// 	if (yzangle != pstate->horizon)
-		// 	{
-		// 		SetPlayerHorizon(pstate, yzangle - HORIZONYZOFFSET);
-		// 	}
-		// 	else
-		// 	{
-		// 		SetPlayerHorizon(pstate, (pstate->horizon - HORIZONYZOFFSET +
-		// 								  YZHORIZONSPEED));
-		// 	}
-		// }
-		// else if (pstate->buttonstate[bt_horizondown])
-		// {
-		// 	if (yzangle != pstate->horizon)
-		// 	{
-		// 		SetPlayerHorizon(pstate, yzangle - HORIZONYZOFFSET);
-		// 	}
-		// 	else
-		// 	{
-		// 		SetPlayerHorizon(pstate, (pstate->horizon - HORIZONYZOFFSET -
-		// 								  YZHORIZONSPEED));
-		// 	}
-		// }
 		if (pstate->buttonstate[bt_lookup])
 		{
 			dyz = YZTILTSPEED;
@@ -3973,152 +3812,16 @@ void PlayerTiltHead(objtype* ob)
 
 	// SetTextMode();
 
-	if (yzangle != 512)
-	{
-		FinddTopYZANGLELIMITvalue(ob);
-	}
-
 	yzangle += dyz;
 	if (yzangle - HORIZONYZOFFSET > YZANGLELIMIT)
 		yzangle = HORIZONYZOFFSET + YZANGLELIMIT;
-	/*   else if (yzangle-HORIZONYZOFFSET<-TopYZANGLELIMIT)//bnafix
-		   yzangle=HORIZONYZOFFSET-TopYZANGLELIMIT;//bnafix
-	dTopYZANGLELIMIT*/
-	else if (yzangle - HORIZONYZOFFSET < -dTopYZANGLELIMIT) // bnafix
-		yzangle = HORIZONYZOFFSET - dTopYZANGLELIMIT;		// bnafix
+	else if (yzangle - HORIZONYZOFFSET < -YZANGLELIMIT) // bnafix
+		yzangle = HORIZONYZOFFSET - YZANGLELIMIT;		// bnafix
 	ob->yzangle = yzangle - HORIZONYZOFFSET;
 	Fix(ob->yzangle);
 
 	iG_playerTilt = ob->yzangle;
 }
-
-//----------------------------------------------------------------------
-// bna added function
-// if a player is to close to wall, looking down max
-//,this func limit the dTopYZANGLELIMIT value when
-// facing a wall
-#define SMALLANGLE 90
-// there is small angles where didnt work
-// so we check for them to = 90/2048 = aprox, 15 degrees
-int FinddTopYZANGLELIMITvalue(objtype* ob)
-{ /*
-
-
-  checkx = ob->tilex + 1;
-  checky = ob->tiley + 1;
-  if (actorat[checkx][checky]){
-  return 0;
-  }
-  return 1;
-
-  checkx = ob->tilex ;
-  checky = ob->tiley;
-
-  // find which direction the player is facing
-  //and check if it is a wall
-
-  */
-
-	// use lowest down angle
-	dTopYZANGLELIMIT = (26 * FINEANGLES / 360);
-
-	if (ob->angle < 256 || ob->angle > 1792)
-	{
-		if ((tilemap[ob->tilex + 1][ob->tiley]) != 0)
-		{
-
-			return 0;
-		}
-		// ob->dir = east;
-	}
-	else if (ob->angle < 768)
-	{
-		if ((tilemap[ob->tilex][ob->tiley - 1]) != 0)
-		{
-			return 0;
-		}
-	}
-	else if (ob->angle < 1280)
-	{
-		if ((tilemap[ob->tilex - 1][ob->tiley]) != 0)
-		{
-			return 0;
-		}
-	}
-	else
-	{
-		if ((tilemap[ob->tilex][ob->tiley + 1]) != 0)
-		{
-			return 0;
-		}
-	}
-
-	// use middle down angle
-	dTopYZANGLELIMIT = (42 * FINEANGLES / 360);
-
-	if ((ob->angle > 768 - SMALLANGLE) && (ob->angle <= 768))
-	{
-		if ((tilemap[ob->tilex - 1][ob->tiley]) != 0)
-		{ // ob->tiley-1
-			return 0;
-		}
-	}
-	if ((ob->angle < 1280 + SMALLANGLE) && (ob->angle >= 1280))
-	{
-		if ((tilemap[ob->tilex - 1][ob->tiley]) != 0)
-		{ // ob->tiley+1
-			return 0;
-		}
-	}
-	if ((ob->angle > 256) && (ob->angle <= 256 + SMALLANGLE))
-	{
-		if ((tilemap[ob->tilex + 1][ob->tiley]) != 0)
-		{ // ob->tiley-1
-			return 0;
-		}
-	}
-	if ((ob->angle < 1792) && (ob->angle >= 1792 - SMALLANGLE))
-	{
-		if ((tilemap[ob->tilex + 1][ob->tiley]) != 0)
-		{ // ob->tiley+1
-			return 0;
-		}
-	}
-	if ((ob->angle < 1280) && (ob->angle >= 1280 - SMALLANGLE))
-	{
-		if ((tilemap[ob->tilex][ob->tiley + 1]) != 0)
-		{ // ob->tilex-1
-			return 0;
-		}
-	}
-	if ((ob->angle > 1792) && (ob->angle <= 1792 + SMALLANGLE))
-	{
-		if ((tilemap[ob->tilex][ob->tiley + 1]) != 0)
-		{ // ob->tiley+1
-			return 0;
-		}
-	}
-	if ((ob->angle > 768) && (ob->angle <= 768 + SMALLANGLE))
-	{
-		if ((tilemap[ob->tilex][ob->tiley - 1]) != 0)
-		{ // ob->tiley-1
-			return 0;
-		}
-	}
-	if ((ob->angle < 256) && (ob->angle >= 256 - SMALLANGLE))
-	{
-		if ((tilemap[ob->tilex][ob->tiley - 1]) != 0)
-		{ // ob->tiley-1
-			return 0;
-		}
-	}
-
-	// use max down angle
-	dTopYZANGLELIMIT = (90 * FINEANGLES / 360);
-	return 1;
-}
-// bna added function end
-//----------------------------------------------------------------------
 
 /*
 ===================
@@ -4946,13 +4649,16 @@ void CheckWeaponStates(objtype* ob)
 	 (ob->state == &s_serialdog3) || (ob->state == &s_serialdog4))
 
 static int dyingvolume = 255;
+
+extern boolean disablelowhpsnd;
+
 void CheckSpecialSounds(objtype* ob, playertype* pstate)
 {
 	int shift;
 
 	if ((!BATTLEMODE) && (ob == player))
 	{
-		if (pstate->health < MaxHitpointsForCharacter(locplayerstate) / 5)
+		if (pstate->health < MaxHitpointsForCharacter(locplayerstate) / 5 && !disablelowhpsnd)
 		{
 			pstate->healthtime++;
 			if (pstate->healthtime > 2 * VBLCOUNTER)

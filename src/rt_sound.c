@@ -42,6 +42,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "rt_str.h"
 
+#include "opl.h"
+
 #if (SHAREWARE == 0)
 #include "snd_reg.h"
 #else
@@ -58,17 +60,33 @@ static int NumBadSounds = 0;
 static int remotestart;
 static boolean SoundsRemapped = false;
 
+extern boolean useoplmusic;
+
 int MUSIC_GetPosition(void)
 {
-	songtic pos;
+	if(useoplmusic && OPL_IsHooked())
+	{
+		return OPL_GetPosition();
+	}
+	else 
+	{
+		songtic pos;
 
-	MUSIC_GetSongPosition(&pos);
-	return pos.milliseconds;
+		MUSIC_GetSongPosition(&pos);
+		return pos.milliseconds;
+	}
 }
 
 void MUSIC_SetPosition(int time)
 {
-	MUSIC_SetSongTime((unsigned long)time);
+	if(useoplmusic && OPL_IsHooked())
+	{
+		OPL_SetPosition(time);
+	}
+	else 
+	{
+		MUSIC_SetSongTime((unsigned long)time);
+	}
 }
 
 //***************************************************************************

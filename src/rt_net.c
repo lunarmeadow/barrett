@@ -760,7 +760,7 @@ void ProcessRemoteRidicule(void* pkt)
 		((who == MSG_DIRECTED_TO_TEAM) &&
 		 (BATTLE_Team[from] == BATTLE_Team[consoleplayer])))
 	{
-		strcpy(name, "(� RR from ");
+		strcpy(name, "(\x81 RR from ");
 		strcat(name, PLAYERSTATE[from].codename);
 		strcat(name, ")");
 		AddMessage(name, MSG_REMOTERIDICULE);

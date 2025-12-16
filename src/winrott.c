@@ -19,8 +19,6 @@ int iGLOBAL_AMMO_Y;
 int iGLOBAL_FOCALWIDTH;
 double dGLOBAL_FPFOCALWIDTH;
 
-double dTopYZANGLELIMIT;
-
 int iG_X_center;
 int iG_Y_center;
 
@@ -62,9 +60,6 @@ void SetRottScreenRes(int Width, int Height)
 	iGLOBAL_SCREENBWIDE = iGLOBAL_SCREENWIDTH * (96 / 320);
 	iG_SCREENWIDTH = iGLOBAL_SCREENWIDTH * (96 / 320);
 	; // default screen width in bytes
-
-	dTopYZANGLELIMIT = (44 * FINEANGLES / 360);
-	;
 
 	// MinScreenWidth =  ((float)iGLOBAL_SCREENWIDTH * 0.01875);
 

@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include "HashTable.h"
 
@@ -30,6 +29,8 @@ void InitHashTable(HashTable* hashTable, int initSize)
 
 		hashTable->table[x] = node;
 	}
+
+	free(emptyNode);
 }
 
 int HashFunc(HashTable* hashTable, int key)
@@ -60,14 +61,13 @@ void Delete(HashTable* hashTable, int key)
 void ClearHashTable(HashTable* hashTable)
 {
 	int x = 0;
-	for (x = 0; x < ARRAY_SIZE(hashTable->table); x++)
-	{
-		if (hashTable->table[x] != NULL)
-		{
-			// DestroyList(hashTable->table[x]);
-			free(hashTable->table[x]);
-		}
-	}
+
+	// free all table entries until last index.
+	// do allows zero-case to be covered,
+	// pre-increment ensures that last case isn't skipped
+	do free(hashTable->table[x]);
+		while(hashTable->table[++x] != NULL);
+
 	free(hashTable->table);
 }
 

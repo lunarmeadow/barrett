@@ -27,16 +27,25 @@ typedef struct opl
 {
     int oplChipNum;
     int bankNum;
+    int emulator;
 } oplCfg;
+
+void OPL_Init(void);
+void OPL_Free(void);
 
 void OPL_RegisterHook(void);
 void OPL_DeregisterHook(void);
+void OPL_CheckForStateChange(void);
+
+int OPL_GetPosition(void);
+void OPL_SetPosition(int ms);
+
+void OPL_SetVolume(double newVol);
+int OPL_IsPlaying(void);
 int OPL_IsHooked(void);
-void OPL_Init(void);
+
 boolean OPL_Play(char* buffer, int siz, int loopflag);
 void OPL_Stop(void);
 void OPL_Pause(void);
-void OPL_SetVolume(double newVol);
-int OPL_IsPlaying(void);
 
 #endif

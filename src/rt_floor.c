@@ -97,7 +97,7 @@ void DrawSky(void)
 	else
 		shadingtable = colormap + (1 << 12);
 
-	ofs = (((maxheight) - (player->z)) >> 3) +
+	ofs = (((maxheight) - (player->z)) >> 4) +
 		  (centery * 200 / iGLOBAL_SCREENHEIGHT -
 		   ((viewheight * 200 / iGLOBAL_SCREENHEIGHT) >> 1));
 

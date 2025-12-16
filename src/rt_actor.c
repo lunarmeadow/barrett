@@ -1420,61 +1420,6 @@ void StandardEnemyInit(objtype* ob, int dir)
 		ob->z = PlatformHeight(ob->tilex, ob->tiley);
 }
 
-// LT added
-// if under ext actor options BLITZ RANDOM WEP is enabled, this will decide what
-// missile weapon a blitzguard will get
-void OutfitBlitzguardWith(objtype* ob)
-{
-	int number = GameRandomNumber("outfitting blitzguard", 0);
-
-	srand((unsigned)number);
-
-	number = rand() % 400;
-
-	if (number < 100)
-	{
-		ob->temp3 = stat_bazooka;
-		ob->temp2 = 3;
-	}
-	else if (number > 100 && number <= 150)
-	{
-		ob->temp3 = stat_heatseeker;
-		ob->temp2 = 3;
-	}
-	else if (number > 150 && number <= 200)
-	{
-		ob->temp3 = stat_drunkmissile;
-		ob->temp2 = 3;
-	}
-	else if (number > 200 && number <= 250)
-	{
-		ob->temp3 = stat_firewall;
-		ob->temp2 = 3;
-	}
-	else if (number > 250 && number <= 300)
-	{
-		ob->temp3 = stat_firebomb;
-		ob->temp2 = 3;
-	}
-#if (SHAREWARE == 0)
-	else if (number > 300 && number <= 350)
-	{
-		// excalibat
-		ob->temp3 = stat_bat;
-		ob->temp2 = 3;
-	}
-	else if (number > 350)
-	{
-		// dark staff
-		ob->temp3 = stat_kes;
-		ob->temp2 = 3;
-	}
-
-#endif
-}
-
-extern boolean allowBlitzMoreMissileWeps;
-
 // This decides if a Blitzguard (green dude) gets a rocket launcher
 void ConsiderOutfittingBlitzguard(objtype* ob)
 {
@@ -1482,63 +1427,9 @@ void ConsiderOutfittingBlitzguard(objtype* ob)
 	if ((GameRandomNumber("wiley blitzguard", 0) < WILEYBLITZCHANCE) &&
 		(gamestate.difficulty >= gd_medium))
 	{
-		if (allowBlitzMoreMissileWeps)
-		{
-			OutfitBlitzguardWith(ob);
-		}
-		else
-		{
-			ob->temp3 = stat_bazooka;
-			ob->temp2 = 3;
-		}
+		ob->temp3 = stat_bazooka;
+		ob->temp2 = 3;
 	}
-}
-
-void BlitzBatAttack(objtype* ob, objtype* target)
-{
-	// objtype *grenadetarget;
-	int dx, dy, dz, angle, momx, momy, op;
-
-	if (target->flags & FL_DYING)
-		return;
-	dx = abs(target->x - ob->x);
-	dy = abs(target->y - ob->y);
-	dz = abs(target->z - ob->z);
-	if ((dx > 0x10000) || (dy > 0x10000) || (dz > 20))
-		return;
-
-	SD_PlaySoundRTP(SD_EXCALISWINGSND, ob->x, ob->y);
-	// magangle = abs(ob->angle - AngleBetween(ob,target));
-	// if (magangle > VANG180)
-	// magangle = ANGLES - magangle;
-
-	// if (magangle > ANGLES/8)
-	// return;
-
-	angle = ob->angle + ANGLES / 16;
-	Fix(angle);
-
-	// if (temp->obclass != grenadeobj)
-	momx = FixedMul(0x3000l, costable[angle]);
-	momy = -FixedMul(0x3000l, sintable[angle]);
-	if (levelheight > 2)
-	{
-		op = FixedMul(GRAVITY, (maxheight - 100) << 16) << 1;
-		target->momentumz = -FixedSqrtHP(op);
-	}
-	target->flags |= FL_NOFRICTION;
-	SD_PlaySoundRTP(SD_EXCALIHITSND, ob->x, ob->y);
-	if ((gamestate.violence == vl_excessive) &&
-		(GameRandomNumber("Bat Gibs", 0) < 150))
-	{
-		target->flags |= FL_HBM;
-		DamageThing(target, 50);
-	}
-	else
-		DamageThing(target, 10);
-	if ((target->flags & FL_HBM) && (target->hitpoints > 0))
-		target->flags &= ~FL_HBM;
-	Collision(target, ob, momx, momy);
 }
 
 /*
@@ -3277,155 +3168,6 @@ boolean Vicious_Annihilation(objtype* ob, objtype* attacker)
 	return false;
 }
 
-void SetReverseDeathState(objtype* actor)
-{
-	switch (actor->obclass)
-	{
-	case lowguardobj:
-		NewState(actor, &s_lowgrddie4rev);
-		// actor->state = &s_lowgrddie4rev;
-		break;
-	case highguardobj:
-		NewState(actor, &s_highgrddie5rev);
-		break;
-	case strikeguardobj:
-		NewState(actor, &s_strikedie4rev);
-		// actor->state = &s_strikedie4rev;
-		break;
-	case blitzguardobj:
-		NewState(actor, &s_blitzdie4rev);
-		// actor->state = &s_blitzdie4rev;
-		break;
-	case triadenforcerobj:
-		NewState(actor, &s_enforcerdie4rev);
-		// actor->state = &s_enforcerdie4rev;
-		break;
-#if (SHAREWARE == 0)
-	case overpatrolobj:
-		NewState(actor, &s_opdie5rev);
-		// actor->state = &s_opdie5rev;
-		break;
-	case deathmonkobj:
-		NewState(actor, &s_dmonkdie4rev);
-		// actor->state = &s_dmonkdie4rev;
-		break;
-	case dfiremonkobj:
-		NewState(actor, &s_firemonkdie4rev);
-		// actor->state = &s_firemonkdie4rev;
-		break;
-#endif
-	default:
-		Error("SetReverseDeathState was called with something that can't be "
-			  "handled!");
-		break;
-	}
-}
-
-int DetermineTimeUntilEnemyIsResurrected(classtype obclass)
-{
-	switch (obclass)
-	{
-	case lowguardobj:
-		return gamestate.TimeCount / VBLCOUNTER + 60;
-		break;
-	case highguardobj:
-		return gamestate.TimeCount / VBLCOUNTER + 90;
-		break;
-
-	case strikeguardobj:
-		return gamestate.TimeCount / VBLCOUNTER + 65;
-		break;
-	case blitzguardobj:
-		return gamestate.TimeCount / VBLCOUNTER + 60;
-		break;
-	case triadenforcerobj:
-		return gamestate.TimeCount / VBLCOUNTER + 200;
-		break;
-#if (SHAREWARE == 0)
-	case overpatrolobj:
-		return gamestate.TimeCount / VBLCOUNTER + 75;
-		break;
-	case deathmonkobj:
-		return gamestate.TimeCount / VBLCOUNTER + 150;
-		break;
-	case dfiremonkobj:
-		return gamestate.TimeCount / VBLCOUNTER + 175;
-		break;
-#endif
-	default:
-		return -1; // TODO: Return -1 for every entry that isn't any of the
-				   // above
-		break;
-	}
-}
-
-extern Queue* enemiesToRes[8];
-
-void AddEnemyToResurrectList(objtype* ob)
-{
-	ob->resurrectAtTime = DetermineTimeUntilEnemyIsResurrected(ob->obclass);
-	if (ob->resurrectAtTime == -1)
-	{
-		free(ob);
-		return;
-	}
-	SetReverseDeathState(ob);
-	switch (ob->obclass)
-	{
-	case lowguardobj:
-		Enqueue(enemiesToRes[0], ob);
-		break;
-	case highguardobj:
-		Enqueue(enemiesToRes[1], ob);
-		break;
-
-	case strikeguardobj:
-		Enqueue(enemiesToRes[2], ob);
-		break;
-	case blitzguardobj:
-		Enqueue(enemiesToRes[3], ob);
-		break;
-	case triadenforcerobj:
-		Enqueue(enemiesToRes[4], ob);
-		break;
-#if (SHAREWARE == 0)
-	case overpatrolobj:
-		Enqueue(enemiesToRes[5], ob);
-		break;
-	case deathmonkobj:
-		Enqueue(enemiesToRes[6], ob);
-		break;
-	case dfiremonkobj:
-		Enqueue(enemiesToRes[7], ob);
-		break;
-#endif
-	default:
-		Error("Unknown organic enemy type detected in AddEnemyToResurrectList");
-		break;
-	}
-	// enqueue(&enemiesToRes, ob);
-}
-
-void FreeUpResurrectList()
-{
-	int x = 0;
-	for (x = 0; x < 8; x++)
-	{
-		ClearQueue(enemiesToRes[x]);
-	}
-}
-
-void SetAfterResurrectState(objtype* actor, statetype* doWhat)
-{
-	statetype* state = actor->state;
-
-	while (state->next != NULL)
-	{
-		state = state->next;
-	}
-	state->next = doWhat;
-}
-
 void SpawnDuringGameWithState(classtype which, int tilex, int tiley, int dir,
 							  int ambush, statetype* temp)
 {
@@ -3470,33 +3212,6 @@ void SpawnDuringGameWithState(classtype which, int tilex, int tiley, int dir,
 	}
 
 	ConnectAreas();
-}
-
-void ResurrectEnemies()
-{
-	objtype* actor;
-
-	int currTime = gamestate.TimeCount / VBLCOUNTER;
-
-	int index;
-
-	for (index = 0; index < 8; index++)
-	{
-		if (enemiesToRes[index]->NumOfItems == 0)
-		{
-			continue;
-		}
-		actor = enemiesToRes[index]->Head->data;
-
-		if (currTime >= actor->resurrectAtTime)
-		{
-			SD_PlaySoundRTP(SD_PLAYERSPAWNSND, actor->x, actor->y);
-			SpawnDuringGameWithState(actor->obclass, actor->tilex, actor->tiley,
-									 actor->dir, 1, actor->state);
-			Dequeue(enemiesToRes[index]);
-			gamestate.killcount--;
-		}
-	}
 }
 
 void SpawnDuringGame(classtype which, int tilex, int tiley, int dir, int ambush)
@@ -3554,8 +3269,6 @@ void SpawnDuringGame(classtype which, int tilex, int tiley, int dir, int ambush)
 ========================
 */
 
-extern boolean enableZomROTT;
-
 void BeginEnemyFatality(objtype* ob, objtype* attacker)
 {
 	if ((attacker == player) && (ob->obclass < (NUMENEMIES + 2)))
@@ -3570,14 +3283,6 @@ void BeginEnemyFatality(objtype* ob, objtype* attacker)
 
 	if (Vicious_Annihilation(ob, attacker))
 		return;
-	else if (enableZomROTT)
-	{
-		objtype* copyOfObject = malloc(sizeof(objtype));
-
-		memcpy(copyOfObject, ob, sizeof(objtype));
-
-		AddEnemyToResurrectList(copyOfObject);
-	}
 
 	if ((ob->obclass == patrolgunobj) && (ob->temp1 == -1))
 		NewState(ob, &s_robogrddie1);
@@ -4095,8 +3800,6 @@ void DropItemInEmptyTile(int item, int tilex, int tiley)
 	MakeStatActive(LASTSTAT);
 }
 
-extern boolean enableExtraPistolDrops;
-
 void KillActor(objtype* ob)
 {
 	int ocl;
@@ -4113,13 +3816,6 @@ void KillActor(objtype* ob)
 	{
 		DropItemInEmptyTile(ob->temp3, ob->tilex, ob->tiley);
 		LASTSTAT->ammo = ob->temp2;
-	}
-	else if ((ocl >= lowguardobj && ocl != highguardobj &&
-			  ocl <= blitzguardobj) &&
-			 (GameRandomNumber("Drop extra pistol chance", 0) < 25) &&
-			 enableExtraPistolDrops)
-	{
-		DropItemInEmptyTile(stat_twopistol, ob->tilex, ob->tiley);
 	}
 
 	if (actorat[ob->tilex][ob->tiley] == (void*)ob)
@@ -7013,6 +6709,10 @@ void PushWallMove(int num)
 
 	areanumber = AREANUMBER(trytilex, trytiley);
 
+	// ashley added: fix asan detection
+	if(areanumber < 0 || areanumber >= 48)
+		return;
+
 	for (temp = firstareaactor[areanumber]; temp; temp = temp->nextinarea)
 	{
 		tcl = temp->obclass;
@@ -8762,11 +8462,15 @@ void T_OrobotChase(objtype* ob)
 					prev = dirorder16[ob->dir][PREV];
 					ob->targettilex = (angletodir[atan2_appx(dx, dy)] << 1);
 
-					if (dirdiff16[prev][ob->targettilex] <
-						dirdiff16[next][ob->targettiley])
-						ob->temp3 = PREV;
-					else
-						ob->temp3 = NEXT;
+					if(prev < 16 && ob->targettilex < 16 && next < 16 && ob->targettiley < 16)
+					{
+						if (dirdiff16[prev][ob->targettilex] <
+							dirdiff16[next][ob->targettiley])
+							ob->temp3 = PREV;
+						else
+							ob->temp3 = NEXT;
+					}
+
 					NewState(ob, &s_NMEspinfire);
 				}
 				else
@@ -11402,28 +11106,11 @@ void A_Shoot(objtype* ob)
 			Error("an instance of %s called shoot without a target\n",
 				  debugstr[ob->obclass]);
 
-		if (!(ob->obclass == blitzguardobj && ob->temp3 == stat_bat))
-		{
-			ob->flags &= ~FL_FULLLIGHT;
-		}
-
 		dx = (target->x - ob->x);
 		dy = (ob->y - target->y);
 		dz = target->z - ob->z;
 
-		if (ob->obclass == blitzguardobj && ob->temp3 == stat_bat)
-		{
-			// is the target close enough for me to hit with my bat?
-			if ((abs(dx) <= 0x10000) && (abs(dy) <= 0x10000) && (abs(dz) <= 20))
-				BlitzBatAttack(ob, target);
-			else
-				// resort to pistol to damage target
-				goto pistol;
-			ob->target = NULL;
-			return;
-		}
-
-		else if ((ob->obclass == blitzguardobj) && (ob->temp3) &&
+		if ((ob->obclass == blitzguardobj) && (ob->temp3) &&
 				 (ob->temp3 != stat_gasmask) && (ob->temp3 != stat_asbesto) &&
 				 (ob->temp3 != stat_bulletproof) &&
 				 (gamestate.difficulty >= gd_medium) &&
@@ -11463,7 +11150,6 @@ void A_Shoot(objtype* ob)
 		// if (!CheckLine(ob,target,SHOOT))       // player is behind a wall
 		// return;
 
-	pistol:
 		savedangle = ob->angle;
 		ob->angle = atan2_appx(dx, dy);
 		dist = FindDistance(dx, dy);

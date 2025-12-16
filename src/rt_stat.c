@@ -452,8 +452,10 @@ void DeactivateLight(long light)
 
 void TurnOnLight(int i, int j)
 {
-
-	LightsInArea[MAPSPOT(i, j, 0) - AREATILE]++;
+	// ashley added: fix asan detection
+	if( ((MAPSPOT(i, j, 0) - AREATILE)) <  48 &&
+		((MAPSPOT(i, j, 0) - AREATILE)) >= 0)
+		LightsInArea[MAPSPOT(i, j, 0) - AREATILE]++;
 
 	if (lightsource == 0)
 		return;
@@ -1459,6 +1461,10 @@ void SpawnSolidStatic(statobj_t* temp)
 
 void PreCacheStaticSounds(int itemnumber)
 {
+	// ashley added: fix asan detection
+	const int MAX_ITEM_NUMBER = sizeof(stats) / sizeof(stats[0]);
+	if(itemnumber < 0 || itemnumber > MAX_ITEM_NUMBER)
+		return;
 
 	if (stats[itemnumber].flags & FL_SHOOTABLE)
 		SD_PreCacheSound(SD_ITEMBLOWSND);

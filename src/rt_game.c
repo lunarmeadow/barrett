@@ -1276,77 +1276,6 @@ void GiveWeapon(objtype* ob, int weapon)
 	}
 }
 
-// LT added
-//******************************************************************************
-//
-//  GivePlayerAmmo ()
-//
-//******************************************************************************
-
-void GivePlayerAmmo(objtype* ob, statobj_t* item_pickup, int which)
-{
-	playertype* pstate;
-
-	M_LINKSTATE(ob, pstate);
-
-	int playerCurrentAmmo = pstate->ammo;
-
-	int ammoInItem = item_pickup->ammo;
-
-	int maxAmmoInWeapon = stats[item_pickup->itemnumber].ammo;
-
-	// printf("playerCurrentAmmo: %d \n", playerCurrentAmmo);
-	// printf("ammoInItem: %d \n", ammoInItem);
-	// printf("maxAmmoInWeapon: %d \n", maxAmmoInWeapon);
-
-	int newAmmoAmount = ammoInItem + playerCurrentAmmo;
-
-	if (newAmmoAmount > maxAmmoInWeapon)
-	{
-		ammoInItem = newAmmoAmount - maxAmmoInWeapon;
-		if (ammoInItem < 0)
-		{
-			Error("Ammo in item cannot be set to a negative number!");
-		}
-		item_pickup->ammo = ammoInItem;
-		newAmmoAmount = maxAmmoInWeapon;
-	}
-	else
-	{
-		ammoInItem = 0;
-	}
-	pstate->ammo = newAmmoAmount;
-
-	if (pstate->ammo && (pstate->missileweapon != -1) &&
-		(!(WEAPON_IS_MAGICAL(which))) &&
-		(!(WEAPON_IS_MAGICAL(pstate->missileweapon))))
-	{
-		int nx, ny;
-
-		nx = ob->tilex;
-		ny = ob->tiley;
-
-		// If the missile weapon still has ammo in it after taking ammo from it,
-		// spawn it on the ground
-		if (ammoInItem)
-		{
-			if (IsPlatform(nx, ny))
-				SpawnStatic(nx, ny, GetItemForWeapon(pstate->missileweapon), 9);
-			else
-			{
-				int newz = sprites[ob->tilex][ob->tiley]->z;
-				SpawnStatic(nx, ny, GetItemForWeapon(pstate->missileweapon),
-							-1);
-				LASTSTAT->z = newz;
-			}
-
-			// update ammo count on missile weapon on ground
-			LASTSTAT->ammo = ammoInItem;
-			EnableOldWeapon(pstate);
-		}
-	}
-}
-
 //******************************************************************************
 //
 // GiveMissileWeapon ()
@@ -4530,14 +4459,12 @@ void DoLoadGameAction(void)
 		py = 152;
 		if (whichstr)
 		{
-			//         VW_DrawPropString ("�");
-			VW_DrawPropString(".");
+			VW_DrawPropString ("\x83");
 			whichstr = 0;
 		}
 		else
 		{
-			//         VW_DrawPropString ("�");
-			VW_DrawPropString(".");
+			VW_DrawPropString ("\x84");
 			whichstr = 1;
 		}
 		bufferofs = temp;
@@ -4634,11 +4561,6 @@ void SaveTag(int handle, char* tag, int size)
 // Expects game to be premalloced
 //
 //******************************************************************************
-
-extern boolean enableZomROTT;
-extern boolean allowBlitzMoreMissileWeps;
-extern boolean enableAmmoPickups;
-extern Queue* enemiesToRes[8];
 
 boolean SaveTheGame(int num, gamestorage_t* game)
 {
@@ -4863,39 +4785,6 @@ boolean SaveTheGame(int num, gamestorage_t* game)
 
 	size = sizeof(poweradjust);
 	SafeWrite(savehandle, &poweradjust, size);
-
-	size = sizeof(allowBlitzMoreMissileWeps);
-	SafeWrite(savehandle, &allowBlitzMoreMissileWeps, size);
-
-	size = sizeof(enableAmmoPickups);
-	SafeWrite(savehandle, &enableAmmoPickups, size);
-
-	size = sizeof(enableZomROTT);
-	SafeWrite(savehandle, &enableZomROTT, size);
-
-	// ZomROTT Stuff
-	if (enableZomROTT)
-	{
-		int z;
-		for (z = 0; z < 8; z++)
-		{
-			size = sizeof(int);
-			SafeWrite(savehandle, &enemiesToRes[z]->NumOfItems, size);
-			if (enemiesToRes[z]->NumOfItems == 0)
-			{
-				continue;
-			}
-
-			int x;
-			Node* thingToSave = enemiesToRes[z]->Head;
-			size = sizeof(objtype);
-			for (x = 0; x < enemiesToRes[z]->NumOfItems; x++)
-			{
-				SafeWrite(savehandle, thingToSave->data, size);
-				thingToSave = thingToSave->next;
-			}
-		}
-	}
 
 	close(savehandle);
 
@@ -5266,64 +5155,6 @@ boolean LoadTheGame(int num, gamestorage_t* game)
 	size = sizeof(poweradjust);
 	memcpy(&poweradjust, bufptr, size);
 	bufptr += size;
-
-	size = sizeof(allowBlitzMoreMissileWeps);
-	memcpy(&allowBlitzMoreMissileWeps, bufptr, size);
-	bufptr += size;
-
-	size = sizeof(enableAmmoPickups);
-	memcpy(&enableAmmoPickups, bufptr, size);
-	bufptr += size;
-
-	size = sizeof(enableZomROTT);
-	memcpy(&enableZomROTT, bufptr, size);
-	bufptr += size;
-
-	// ZomROTT Stuff
-	if (enableZomROTT)
-	{
-		int z;
-		for (z = 0; z < 8; z++)
-		{
-			size = sizeof(int);
-
-			int origQueueSize = 0;
-			Queue* enemyQueue;
-
-			origQueueSize = 0;
-
-			enemyQueue = malloc(sizeof(Queue));
-			InitQueue(enemyQueue, sizeof(objtype));
-
-			memcpy(&origQueueSize, bufptr, size);
-			bufptr += size;
-			enemiesToRes[z] = enemyQueue;
-
-			// memcpy(&origQueueSize, bufptr, size);
-			// bufptr+=size;
-
-			size = sizeof(objtype);
-
-			int x = 0;
-
-			while (x < origQueueSize)
-			{
-				objtype* item = (objtype*)malloc(sizeof(objtype));
-
-				memcpy(item, bufptr, size);
-
-				// fix for crash that occurs after something tries to respawn
-				// after the game is loaded
-				SetReverseDeathState(item);
-
-				Enqueue(enemyQueue, item);
-
-				bufptr += size;
-
-				x++;
-			}
-		}
-	}
 
 	// Set the viewsize
 

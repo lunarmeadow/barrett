@@ -39,8 +39,8 @@
 *.x86_64
 *.hex
 
-rott
-barrett
+rott*
+barrett*
 
 rott.exe
 barrett.exe
@@ -51,6 +51,7 @@ barrett.exe
 *.RTL
 *.DMO
 *.WAD
+*.ROT
 
 # Debug files
 *.dSYM/
