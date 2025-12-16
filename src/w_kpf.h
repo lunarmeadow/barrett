@@ -24,4 +24,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 void InitKPF(void);
 void ShutdownKPF(void);
 
+void KPF_CacheBetaWalls(void);
+
 #endif

@@ -36,6 +36,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "w_kpfdat.h"
 
 static mz_zip_archive kpfArc;
+static boolean isMounted;
+
+int numWalls;
+void** wallCache;
+int* wallSize;
 
 // TODO: search for kpf in LE install
 const char* GetKPFPath(void)
@@ -55,13 +60,21 @@ void InitKPF(void)
     {
         printf("Couldn't initialize KPF file!\n");
         ShutdownKPF();
+        isMounted = false;
         return;
     }
+
+    isMounted = true;
 }
 
 void ShutdownKPF(void)
 {
     mz_zip_reader_end(&kpfArc);
+
+    for(int i = 0; i < numWalls; i++)
+        free(wallCache[i]);
+
+    free(wallSize);
 }
 
 // void KPF_DecodePatch(const char* name)
@@ -79,44 +92,61 @@ void ShutdownKPF(void)
 
 // }
 
-void* KPF_CacheBetaWalls(const char* name)
+void KPF_CacheBetaWalls(void)
 {
     void *filePtr;
     size_t decompSize;
-
+    mz_zip_archive_file_stat fileStat;
     char filePath[256];
 
-    snprintf(filePath, 256, "/wad/wall/%s.png", name);
+    if(!isMounted)
+        return;
 
-    int fileIdx = mz_zip_reader_locate_file(&kpfArc, filePath, NULL, 
-            MZ_ZIP_FLAG_CASE_SENSITIVE);
+    if(!numWalls)
+        numWalls = ARRAY_COUNT(betaWalls);
 
-    if(fileIdx < 0)
+    if(!wallSize)
+        wallSize = malloc(numWalls * sizeof(wallSize));
+    
+    for(int i = 0; i < numWalls; i++)
     {
-        if(mz_zip_reader_is_file_a_directory(&kpfArc, fileIdx))
+        snprintf(filePath, 256, "/wad/wall/%s.png", betaWalls[i]);
+
+        int fileIdx = mz_zip_reader_locate_file(&kpfArc, filePath, NULL, 
+                MZ_ZIP_FLAG_CASE_SENSITIVE);
+
+        mz_zip_reader_file_stat(&kpfArc, fileIdx, &fileStat);
+        
+        // this should roughly equate to the size of the wall
+        wallSize[i] = fileStat.m_uncomp_size + sizeof(patch_t);
+
+        if(fileIdx < 0)
         {
-            printf("Attempted read %s is directory!", name);
+            if(mz_zip_reader_is_file_a_directory(&kpfArc, fileIdx))
+            {
+                printf("Attempted read %s is directory!", filePath);
+                ShutdownKPF();
+                ShutDown();
+            }
+
+            printf("Failed to locate patch lump %s", filePath);
             ShutdownKPF();
             ShutDown();
         }
 
-        printf("Failed to locate patch lump %s", name);
-        ShutdownKPF();
-        ShutDown();
+        filePtr = mz_zip_reader_extract_file_to_heap(&kpfArc, filePath, &decompSize, NULL);
+
+        if(!decompSize)
+        {
+            printf("File %s failed to decompress!", filePath);
+            ShutdownKPF();
+            ShutDown();
+        }
+
+        PNGDecode(filePtr, decompSize);
+
+        mz_free(filePtr);
     }
-
-    filePtr = mz_zip_reader_extract_file_to_heap(&kpfArc, filePath, &decompSize, NULL);
-
-    if(!decompSize)
-    {
-        printf("File %s failed to decompress!", name);
-        ShutdownKPF();
-        ShutDown();
-    }
-
-    PNGDecode(filePtr, decompSize);
-
-    mz_free(filePtr);
 }
 
 // byte* KPF_JSONPatchByName(const char* name)
