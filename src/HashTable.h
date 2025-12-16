@@ -9,12 +9,23 @@
 #ifndef HASHTABLE_H
 #define HASHTABLE_H
 
+#include "rt_def.h"
+#include "lumpy.h"
+
 typedef struct listNode
 {
 	int isAvaliable;
 	int key;
 	int data;
 } listNode;
+
+typedef struct patchNode
+{
+	int isAvaliable;
+	char* key;
+	patch_t* data;
+	int size;
+} patchNode;
 
 typedef struct HashTable
 {

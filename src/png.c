@@ -20,8 +20,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <spng.h>
 #include "png.h"
+#include "lumpy.h"
 
-void PNGDecode(void* buf, size_t size)
+patch_t* PNGDecode(void* buf, size_t size)
 {
     // TODO: decode the indexed png into a patch_t and send it off
     png_context_t png;
