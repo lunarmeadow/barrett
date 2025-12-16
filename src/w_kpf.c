@@ -30,7 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "rt_main.h"
 
-#include "png.h"
+#include "rt_png.h"
 
 #include "w_kpf.h"
 #include "w_kpfdat.h"
