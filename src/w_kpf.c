@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include <stdio.h>
+#include <wchar.h>
 
 #include "rt_def.h"
 
@@ -39,6 +40,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 static mz_zip_archive kpfArc;
 static boolean isMounted;
+static boolean areWallsCached = false;
 
 int numWalls;
 void** wallCache;
@@ -60,7 +62,7 @@ void InitKPF(void)
 
     if(!status)
     {
-        printf("Couldn't initialize KPF file!\n");
+        printf("InitKPF: couldn't initialize KPF file %s!\n", GetKPFPath());
         ShutdownKPF();
         isMounted = false;
         return;
@@ -71,28 +73,22 @@ void InitKPF(void)
 
 void ShutdownKPF(void)
 {
+    int cacheidx = 0;
+
     mz_zip_reader_end(&kpfArc);
 
-    for(int i = 0; i < numWalls; i++)
-        Z_Free(wallCache[i]);
+    // for(int i = 0; i < numWalls; i++)
+    //     Z_Free(wallCache[i]);
 
-    free(wallSize);
+    // should be safer, this SHOULD free all allocated walls even if only cache is only partially filled.
+    // still should be suspect of this a bit
+    do Z_Free(wallCache[cacheidx]); 
+        while (wallCache[++cacheidx] != NULL);
+
+    // avoid freeing before malloc. this should never occur, but better safe than sorry.
+    if(wallSize != NULL)
+        free(wallSize);
 }
-
-// void KPF_DecodePatch(const char* name)
-// {
-
-// }
-
-// void KPF_DecodeTransPatch(const char* name)
-// {
-    
-// }
-
-// void KPF_GetPatchType(void* jsonPtr, size_t* jsonSize)
-// {
-
-// }
 
 void KPF_CacheBetaWalls(void)
 {
@@ -102,6 +98,9 @@ void KPF_CacheBetaWalls(void)
     char filePath[256];
 
     if(!isMounted)
+        return;
+
+    if(areWallsCached)
         return;
 
     if(!numWalls)
@@ -127,12 +126,12 @@ void KPF_CacheBetaWalls(void)
         {
             if(mz_zip_reader_is_file_a_directory(&kpfArc, fileIdx))
             {
-                printf("Attempted read %s is directory!", filePath);
+                printf("KPF_CacheBetaWalls: attempted read %s is directory!", filePath);
                 ShutdownKPF();
                 ShutDown();
             }
 
-            printf("Failed to locate patch lump %s", filePath);
+            printf("KPF_CacheBetaWalls: failed to locate patch lump %s", filePath);
             ShutdownKPF();
             ShutDown();
         }
@@ -141,7 +140,7 @@ void KPF_CacheBetaWalls(void)
 
         if(!decompSize)
         {
-            printf("File %s failed to decompress!", filePath);
+            printf("KPF_CacheBetaWalls: file %s failed to decompress!", filePath);
             ShutdownKPF();
             ShutDown();
         }
@@ -150,52 +149,49 @@ void KPF_CacheBetaWalls(void)
 
         mz_free(filePtr);
     }
+
+    areWallsCached = true;
 }
 
-// byte* KPF_JSONPatchByName(const char* name)
-// {
-//     void *filePtr;
-//     void *jsonPtr;
-//     size_t decompFileSize, decompJsonSize;
+static int _KPF_GetWallForName(const char* name)
+{
+    // index in cache should match index in betaWalls, so this should just work.
+    for(int i = 0; i < numWalls; i++)
+        if(strcmp(betaWalls[i], name) == 0)
+            return i;
 
-//     char filePath[256];
-//     char jsonPath[256];
+    return -1;
+}
 
-//     snprintf(filePath, 256, "/wad/wall/%s.png", name);
-//     snprintf(jsonPath, 256, "/wad/wall/%s.png.json", name);
+// outLength should take a pointer to an integer that stores the total length of the malloc'd cache entry
+// cast this to a pointer of the required type. KPF subsystem manages resources on free
+static void* KPF_GetWallFromCache(const char* name, int* outLength)
+{
+    if(!isMounted)
+    {
+        printf("KPF_GetLumpFromCache: kpf not mounted");
+        goto err;
+    }
 
-//     int fileIdx = mz_zip_reader_locate_file(&kpfArc, filePath, NULL, 
-//             MZ_ZIP_FLAG_CASE_SENSITIVE);
+    if(!areWallsCached)
+    {
+        printf("KPF_GetLumpFromCache: walls not cached");
+        goto err;
+    }
+
+    int lumpNum = _KPF_GetWallForName(name);
     
-//     int jsonIdx = mz_zip_reader_locate_file(&kpfArc, jsonPath, NULL, 
-//             MZ_ZIP_FLAG_CASE_SENSITIVE);
+    if(lumpNum == -1)
+    {
+        printf("KPF_GetLumpFromCache: no lump found for num %d - %s", lumpNum, name);
+        goto err;
+    }
 
-//     if(fileIdx < 0 || jsonIdx < 0)
-//     {
-//         if(mz_zip_reader_is_file_a_directory(&kpfArc, fileIdx))
-//         {
-//             printf("Attempted read %s is directory!", name);
-//             ShutdownKPF();
-//             ShutDown();
-//         }
+    *outLength = wallSize[lumpNum];
 
-//         printf("Failed to locate beta wall lump %s", name);
-//         ShutdownKPF();
-//         ShutDown();
-//     }
+    return wallCache[lumpNum];
 
-//     filePtr = mz_zip_reader_extract_file_to_heap(&kpfArc, filePath, &decompFileSize, NULL);
-//     jsonPtr = mz_zip_reader_extract_file_to_heap(&kpfArc, jsonPath, &decompJsonSize, NULL);
-
-//     if(!decompFileSize || !decompJsonSize)
-//     {
-//         printf("File %s failed to decompress!", name);
-//         ShutdownKPF();
-//         ShutDown();
-//     }
-
-//     // KPF_GetPatchType(void *jsonPtr, size_t *jsonSize);
-//     // PNGDecode(filePtr, decompSize);
-
-//     mz_free(filePtr);
-// }
+err:
+    ShutdownKPF();
+    ShutDown();
+}
