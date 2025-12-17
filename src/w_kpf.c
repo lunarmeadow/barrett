@@ -36,108 +36,135 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "w_kpfdat.h"
 
 static mz_zip_archive kpfArc;
+
+// ensure we don't do anything stupid
 static boolean isMounted;
 static boolean areWallsCached = false;
 
-int numWalls;
+// numWalls is a compile-time constant
+int numWalls = ARRAY_COUNT(betaWalls);
+
+// wallCache is a table of pointers to memory blocks containing decoded patches. 
+// each index correponds to the entry in betaWalls[i], and same with wallSize
+// a hash table would likely be better here but that's complex.
+// this is sort of structured like the pre-existing wad code but very specific.
+// Access through KPF_GetWallFromCache which uses a linear search in betaWalls to index by name.
 void** wallCache;
 int* wallSize;
 
 void InitKPF(const char* path)
 {
-    mz_bool status;
+    mz_bool status = MZ_FALSE;
     mz_zip_error err;
 
-    if(mz_zip_validate_file_archive(path, NULL, &err))
+    // initialize base pointers for wall cache tables
+    wallSize = calloc(numWalls, sizeof(*wallSize));
+    wallCache = calloc(numWalls, sizeof(*wallCache));
+
+    // initialize kpf shit
+    if(mz_zip_validate_file_archive(path, 0, &err))
         status = mz_zip_reader_init_file(&kpfArc, path, 0);
 
+    // shit don't work ! ! !
     if(!status)
     {
-        printf("InitKPF: couldn't initialize KPF file %s!\n", path);
+        printf("InitKPF: couldn't initialize KPF file %s with miniz error %s!\n", path, mz_zip_get_error_string(err));
         ShutdownKPF();
         isMounted = false;
         return;
     }
 
+    // we loaded alright
+    printf("Added %s\n", path);
     isMounted = true;
 }
 
 void ShutdownKPF(void)
 {
-    int cacheidx = 0;
-
+    // close and free miniz resources
     mz_zip_reader_end(&kpfArc);
 
-    // for(int i = 0; i < numWalls; i++)
-    //     Z_Free(wallCache[i]);
+    // free table base pointer and all indices if wall cache is loaded
+    if (wallCache)
+    {
+        for (int i = 0; i < numWalls; i++)
+        {
+            // check if data is actually allocated, free if not.
+            // this should avoid freeing on
+            if (wallCache[i])
+                free(wallCache[i]);
+        }
+        free(wallCache);
+    }
 
-    // should be safer, this SHOULD free all allocated walls even if only cache is only partially filled.
-    // still should be suspect of this a bit
-    if(wallCache[0] != NULL)
-        do free(wallCache[cacheidx]); 
-            while (wallCache[++cacheidx] != NULL);
-
-    // avoid freeing before malloc. this should never occur, but better safe than sorry.
-    if(wallSize != NULL)
+    if (wallSize)
         free(wallSize);
 }
 
 void KPF_CacheBetaWalls(void)
 {
-    void *filePtr;
-    size_t decompSize;
     mz_zip_archive_file_stat fileStat;
     char filePath[256];
+
+    mz_bool status = MZ_FALSE;
 
     if(!isMounted)
         return;
 
     if(areWallsCached)
         return;
-
-    if(!numWalls)
-        numWalls = ARRAY_COUNT(betaWalls);
-
-    if(!wallSize)
-        wallSize = malloc(numWalls * sizeof(wallSize));
     
     for(int i = 0; i < numWalls; i++)
     {
-        snprintf(filePath, 256, "/wad/wall/%s.png", betaWalls[i]);
+        snprintf(filePath, 256, "wad/wall/%s.png", betaWalls[i]);
+
+        // locate and validate file
 
         int fileIdx = mz_zip_reader_locate_file(&kpfArc, filePath, NULL, 
-                MZ_ZIP_FLAG_CASE_SENSITIVE);
+                0);
 
-        mz_zip_reader_file_stat(&kpfArc, fileIdx, &fileStat);
-        
-        // this should roughly equate to the size of the wall. still freaks me out a bit.
-        wallSize[i] = fileStat.m_uncomp_size;
-        wallCache[i] = malloc(wallSize[i]);
-    
         if(fileIdx < 0)
         {
-            if(mz_zip_reader_is_file_a_directory(&kpfArc, fileIdx))
-            {
-                printf("KPF_CacheBetaWalls: attempted read %s is directory!", filePath);
-                ShutdownKPF();
-                ShutDown();
-            }
-
-            printf("KPF_CacheBetaWalls: failed to locate patch lump %s", filePath);
+            printf("KPF_CacheBetaWalls: failed to locate patch lump %s\n", filePath);
             ShutdownKPF();
             ShutDown();
         }
 
-        filePtr = mz_zip_reader_extract_file_to_heap(&kpfArc, filePath, &decompSize, NULL);
-
-        if(!decompSize)
+        if(mz_zip_reader_is_file_a_directory(&kpfArc, fileIdx))
         {
-            printf("KPF_CacheBetaWalls: file %s failed to decompress!", filePath);
+            printf("KPF_CacheBetaWalls: attempted read %s is directory!\n", filePath);
             ShutdownKPF();
             ShutDown();
         }
 
-        mz_free(filePtr);
+        // extract file info
+
+        status = mz_zip_reader_file_stat(&kpfArc, fileIdx, &fileStat);
+        
+        if(!status)
+        {
+            printf("KPF_CacheBetaWalls: file %s has no info!\n", filePath);
+            ShutdownKPF();
+            ShutDown();
+        }
+        else 
+        {
+            wallSize[i] = fileStat.m_uncomp_size;
+            wallCache[i] = malloc(fileStat.m_uncomp_size);
+        }
+
+        // load png into test cache buffer
+         
+        // todo: should load the png into a scratch buffer instead, and then use it to decode into a patch_t which is then loaded into wallCache.
+    
+        status = mz_zip_reader_extract_file_to_mem(&kpfArc, filePath, wallCache[i], wallSize[i], 0);
+
+        if(!status)
+        {
+            printf("KPF_CacheBetaWalls: file %s failed to decompress!\n", filePath);
+            ShutdownKPF();
+            ShutDown();
+        }
     }
 
     areWallsCached = true;
@@ -154,18 +181,19 @@ static int _KPF_GetWallForName(const char* name)
 }
 
 // outLength should take a pointer to an integer that stores the total length of the malloc'd cache entry
-// cast this to a pointer of the required type. KPF subsystem manages resources on free
-static void* KPF_GetWallFromCache(const char* name, int* outLength)
+// cast this to a pointer of the required type. KPF subsystem manages resources on free.
+// returns an allocated block of memory managed by kpf subsystem containing patch data.
+void* KPF_GetWallFromCache(const char* name, int* outLength)
 {
     if(!isMounted)
     {
-        printf("KPF_GetLumpFromCache: kpf not mounted");
+        printf("KPF_GetLumpFromCache: kpf not mounted\n");
         goto err;
     }
 
     if(!areWallsCached)
     {
-        printf("KPF_GetLumpFromCache: walls not cached");
+        printf("KPF_GetLumpFromCache: attempt to index %s but walls not cached\n", name);
         goto err;
     }
 
@@ -173,15 +201,15 @@ static void* KPF_GetWallFromCache(const char* name, int* outLength)
     
     if(lumpNum == -1)
     {
-        printf("KPF_GetLumpFromCache: no lump found for num %d - %s", lumpNum, name);
+        printf("KPF_GetLumpFromCache: no lump found for num %d - %s\n", lumpNum, name);
         goto err;
     }
 
     *outLength = wallSize[lumpNum];
-
     return wallCache[lumpNum];
 
 err:
     ShutdownKPF();
     ShutDown();
+    return NULL;
 }

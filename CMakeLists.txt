@@ -137,6 +137,7 @@ set(BARRETT_SOURCES
 	${PROJECT_SOURCE_DIR}/src/rt_vid.c
 	${PROJECT_SOURCE_DIR}/src/rt_err.c
 	${PROJECT_SOURCE_DIR}/src/scriplib.c
+	${PROJECT_SOURCE_DIR}/src/w_kpf.c
 	${PROJECT_SOURCE_DIR}/src/w_wad.c
 	${PROJECT_SOURCE_DIR}/src/z_zone.c
 	${PROJECT_SOURCE_DIR}/src/byteordr.c

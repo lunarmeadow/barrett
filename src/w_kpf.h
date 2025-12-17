@@ -25,5 +25,6 @@ void InitKPF(const char* path);
 void ShutdownKPF(void);
 
 void KPF_CacheBetaWalls(void);
+void* KPF_GetWallFromCache(const char* name, int* outLength);
 
 #endif

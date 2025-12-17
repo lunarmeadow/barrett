@@ -26,6 +26,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <fcntl.h>
 #include <string.h>
 #include <signal.h>
+#include <wchar.h>
 
 /* Need to redefine main to SDL_main on some platforms... */
 #include "SDL.h"
@@ -72,6 +73,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "music.h"
 #include "fx_man.h"
 
+#include "w_kpf.h"
+
 volatile int oldtime;
 volatile int gametime;
 
@@ -116,6 +119,8 @@ static int demonumber = -1;
 
 char CWD[40]; // curent working directory
 static boolean quitactive = false;
+
+char kpfPath[256];
 
 int timelimit;
 int maxtimelimit;
@@ -252,6 +257,17 @@ int main(int argc, char* argv[])
 		ReadSETUPFiles();
 		doublestep = 0;
 		SetupWads();
+		GetPathFromEnvironment(kpfPath, ApogeePath, "RottEX.KPF");
+
+		// check if string is populated
+		if(kpfPath[0] != '\0')
+		{
+			InitKPF(kpfPath);
+			KPF_CacheBetaWalls();
+		}
+		else {
+			printf("main: no LE KPF found");
+		}
 		BuildTables();
 		GetMenuInfo();
 	}
