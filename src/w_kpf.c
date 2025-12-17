@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include <stdio.h>
+#include <string.h>
 #include <wchar.h>
 
 #include "rt_def.h"
@@ -31,12 +32,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "rt_main.h"
 
-#include "rt_png.h"
-
 #include "w_kpf.h"
-#include "rt_util.h"
 #include "w_kpfdat.h"
-#include "z_zone.h"
 
 static mz_zip_archive kpfArc;
 static boolean isMounted;
@@ -46,23 +43,17 @@ int numWalls;
 void** wallCache;
 int* wallSize;
 
-// TODO: search for kpf in LE install
-const char* GetKPFPath(void)
-{
-    return "RottEX.kpf";
-}
-
-void InitKPF(void)
+void InitKPF(const char* path)
 {
     mz_bool status;
     mz_zip_error err;
 
-    if(mz_zip_validate_file_archive(GetKPFPath(), NULL, &err))
-        status = mz_zip_reader_init_file(&kpfArc, GetKPFPath(), 0);
+    if(mz_zip_validate_file_archive(path, NULL, &err))
+        status = mz_zip_reader_init_file(&kpfArc, path, 0);
 
     if(!status)
     {
-        printf("InitKPF: couldn't initialize KPF file %s!\n", GetKPFPath());
+        printf("InitKPF: couldn't initialize KPF file %s!\n", path);
         ShutdownKPF();
         isMounted = false;
         return;
@@ -82,8 +73,9 @@ void ShutdownKPF(void)
 
     // should be safer, this SHOULD free all allocated walls even if only cache is only partially filled.
     // still should be suspect of this a bit
-    do Z_Free(wallCache[cacheidx]); 
-        while (wallCache[++cacheidx] != NULL);
+    if(wallCache[0] != NULL)
+        do free(wallCache[cacheidx]); 
+            while (wallCache[++cacheidx] != NULL);
 
     // avoid freeing before malloc. this should never occur, but better safe than sorry.
     if(wallSize != NULL)
@@ -118,9 +110,9 @@ void KPF_CacheBetaWalls(void)
 
         mz_zip_reader_file_stat(&kpfArc, fileIdx, &fileStat);
         
-        // this should roughly equate to the size of the wall. still freaks me out a bit
-        wallSize[i] = fileStat.m_uncomp_size + sizeof(patch_t);
-        wallCache[i] = Z_Malloc(wallSize[i], PU_STATIC, NULL);
+        // this should roughly equate to the size of the wall. still freaks me out a bit.
+        wallSize[i] = fileStat.m_uncomp_size;
+        wallCache[i] = malloc(wallSize[i]);
     
         if(fileIdx < 0)
         {
@@ -144,8 +136,6 @@ void KPF_CacheBetaWalls(void)
             ShutdownKPF();
             ShutDown();
         }
-
-        PNGDecode(filePtr, decompSize);
 
         mz_free(filePtr);
     }

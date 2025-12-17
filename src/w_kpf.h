@@ -21,7 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _KPF_H
 #define _KPF_H
 
-void InitKPF(void);
+void InitKPF(const char* path);
 void ShutdownKPF(void);
 
 void KPF_CacheBetaWalls(void);
