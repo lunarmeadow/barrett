@@ -25,6 +25,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ============================================================================
 */
+#include <SDL_timer.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "rt_def.h"
@@ -95,7 +96,7 @@ static int ticbase;	  /* game-supplied base */
 
 int GetTicCount(void)
 {
-	return (SDL_GetTicks() * VBLCOUNTER) / 1000;
+	return (SDL_GetPerformanceCounter() * VBLCOUNTER) / SDL_GetPerformanceFrequency();
 }
 
 /*

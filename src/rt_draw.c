@@ -1341,22 +1341,7 @@ void AdaptDetail(void)
 
 void CalcTics(void)
 {
-
-#if PROFILE
-	tics = PROFILETICS;
-	GetTicCount() += PROFILETICS;
-	oldtime = GetTicCount();
-	return;
-#else
-	volatile int tc;
-
-	//   SoftError("InCalcTics\n");
-	//   SoftError("CT GetTicCount()=%ld\n",GetTicCount());
-	//   SoftError("CT oldtime=%ld\n",oldtime);
-
-	//
-	// calculate tics since last refresh for adaptive timing
-	//
+	int tc;
 
 	tc = GetTicCount();
 	while (tc == oldtime)
@@ -1364,14 +1349,6 @@ void CalcTics(void)
 		tc = GetTicCount(); /* endwhile */
 	}
 	tics = tc - oldtime;
-
-	//   SoftError("CT GetTicCount()=%ld\n",GetTicCount());
-	//   if (tics>MAXTICS)
-	//      {
-	//      tc-=(tics-MAXTICS);
-	//      GetTicCount() = tc;
-	//     tics = MAXTICS;
-	//      }
 
 	if (demoplayback || demorecord)
 	{
@@ -1382,8 +1359,8 @@ void CalcTics(void)
 			ISR_SetTime(tc);
 		}
 	}
+	
 	oldtime = tc;
-#endif
 }
 
 /*
