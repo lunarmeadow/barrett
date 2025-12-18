@@ -460,7 +460,7 @@ void StartupClientControls(void)
 		controlupdatetime = 20;
 	}
 	else
-		controlupdatetime = GetTicCount();
+		controlupdatetime = GetCachedTic();
 
 	controlupdatetime -= (controlupdatetime % controldivisor);
 
@@ -523,12 +523,12 @@ void StartupClientControls(void)
 	{
 		if (modemgame == true)
 		{
-			while (GetTicCount() < (controlupdatetime - 10))
+			while (GetCachedTic() < (controlupdatetime - 10))
 			{
 				CalcTics();
 			}
 		}
-		lastcontrolupdatetime = GetTicCount();
+		lastcontrolupdatetime = GetCachedTic();
 		largesttime = 0;
 		PollControls();
 	}

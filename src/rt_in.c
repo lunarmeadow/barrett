@@ -1038,14 +1038,14 @@ boolean IN_UserInput(long delay)
 {
 	long lasttime;
 
-	lasttime = GetTicCount();
+	lasttime = GetCachedTic();
 
 	IN_StartAck();
 	do
 	{
 		if (IN_CheckAck())
 			return true;
-	} while ((GetTicCount() - lasttime) < delay);
+	} while ((GetCachedTic() - lasttime) < delay);
 
 	return (false);
 }

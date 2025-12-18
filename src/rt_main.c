@@ -1813,7 +1813,7 @@ void PauseLoop(void)
 		PollControls();
 
 	if ((RefreshPause == true) && (GamePaused == true) &&
-		((GetTicCount() - pausedstartedticcount) >= blanktime))
+		((GetCachedTic() - pausedstartedticcount) >= blanktime))
 	{
 		RefreshPause = false;
 		StartupScreenSaver();
@@ -1997,7 +1997,7 @@ fromloadedgame:
 				if ((LastScan == sc_Escape) && (canquit))
 				{
 					quitactive = true;
-					quittime = GetTicCount() + QUITTIMEINTERVAL;
+					quittime = GetCachedTic() + QUITTIMEINTERVAL;
 
 					if ((consoleplayer == 0) || (networkgame == false))
 					{
@@ -2015,7 +2015,7 @@ fromloadedgame:
 			}
 			else
 			{
-				if (GetTicCount() > quittime)
+				if (GetCachedTic() > quittime)
 				{
 					quitactive = false;
 				}
