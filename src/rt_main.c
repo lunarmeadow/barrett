@@ -1997,7 +1997,7 @@ fromloadedgame:
 				if ((LastScan == sc_Escape) && (canquit))
 				{
 					quitactive = true;
-					quittime = GetCachedTic() + QUITTIMEINTERVAL;
+					quittime = GetTicCount() + QUITTIMEINTERVAL;
 
 					if ((consoleplayer == 0) || (networkgame == false))
 					{
@@ -2015,7 +2015,7 @@ fromloadedgame:
 			}
 			else
 			{
-				if (GetCachedTic() > quittime)
+				if (GetTicCount() > quittime)
 				{
 					quitactive = false;
 				}

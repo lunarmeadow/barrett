@@ -1937,10 +1937,10 @@ void PollMouseButtons(void)
 
 					// Is this the first click, or a really late click?
 					if ((DoubleClickCount[i] == 0) ||
-						(GetTicCount() >= DoubleClickTimer[i]))
+						(GetCachedTic() >= DoubleClickTimer[i]))
 					{
 						// Yes, now wait for a second click
-						DoubleClickTimer[i] = GetTicCount() + DoubleClickSpeed;
+						DoubleClickTimer[i] = GetCachedTic() + DoubleClickSpeed;
 
 						//( tics << 5 );
 						DoubleClickCount[i] = 1;
@@ -2036,10 +2036,10 @@ void PollJoystickButtons(void)
 
 					// Is this the first click, or a really late click?
 					if ((JoyDblClickCount[i] == 0) ||
-						(GetTicCount() >= JoyDblClickTimer[i]))
+						(GetCachedTic() >= JoyDblClickTimer[i]))
 					{
 						// Yes, now wait for a second click
-						JoyDblClickTimer[i] = GetTicCount() + DoubleClickSpeed;
+						JoyDblClickTimer[i] = GetCachedTic() + DoubleClickSpeed;
 
 						//( tics << 5 );
 						JoyDblClickCount[i] = 1;
@@ -2305,7 +2305,7 @@ void PollMove(void)
 	{
 		if (first)
 		{
-			nettics = GetTicCount() + (VBLCOUNTER * 4);
+			nettics = GetCachedTic() + (VBLCOUNTER * 4);
 			first = 0;
 		}
 
@@ -2333,7 +2333,7 @@ void PollMove(void)
 				leftmom = 0;
 		}
 
-		if ((GetTicCount() > nettics) && (rightmom > (NETMOM * 2)) &&
+		if ((GetCachedTic() > nettics) && (rightmom > (NETMOM * 2)) &&
 			(leftmom > (NETMOM * 2)))
 		{
 			rightmom = 0;
