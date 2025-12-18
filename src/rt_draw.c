@@ -1339,6 +1339,7 @@ void AdaptDetail(void)
 =====================
 */
 
+// cache tic count here. GetTicCount is stil allowed
 void CalcTics(void)
 {
 	int tc;
@@ -1350,6 +1351,9 @@ void CalcTics(void)
 	}
 	tics = tc - oldtime;
 
+	// cache updated tic count (only use where CalcTics is called, esp in hot loops like game loop)
+	SetCachedTic(tc);
+
 	if (demoplayback || demorecord)
 	{
 		if (tics > MAXTICS)
@@ -1359,7 +1363,7 @@ void CalcTics(void)
 			ISR_SetTime(tc);
 		}
 	}
-	
+
 	oldtime = tc;
 }
 

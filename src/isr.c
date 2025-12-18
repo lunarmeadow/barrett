@@ -49,6 +49,11 @@ volatile boolean PausePressed = false;
 volatile boolean PanicPressed = false;
 int KeyboardStarted = false;
 
+// global tic cache to reduce expensive SDL timer calls during game loop.
+// be cautious to only READ and not WRITE this, only WRITE from CalcTics().
+// use GetTicCount() in loops where CalcTics isn't called.
+static int ticCount;
+
 const int ASCIINames[] = // Unshifted ASCII for scan codes
 	{
 		//       0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
@@ -93,6 +98,26 @@ const int ShiftNames[] = // Shifted ASCII for scan codes
 
 static int ticoffset; /* offset for SDL_GetTicks() */
 static int ticbase;	  /* game-supplied base */
+
+// - getter for ticCount -
+//
+// global tic cache to reduce expensive SDL timer calls during game loop.
+// be cautious to only READ and not WRITE this, only WRITE from CalcTics().
+// use GetTicCount() in loops where CalcTics isn't called.
+int GetCachedTic(void)
+{
+	return ticCount;
+}
+
+// - setter for ticCount -
+//
+// global tic cache to reduce expensive SDL timer calls during game loop.
+// be cautious to only READ and not WRITE this, only WRITE from CalcTics().
+// use GetTicCount() in loops where CalcTics isn't called.
+void SetCachedTic(int newTics)
+{
+	ticCount = newTics;
+}
 
 int GetTicCount(void)
 {
