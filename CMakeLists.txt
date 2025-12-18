@@ -63,13 +63,13 @@ set(AUDIOLIB_SOURCES
 add_library(audiolib STATIC ${AUDIOLIB_SOURCES})
 
 add_library(ASAN::ASAN IMPORTED INTERFACE)
-target_compile_options(ASAN::ASAN INTERFACE -fsanitize=address $<$<NOT:$<COMPILE_LANG_AND_ID:C,MSVC>>:-fno-omit-frame-pointer>)
-target_link_options(ASAN::ASAN INTERFACE -fsanitize=address)
+target_compile_options(ASAN::ASAN INTERFACE -fsanitize=address,undefined $<$<NOT:$<COMPILE_LANG_AND_ID:C,MSVC>>:-fno-omit-frame-pointer>)
+target_link_options(ASAN::ASAN INTERFACE -fsanitize=address,undefined)
 
 set_target_properties(audiolib PROPERTIES C_STANDARD_REQUIRED ON C_STANDARD 17)
 target_link_libraries(audiolib PRIVATE SDL2::SDL2 SDL2_mixer::SDL2_mixer)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
-	target_compile_options(audiolib PRIVATE -Wall -Wextra -Wpedantic)
+	target_compile_options(audiolib PRIVATE -Wall -Wextra -Wpedantic -Wfatal-errors)
 endif()
 
 set(BARRETT_SOURCES
@@ -137,9 +137,18 @@ target_compile_definitions(barrett PRIVATE SITELICENSE=$<BOOL:${BARRETT_SITELICE
 target_compile_definitions(barrett PRIVATE PLATFORM_UNIX=1)
 set_target_properties(barrett PROPERTIES C_STANDARD_REQUIRED ON C_STANDARD 17)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "CLANG")
-	target_compile_options(barrett PRIVATE -Wall -Wextra -Wshadow -Wpedantic)
+	target_compile_options(barrett PRIVATE -Wall -Wextra -Wshadow=compatible-local -Wpedantic -Wfatal-errors)
+endif()
+
+# statically link libc on windows bc mingw is a royal pain in the ass.
+# maybe use MSVC eventually but this should be good for now.
+# windows executable is probably huge so it should be stripped and compiled for size.
+if(WIN32)	
+    if(MINGW)
+		add_compile_options(barrett PRIVATE -static-libgcc -static-libstdc++ -static)
+	endif()
 endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT WIN32)
-    add_compile_options(barrett PRIVATE -g -O0 -fno-omit-frame-pointer -rdynamic)
+    add_compile_options(barrett PRIVATE -rdynamic)
 endif()
