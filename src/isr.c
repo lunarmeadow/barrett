@@ -54,6 +54,14 @@ int KeyboardStarted = false;
 // use GetTicCount() in loops where CalcTics isn't called.
 static int ticCount;
 
+// the internal implementation of SDL_GetPerformanceFrequency still uses some expensive clock calls, so cache it as well.
+Uint64 frequencyCache;
+
+// update frequency cache every ~0.457 seconds
+// this is the numerator over VBLCOUNTER, and thus this represents 16/35
+// this needs to be 2^n-1 to use the fast modulo trick.
+const int FREQ_POLLING_INTERVAL = 15;
+
 const int ASCIINames[] = // Unshifted ASCII for scan codes
 	{
 		//       0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
@@ -122,7 +130,11 @@ void SetCachedTic(int newTics)
 
 int GetTicCount(void)
 {
-	return (SDL_GetPerformanceCounter() * VBLCOUNTER) / SDL_GetPerformanceFrequency();
+	// higher tick period = more consistent frame times and vice versa.
+	if((GetCachedTic() & FREQ_POLLING_INTERVAL) == 0)
+		frequencyCache = SDL_GetPerformanceFrequency();
+
+	return (SDL_GetPerformanceCounter() * VBLCOUNTER) / frequencyCache;
 }
 
 /*
@@ -169,6 +181,7 @@ void I_Delay(int delay)
 
 void I_StartupTimer(void)
 {
+	frequencyCache = SDL_GetPerformanceFrequency();
 }
 
 void I_ShutdownTimer(void)
