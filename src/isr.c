@@ -95,7 +95,7 @@ static int ticbase;	  /* game-supplied base */
 
 int GetTicCount(void)
 {
-	return ((SDL_GetTicks() - ticoffset) * VBLCOUNTER) / 1000 + ticbase;
+	return (SDL_GetTicks() * VBLCOUNTER) / 1000;
 }
 
 /*
