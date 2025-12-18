@@ -772,7 +772,14 @@ boolean US_LineInput(int x, int y, char* buf, const char* def, boolean escok,
 
 			if (cursor)
 			{
+				// ashley added: fix asan detection (remove prev character and then next)
+				// logic still seems to be buggy wrt overwriting names and should be fixed.
+				s[cursor - 1] = 0;
+
 				strncpy(s + cursor - 1, s + cursor, strlen(s + cursor));
+
+				s[cursor] = 0;
+
 				cursor--;
 				redraw = true;
 				cursormoved = true;
@@ -787,7 +794,12 @@ boolean US_LineInput(int x, int y, char* buf, const char* def, boolean escok,
 
 			if (s[cursor])
 			{
+				// ashley added: fix asan detection (remove prev character and then next)
+				s[cursor] = 0;
+
 				strncpy(s + cursor, s + cursor + 1, strlen(s + cursor + 1));
+
+				s[cursor + 1] = 0;
 				redraw = true;
 				cursormoved = true;
 				MN_PlayMenuSnd(SD_MOVECURSORSND);
