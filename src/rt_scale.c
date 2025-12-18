@@ -1114,10 +1114,10 @@ void R_DrawColumn(byte* buf)
 	if (count < 0)
 		return;
 
-	dest = buf + ylookup[dc_yl + 1];
+	dest = buf + ylookup[dc_yl];
 
 	fracstep = dc_iscale;
-	frac = dc_texturemid + (dc_yl + 1 - centery) * fracstep;
+	frac = dc_texturemid + (dc_yl - centery) * fracstep;
 
 	while (count--)
 	{
