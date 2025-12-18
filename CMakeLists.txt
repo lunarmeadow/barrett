@@ -145,10 +145,10 @@ endif()
 # windows executable is probably huge so it should be stripped and compiled for size.
 if(WIN32)	
     if(MINGW)
-		add_compile_options(barrett PRIVATE -static-libgcc -static-libstdc++ -static)
+		target_link_options(barrett PRIVATE -static-libgcc -static-libstdc++ -static)
 	endif()
 endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT WIN32)
-    add_compile_options(barrett PRIVATE -rdynamic)
+    target_link_options(barrett PRIVATE -rdynamic)
 endif()
