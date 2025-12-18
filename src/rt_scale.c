@@ -170,11 +170,17 @@ void ScaleTransparentPost(byte* src, byte* buf, int level)
 	byte* oldlevel;
 	byte* seelevel;
 
+	// patches are roughly a maximum of 4kb, and header is 16 bytes.
+	// some patches are smaller because of what appears to be some form of RLE,
+	// but this should make the currently inevitable overflows not catastrophic in terms of performance impact,
+	// as well as reducing crashes at high focal widths and resolutions despite the garbage data read.
+	byte* lastsrc = src + (4096 - 16);
 
 	seelevel = colormap + (((level + 64) >> 2) << 8);
 	oldlevel = shadingtable;
 	offset = *(src++);
-	for (; offset != 255;)
+
+	for (; offset != 255 && src < lastsrc;)
 	{
 		length = *(src++);
 		topscreen = sprtopoffset + (dc_invscale * offset);
@@ -215,8 +221,14 @@ void ScaleMaskedPost(byte* src, byte* buf)
 	int topscreen;
 	int bottomscreen;
 
+	// patches are roughly a maximum of 4kb, and header is 16 bytes.
+	// some patches are smaller because of what appears to be some form of RLE,
+	// but this should make the currently inevitable overflows not catastrophic in terms of performance impact,
+	// as well as reducing crashes at high focal widths and resolutions despite the garbage data read.
+	byte* lastsrc = src + (4096 - 16);
+
 	offset = *(src++);
-	for (; offset != 255;)
+	for (; offset != 255 && src < lastsrc;)
 	{
 		length = *(src++);
 		topscreen = sprtopoffset + (dc_invscale * offset);
@@ -1102,10 +1114,10 @@ void R_DrawColumn(byte* buf)
 	if (count < 0)
 		return;
 
-	dest = buf + ylookup[dc_yl];
+	dest = buf + ylookup[dc_yl + 1];
 
 	fracstep = dc_iscale;
-	frac = dc_texturemid + (dc_yl - centery) * fracstep;
+	frac = dc_texturemid + (dc_yl + 1 - centery) * fracstep;
 
 	while (count--)
 	{
