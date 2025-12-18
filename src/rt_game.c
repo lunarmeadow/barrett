@@ -5189,7 +5189,6 @@ boolean LoadTheGame(int num, gamestorage_t* game)
 		UpdateLightLevel(player->areanumber);
 
 	CalcTics();
-	CalcTics();
 
 	pickquick = true;
 

@@ -440,7 +440,6 @@ void StartupClientControls(void)
 	locplayerstate->topspeed = MaxSpeedForCharacter(locplayerstate);
 
 	CalcTics();
-	CalcTics();
 
 	//   FixingPackets=false;
 
