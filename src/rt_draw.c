@@ -974,14 +974,14 @@ void DrawScaleds(void)
 			if (player->flags & FL_SHROOMS)
 			{
 				visptr->shapesize = 4;
-				visptr->h2 = (GetTicCount() & 0xff);
+				visptr->h2 = (GetCachedTic() & 0xff);
 			}
 			if (obj->obclass == playerobj)
 			{
 				if (obj->flags & FL_GODMODE)
 				{
 					visptr->shapesize = 4;
-					visptr->h2 = 240 + (GetTicCount() & 0x7);
+					visptr->h2 = 240 + (GetCachedTic() & 0x7);
 				}
 				else if (obj->flags & FL_COLORED)
 				{
@@ -2003,11 +2003,11 @@ void WallRefresh(void)
 			viewangle = (player->angle +
 						 FixedMulShift(
 							 FINEANGLES,
-							 sintable[(GetTicCount() << 5) & (FINEANGLES - 1)],
+							 sintable[(GetCachedTic() << 5) & (FINEANGLES - 1)],
 							 (16 + 4))) &
 						(FINEANGLES - 1);
 			ChangeFocalWidth(FixedMulShift(
-				40, sintable[(GetTicCount() << 5) & (FINEANGLES - 1)], 16));
+				40, sintable[(GetCachedTic() << 5) & (FINEANGLES - 1)], 16));
 		}
 		else
 			viewangle = player->angle;
@@ -2037,14 +2037,14 @@ void WallRefresh(void)
 				pheightshift = 28;
 
 			pheight +=
-				FixedMulShift(mag, sintable[(GetTicCount() << 7) & 2047], pheightshift);
+				FixedMulShift(mag, sintable[(GetCachedTic() << 7) & 2047], pheightshift);
 
 			// bob calc itself is basically mathematically equivalent to doom bobbing, 
 			// just need to disable 3d scaling and normalize shift values to be numerically equivalent.
 			weaponbobx = FixedMulShift(
-				mag, costable[((GetTicCount() << 5)) & (FINEANGLES - 1)], bobxshift);
+				mag, costable[((GetCachedTic() << 5)) & (FINEANGLES - 1)], bobxshift);
 			weaponboby = FixedMulShift(
-				mag, sintable[((GetTicCount() << 5)) & ((FINEANGLES / 2) - 1)],
+				mag, sintable[((GetCachedTic() << 5)) & ((FINEANGLES / 2) - 1)],
 				bobyshift);
 
 			// weaponframe non-zero = not idle frame
@@ -2096,7 +2096,7 @@ void WallRefresh(void)
 	mag = 7 + ((3 - gamestate.difficulty) << 2);
 
 	transparentlevel =
-		FixedMul(mag, sintable[(GetTicCount() << 5) & (FINEANGLES - 1)]) + mag;
+		FixedMul(mag, sintable[(GetCachedTic() << 5) & (FINEANGLES - 1)]) + mag;
 
 	viewsin = sintable[viewangle];
 	viewcos = costable[viewangle];
