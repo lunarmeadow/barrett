@@ -433,7 +433,16 @@ void LoadColorMap(void)
 	lump = W_GetNumForName("colormap");
 	length = W_LumpLength(lump) + 255;
 	colormap = SafeMalloc(length);
-	colormap = (byte*)(((long)colormap + 255) & ~0xff);
+
+	// this pattern is pretty suspect, after evaluating what this operation does it appears to align pointers to the nearest 256 boundary.
+	// for instance, (925 & ~0xFF) = 768. the cast itself is pretty strange,
+	// and I worry is shifting colormap outside of its allocated boundary or corrupting the pointer.
+	// Windows builds crash in this function in the W_ReadLump call,
+	// and investigating with -fsanitize=undefined after removing this line shows no unaligned accesses or anything of the sort
+	// in addition to colormap still being perfectly functional.
+
+	// colormap = (byte*)(((long)colormap + 255) & ~0xff);
+
 	W_ReadLump(lump, colormap);
 
 	// Fix fire colors in colormap
@@ -480,7 +489,7 @@ void LoadColorMap(void)
 	lump = W_GetNumForName("specmaps");
 	length = W_LumpLength(lump + 1) + 255;
 	redmap = SafeMalloc(length);
-	redmap = (byte*)(((long)redmap + 255) & ~0xff);
+	// redmap = (byte*)(((long)redmap + 255) & ~0xff);
 	W_ReadLump(lump + 1, redmap);
 	greenmap = redmap + (16 * 256);
 
@@ -493,7 +502,7 @@ void LoadColorMap(void)
 		{
 			length = W_LumpLength(lump + i) + 255;
 			playermaps[i] = SafeMalloc(length);
-			playermaps[i] = (byte*)(((long)playermaps[i] + 255) & ~0xff);
+			// playermaps[i] = (byte*)(((long)playermaps[i] + 255) & ~0xff);
 			W_ReadLump(lump + i, playermaps[i]);
 		}
 	}
