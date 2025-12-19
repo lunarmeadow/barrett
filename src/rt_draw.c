@@ -5702,7 +5702,7 @@ void RefreshClear(void)
 
 	if (start > 0)
 	{
-		VL_Bar(0, 0, iGLOBAL_SCREENHEIGHT, start, CEILINGCOLOR);
+		VL_Bar(0, 0, iGLOBAL_SCREENWIDTH, start, CEILINGCOLOR);
 	}
 	else
 	{
@@ -5714,6 +5714,6 @@ void RefreshClear(void)
 	start = min(viewheight - start, viewheight);
 	if (start > 0)
 	{
-		VL_Bar(0, base, iGLOBAL_SCREENHEIGHT, start, FLOORCOLOR);
+		VL_Bar(0, base, iGLOBAL_SCREENWIDTH, start, FLOORCOLOR);
 	}
 }
