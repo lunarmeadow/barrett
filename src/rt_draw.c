@@ -2077,10 +2077,10 @@ void WallRefresh(void)
 		spotvis[player->tilex][player->tiley] = 1;
 	}
 
-	if (yzangle > ANG180)
-		pheight -= (sintable[yzangle & 2047] >> 14);
-	else
-		pheight += (sintable[yzangle & 2047] >> 14);
+	// if (yzangle > ANG180)
+	// 	pheight -= (sintable[yzangle & 2047] >> 14);
+	// else
+	// 	pheight += (sintable[yzangle & 2047] >> 14);
 
 	// viewx -=
 	// 	(FixedMul(sintable[yzangle & 2047], costable[viewangle & 2047]) >> 2);
