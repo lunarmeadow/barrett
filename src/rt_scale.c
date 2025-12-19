@@ -170,11 +170,10 @@ void ScaleTransparentPost(byte* src, byte* buf, int level)
 	byte* oldlevel;
 	byte* seelevel;
 
-	// patches are roughly a maximum of 4kb, and header is 16 bytes.
-	// some patches are smaller because of what appears to be some form of RLE,
-	// but this should make the currently inevitable overflows not catastrophic in terms of performance impact,
-	// as well as reducing crashes at high focal widths and resolutions despite the garbage data read.
-	byte* lastsrc = src + (4096 - 16);
+	// this was based on the maximum size of a patch, but it does appear this is specifically for a single column at a time.
+	// as columns are 64 high, this should be the last reasonable index or close to it. anything less tends to result in graphical glitches.
+	// setting it to 64 cuts off some columns on for instance, a low guards foot. collumnofs is also a short, so 128 seems like a reasonable cutoff.
+	byte* lastsrc = src + 128;
 
 	seelevel = colormap + (((level + 64) >> 2) << 8);
 	oldlevel = shadingtable;
@@ -221,11 +220,7 @@ void ScaleMaskedPost(byte* src, byte* buf)
 	int topscreen;
 	int bottomscreen;
 
-	// patches are roughly a maximum of 4kb, and header is 16 bytes.
-	// some patches are smaller because of what appears to be some form of RLE,
-	// but this should make the currently inevitable overflows not catastrophic in terms of performance impact,
-	// as well as reducing crashes at high focal widths and resolutions despite the garbage data read.
-	byte* lastsrc = src + (4096 - 16);
+	byte* lastsrc = src + 128;
 
 	offset = *(src++);
 	for (; offset != 255 && src < lastsrc;)
