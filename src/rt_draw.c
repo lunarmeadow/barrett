@@ -778,13 +778,28 @@ void DrawScaleds(void)
 	objtype* obj;
 	maskedwallobj_t* tmwall;
 
+	byte tilex_next, tilex_prev, tiley_next, tiley_prev;
 
 	//
 	// place maskwall objects
 	//
 	for (tmwall = FIRSTMASKEDWALL; tmwall; tmwall = tmwall->next)
 	{
-		if (spotvis[tmwall->tilex][tmwall->tiley])
+		tilex_next = tmwall->tilex + 1;
+		tilex_prev = tmwall->tilex - 1;
+		tiley_next = tmwall->tiley + 1;
+		tiley_prev = tmwall->tiley - 1;
+
+		// ashley added: butt ugly hack to avoid masked walls being cut off on edges of view.
+
+		// on this spot
+		if (spotvis[tmwall->tilex][tmwall->tiley]
+			// check adjacent x tiles 
+			|| spotvis[tilex_next][tmwall->tiley]
+			|| spotvis[tilex_prev][tmwall->tiley]
+			// check adjacent y tiles 
+			|| spotvis[tmwall->tilex][tiley_next]
+			|| spotvis[tmwall->tilex][tiley_prev])
 		{
 			mapseen[tmwall->tilex][tmwall->tiley] = 1;
 			if (tmwall->vertical)
