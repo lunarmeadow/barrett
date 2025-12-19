@@ -55,6 +55,8 @@ int KeyboardStarted = false;
 static int ticCount;
 
 // the internal implementation of SDL_GetPerformanceFrequency still uses some expensive clock calls, so cache it as well.
+// I initially believed this was variable as it is often based on things like CPU clocks etc.
+// However, it appears this is a constant after initialization. No need to refresh, at least on most platforms.
 Uint64 frequencyCache;
 
 // update frequency cache every ~0.457 seconds
@@ -130,10 +132,6 @@ void SetCachedTic(int newTics)
 
 int GetTicCount(void)
 {
-	// higher tick period = more consistent frame times and vice versa.
-	if((GetCachedTic() & FREQ_POLLING_INTERVAL) == 0)
-		frequencyCache = SDL_GetPerformanceFrequency();
-
 	return (SDL_GetPerformanceCounter() * VBLCOUNTER) / frequencyCache;
 }
 
