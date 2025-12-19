@@ -792,6 +792,8 @@ void DrawScaleds(void)
 
 		// ashley added: butt ugly hack to avoid masked walls being cut off on edges of view.
 
+		// check if any 2 adjacent tiles on X or Y are in view.
+		// this should be properly fixed in InitialCast or WallRefresh, but it reduces the issue.
 		// on this spot
 		if (spotvis[tmwall->tilex][tmwall->tiley]
 			// check adjacent x tiles 
@@ -2080,10 +2082,10 @@ void WallRefresh(void)
 	else
 		pheight += (sintable[yzangle & 2047] >> 14);
 
-	viewx -=
-		(FixedMul(sintable[yzangle & 2047], costable[viewangle & 2047]) >> 1);
-	viewy +=
-		(FixedMul(sintable[yzangle & 2047], sintable[viewangle & 2047]) >> 1);
+	// viewx -=
+	// 	(FixedMul(sintable[yzangle & 2047], costable[viewangle & 2047]) >> 2);
+	// viewy +=
+	// 	(FixedMul(sintable[yzangle & 2047], sintable[viewangle & 2047]) >> 2);
 
 	// Set YZ angle
 
