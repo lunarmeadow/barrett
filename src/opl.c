@@ -82,12 +82,12 @@ static boolean OPL_WriteDefault(const char* path)
     // kvp for bank
     fputs("; - notable banks - \n\n", ini);
 
-    fputs("; 67 = ROTT v1.3 (default)\n", ini);
+    fputs("; 67 = ROTT v1.3\n", ini);
     fputs("; 70 = ROTT v1.0-1.2\n", ini);
-    fputs("; 72 = DMXOPL\n\n", ini);
+    fputs("; 72 = DMXOPL (default)\n\n", ini);
     fputs("; for more: https://github.com/Wohlstand/libADLMIDI/blob/master/banks.ini\n", ini);
 
-    fputs("bank=67\n\n", ini);
+    fputs("bank=72\n\n", ini);
 
     // kvp for chip count
     fputs("; how many opl chips to emulate\n", ini);
@@ -159,9 +159,9 @@ void OPL_Init(void)
     int getChips = cfg.oplChipNum ? cfg.oplChipNum : 2;
     adl_setNumChips(midi_player, getChips);
     
-    // banknum if set - default to ROTT v1.3 bank
+    // banknum if set - default to DMXOPL
     // https://github.com/Wohlstand/libADLMIDI/blob/master/banks.ini
-    int getBank = cfg.bankNum ? cfg.bankNum : 67;
+    int getBank = cfg.bankNum ? cfg.bankNum : 72;
     adl_setBank(midi_player, getBank);
 
     adl_setVolumeRangeModel(midi_player, ADLMIDI_VolumeModel_AUTO);
@@ -236,15 +236,16 @@ void OPL_CheckForStateChange(void)
 	}
 }
 
-int OPL_GetPosition(void)
-{
-    return (int)(adl_positionTell(midi_player) * 1000);
-}
+// ! these seem to be broken, removing for now.
+// int OPL_GetPosition(void)
+// {
+//     return (int)(adl_positionTell(midi_player) * 1000);
+// }
 
-void OPL_SetPosition(int ms)
-{
-    adl_positionSeek(midi_player, (double)ms / 1000);
-}
+// void OPL_SetPosition(int ms)
+// {
+//     adl_positionSeek(midi_player, (double)ms / 1000);
+// }
 
 
 void OPL_SetVolume(double newVol)

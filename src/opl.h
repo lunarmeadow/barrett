@@ -37,8 +37,8 @@ void OPL_RegisterHook(void);
 void OPL_DeregisterHook(void);
 void OPL_CheckForStateChange(void);
 
-int OPL_GetPosition(void);
-void OPL_SetPosition(int ms);
+// int OPL_GetPosition(void);
+// void OPL_SetPosition(int ms);
 
 void OPL_SetVolume(double newVol);
 int OPL_IsPlaying(void);
