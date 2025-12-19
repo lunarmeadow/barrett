@@ -140,6 +140,11 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "CLANG")
 	target_compile_options(barrett PRIVATE -Wall -Wextra -Wshadow=compatible-local -Wpedantic -Wfatal-errors)
 endif()
 
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+    target_compile_options(barrett PRIVATE -O3)
+	target_compile_options(barrett PRIVATE -flto)
+endif()
+
 # statically link libc on windows bc mingw is a royal pain in the ass.
 # maybe use MSVC eventually but this should be good for now.
 # windows executable is probably huge so it should be stripped and compiled for size.
