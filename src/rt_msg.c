@@ -87,7 +87,7 @@ int StringLength(char* string)
 
 void ResetMessageTime(void)
 {
-	LastMessageTime = GetTicCount();
+	LastMessageTime = GetCachedTic();
 }
 
 /*
@@ -399,8 +399,8 @@ void UpdateMessages(void)
 	int messagetics;
 	int i;
 
-	messagetics = GetTicCount() - LastMessageTime;
-	LastMessageTime = GetTicCount();
+	messagetics = GetCachedTic() - LastMessageTime;
+	LastMessageTime = GetCachedTic();
 
 	if (GamePaused == true)
 	{

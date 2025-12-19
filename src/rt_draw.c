@@ -974,14 +974,14 @@ void DrawScaleds(void)
 			if (player->flags & FL_SHROOMS)
 			{
 				visptr->shapesize = 4;
-				visptr->h2 = (GetTicCount() & 0xff);
+				visptr->h2 = (GetCachedTic() & 0xff);
 			}
 			if (obj->obclass == playerobj)
 			{
 				if (obj->flags & FL_GODMODE)
 				{
 					visptr->shapesize = 4;
-					visptr->h2 = 240 + (GetTicCount() & 0x7);
+					visptr->h2 = 240 + (GetCachedTic() & 0x7);
 				}
 				else if (obj->flags & FL_COLORED)
 				{
@@ -1339,24 +1339,10 @@ void AdaptDetail(void)
 =====================
 */
 
+// cache tic count here. GetTicCount is stil allowed
 void CalcTics(void)
 {
-
-#if PROFILE
-	tics = PROFILETICS;
-	GetTicCount() += PROFILETICS;
-	oldtime = GetTicCount();
-	return;
-#else
-	volatile int tc;
-
-	//   SoftError("InCalcTics\n");
-	//   SoftError("CT GetTicCount()=%ld\n",GetTicCount());
-	//   SoftError("CT oldtime=%ld\n",oldtime);
-
-	//
-	// calculate tics since last refresh for adaptive timing
-	//
+	int tc;
 
 	tc = GetTicCount();
 	while (tc == oldtime)
@@ -1365,13 +1351,8 @@ void CalcTics(void)
 	}
 	tics = tc - oldtime;
 
-	//   SoftError("CT GetTicCount()=%ld\n",GetTicCount());
-	//   if (tics>MAXTICS)
-	//      {
-	//      tc-=(tics-MAXTICS);
-	//      GetTicCount() = tc;
-	//     tics = MAXTICS;
-	//      }
+	// cache updated tic count (only use where CalcTics is called, esp in hot loops like game loop)
+	SetCachedTic(tc);
 
 	if (demoplayback || demorecord)
 	{
@@ -1382,8 +1363,8 @@ void CalcTics(void)
 			ISR_SetTime(tc);
 		}
 	}
+
 	oldtime = tc;
-#endif
 }
 
 /*
@@ -2022,11 +2003,11 @@ void WallRefresh(void)
 			viewangle = (player->angle +
 						 FixedMulShift(
 							 FINEANGLES,
-							 sintable[(GetTicCount() << 5) & (FINEANGLES - 1)],
+							 sintable[(GetCachedTic() << 5) & (FINEANGLES - 1)],
 							 (16 + 4))) &
 						(FINEANGLES - 1);
 			ChangeFocalWidth(FixedMulShift(
-				40, sintable[(GetTicCount() << 5) & (FINEANGLES - 1)], 16));
+				40, sintable[(GetCachedTic() << 5) & (FINEANGLES - 1)], 16));
 		}
 		else
 			viewangle = player->angle;
@@ -2056,14 +2037,14 @@ void WallRefresh(void)
 				pheightshift = 28;
 
 			pheight +=
-				FixedMulShift(mag, sintable[(GetTicCount() << 7) & 2047], pheightshift);
+				FixedMulShift(mag, sintable[(GetCachedTic() << 7) & 2047], pheightshift);
 
 			// bob calc itself is basically mathematically equivalent to doom bobbing, 
 			// just need to disable 3d scaling and normalize shift values to be numerically equivalent.
 			weaponbobx = FixedMulShift(
-				mag, costable[((GetTicCount() << 5)) & (FINEANGLES - 1)], bobxshift);
+				mag, costable[((GetCachedTic() << 5)) & (FINEANGLES - 1)], bobxshift);
 			weaponboby = FixedMulShift(
-				mag, sintable[((GetTicCount() << 5)) & ((FINEANGLES / 2) - 1)],
+				mag, sintable[((GetCachedTic() << 5)) & ((FINEANGLES / 2) - 1)],
 				bobyshift);
 
 			// weaponframe non-zero = not idle frame
@@ -2115,7 +2096,7 @@ void WallRefresh(void)
 	mag = 7 + ((3 - gamestate.difficulty) << 2);
 
 	transparentlevel =
-		FixedMul(mag, sintable[(GetTicCount() << 5) & (FINEANGLES - 1)]) + mag;
+		FixedMul(mag, sintable[(GetCachedTic() << 5) & (FINEANGLES - 1)]) + mag;
 
 	viewsin = sintable[viewangle];
 	viewcos = costable[viewangle];
@@ -2746,7 +2727,6 @@ void DoLoadGameSequence(void)
 	FlipPage();
 	SafeFree(destscreen);
 	CalcTics();
-	CalcTics();
 	// bna++ section
 	shape = (pic_t*)W_CacheLumpName("backtile", PU_CACHE, Cvt_pic_t, 1);
 	DrawTiledRegion(0, 16, iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT - 32, 0,
@@ -2973,7 +2953,6 @@ void ScaleAndRotateBuffer(int startangle, int endangle, int startscale,
 	scale = (startscale << 6);
 
 	CalcTics();
-	CalcTics();
 	// SDL_SetRelativeMouseMode(SDL_FALSE);
 
 	for (i = 0; i < time; i += tics)
@@ -2999,7 +2978,6 @@ void ScaleAndRotateBuffer(int startangle, int endangle, int startscale,
 	FlipPage();
 	DrawRotatedScreen(Xh, Yh, (byte*)bufferofs, endangle & (FINEANGLES - 1),
 					  endscale, 0);
-	CalcTics();
 	CalcTics();
 	// I_Delay (240);//bna++
 	// bna++ section
@@ -3066,7 +3044,6 @@ void RotateScreenScaleFloat(float startAngle, float endAngle, float startScale,
 	// printf("scalestep: %f \n", scalestep);
 	// printf("startingScale: %f \n", scale);
 
-	CalcTics();
 	CalcTics();
 
 	int i;
@@ -3146,7 +3123,6 @@ was rotating too effing fast
 	printf("scalestep: %f \n", scalestep);
 	printf("startingScale: %f \n", scale);
 
-	CalcTics();
 	CalcTics();
 
 	int i;
@@ -3319,7 +3295,6 @@ void ApogeeTitle(void)
 	int time;
 
 	CalcTics();
-	CalcTics();
 	IN_ClearKeysDown();
 	viewwidth = 320;
 	viewheight = 200;
@@ -3386,7 +3361,6 @@ void ApogeeTitle(void)
 			goto apogeeexit;
 	}
 	CalcTics();
-	CalcTics();
 	VL_DrawPostPic(W_GetNumForName("ap_wrld"));
 	DrawRotatedScreen(x, y >> 16, (byte*)bufferofs, 0, APOGEESCALEEND, 1);
 	FlipPage();
@@ -3413,7 +3387,6 @@ void DopefishTitle(void)
 	int height;
 
 	shapenum = W_GetNumForName("scthead1");
-	CalcTics();
 	CalcTics();
 	IN_ClearKeysDown();
 	MU_StartSong(song_secretmenu);
@@ -3464,7 +3437,6 @@ void RotationFunSDL(void)
 	// StartupRotateBuffer (0);
 
 	CalcTics();
-	CalcTics();
 
 	SDL_Texture* currScreen =
 		SDL_CreateTextureFromSurface((SDL_Renderer*)GetRenderer(), sdl_surface);
@@ -3506,7 +3478,6 @@ void RotationFunSDL(void)
 	SDL_DestroyTexture(currScreen);
 
 	CalcTics();
-	CalcTics();
 	Keyboard[sc_Escape] = 0;
 
 	// ShutdownRotateBuffer ();
@@ -3533,7 +3504,6 @@ void RotationFun(void)
 	StartupRotateBuffer(0);
 
 	CalcTics();
-	CalcTics();
 	while (!Keyboard[sc_Escape])
 	{
 		IN_UpdateKeyboard();
@@ -3555,7 +3525,6 @@ void RotationFun(void)
 			scale += 30;
 		}
 	}
-	CalcTics();
 	CalcTics();
 	Keyboard[sc_Escape] = 0;
 
@@ -4434,7 +4403,6 @@ void DoTransmitterExplosion(void)
 	back = SafeMalloc(800 * linewidth);
 
 	CalcTics();
-	CalcTics();
 	DrawNormalSprite(0, 0, W_GetNumForName("transmit"));
 	PrepareBackground(back);
 	SetupTransmitterExplosions();
@@ -4672,7 +4640,6 @@ void DestroyEarth(void)
 	VL_ClearVideo(0);
 	back = SafeMalloc(800 * linewidth);
 
-	CalcTics();
 	CalcTics();
 	DrawNormalSprite(0, 0, W_GetNumForName("ourearth"));
 	PrepareBackground(back);

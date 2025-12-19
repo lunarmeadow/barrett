@@ -680,7 +680,7 @@ boolean US_LineInput(int x, int y, char* buf, const char* def, boolean escok,
 	cursormoved = redraw = true;
 	cursorvis = done = false;
 
-	lasttime = GetTicCount();
+	lasttime = GetCachedTic();
 
 	lastkey = getASCII();
 
@@ -877,13 +877,13 @@ boolean US_LineInput(int x, int y, char* buf, const char* def, boolean escok,
 		if (cursormoved)
 		{
 			cursorvis = false;
-			lasttime = GetTicCount() - VBLCOUNTER;
+			lasttime = GetCachedTic() - VBLCOUNTER;
 
 			cursormoved = false;
 		}
-		if (GetTicCount() - lasttime > VBLCOUNTER / 2)
+		if (GetCachedTic() - lasttime > VBLCOUNTER / 2)
 		{
-			lasttime = GetTicCount();
+			lasttime = GetCachedTic();
 
 			cursorvis ^= true;
 		}
@@ -968,7 +968,7 @@ boolean US_lineinput(int x, int y, char* buf, const char* def, boolean escok,
 	cursormoved = redraw = true;
 	cursorvis = done = false;
 
-	lasttime = GetTicCount();
+	lasttime = GetCachedTic();
 
 	lastkey = getASCII();
 
@@ -1155,13 +1155,13 @@ boolean US_lineinput(int x, int y, char* buf, const char* def, boolean escok,
 		if (cursormoved)
 		{
 			cursorvis = false;
-			lasttime = GetTicCount() - VBLCOUNTER;
+			lasttime = GetCachedTic() - VBLCOUNTER;
 
 			cursormoved = false;
 		}
-		if (GetTicCount() - lasttime > VBLCOUNTER / 2)
+		if (GetCachedTic() - lasttime > VBLCOUNTER / 2)
 		{
-			lasttime = GetTicCount();
+			lasttime = GetCachedTic();
 
 			cursorvis ^= true;
 		}

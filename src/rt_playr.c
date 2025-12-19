@@ -1937,10 +1937,10 @@ void PollMouseButtons(void)
 
 					// Is this the first click, or a really late click?
 					if ((DoubleClickCount[i] == 0) ||
-						(GetTicCount() >= DoubleClickTimer[i]))
+						(GetCachedTic() >= DoubleClickTimer[i]))
 					{
 						// Yes, now wait for a second click
-						DoubleClickTimer[i] = GetTicCount() + DoubleClickSpeed;
+						DoubleClickTimer[i] = GetCachedTic() + DoubleClickSpeed;
 
 						//( tics << 5 );
 						DoubleClickCount[i] = 1;
@@ -2036,10 +2036,10 @@ void PollJoystickButtons(void)
 
 					// Is this the first click, or a really late click?
 					if ((JoyDblClickCount[i] == 0) ||
-						(GetTicCount() >= JoyDblClickTimer[i]))
+						(GetCachedTic() >= JoyDblClickTimer[i]))
 					{
 						// Yes, now wait for a second click
-						JoyDblClickTimer[i] = GetTicCount() + DoubleClickSpeed;
+						JoyDblClickTimer[i] = GetCachedTic() + DoubleClickSpeed;
 
 						//( tics << 5 );
 						JoyDblClickCount[i] = 1;
@@ -2305,7 +2305,7 @@ void PollMove(void)
 	{
 		if (first)
 		{
-			nettics = GetTicCount() + (VBLCOUNTER * 4);
+			nettics = GetCachedTic() + (VBLCOUNTER * 4);
 			first = 0;
 		}
 
@@ -2333,7 +2333,7 @@ void PollMove(void)
 				leftmom = 0;
 		}
 
-		if ((GetTicCount() > nettics) && (rightmom > (NETMOM * 2)) &&
+		if ((GetCachedTic() > nettics) && (rightmom > (NETMOM * 2)) &&
 			(leftmom > (NETMOM * 2)))
 		{
 			rightmom = 0;
@@ -3706,30 +3706,12 @@ void PlayerTiltHead(objtype* ob)
 
 	pstate->lastmomz = ob->momentumz;
 
-	if(MY && usemouselook)
-	{
-		// when MY is negative, you still have to add it in this case, as adding a negative is subtraction.
-		// this has the downside of inverting mouse input, and also means that vertical input can inadvertently
-		// overflow below or above the floor/ceiling. as such, both operations need to be treated the same,
-		// with a mouse inversion to rectify the problem.
-
-		MY *= -1;
-		if(MY > 0)
-		{
-			if((yzangle + MY) - HORIZONYZOFFSET > YZANGLELIMIT)
-				yzangle = HORIZONYZOFFSET + YZANGLELIMIT;
-			else
-				yzangle += MY;
-		}
-		if(MY < 0)
-		{
-			if((yzangle + MY) - HORIZONYZOFFSET < -YZANGLELIMIT)
-				yzangle = HORIZONYZOFFSET - YZANGLELIMIT;
-			else
-				yzangle += MY;
-		}
-			
-	}
+	// when MY is negative, you still have to add it in this case, as adding a negative is subtraction.
+	// this has the downside of inverting mouse input, and also means that vertical input can inadvertently
+	// overflow below or above the floor/ceiling. as such, both operations need to be treated the same,
+	// with a mouse inversion to rectify the problem.
+	if(abs(MY) && usemouselook)
+		dyz = MY * -1;
 	
 	if (ob->flags & FL_SHROOMS)
 	{

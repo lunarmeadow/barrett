@@ -4446,12 +4446,12 @@ static byte whichstr = 0;
 
 void DoLoadGameAction(void)
 {
-	if ((SaveTime + 1) < GetTicCount())
+	if ((SaveTime + 1) < GetCachedTic())
 	{
 		byte* temp = bufferofs;
 
 		bufferofs = displayofs;
-		SaveTime = GetTicCount();
+		SaveTime = GetCachedTic();
 
 		CurrentFont = tinyfont;
 
@@ -4754,7 +4754,7 @@ boolean SaveTheGame(int num, gamestorage_t* game)
 	// Misc
 
 	// ticcount
-	myticcount = GetTicCount();
+	myticcount = GetCachedTic();
 	size = sizeof(myticcount);
 	SafeWrite(savehandle, &myticcount, size);
 
@@ -5188,7 +5188,6 @@ boolean LoadTheGame(int num, gamestorage_t* game)
 	for (i = 0; i < 100; i++)
 		UpdateLightLevel(player->areanumber);
 
-	CalcTics();
 	CalcTics();
 
 	pickquick = true;

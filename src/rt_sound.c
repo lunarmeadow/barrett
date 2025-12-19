@@ -64,26 +64,20 @@ extern boolean useoplmusic;
 
 int MUSIC_GetPosition(void)
 {
-	if(useoplmusic && OPL_IsHooked())
-	{
-		return OPL_GetPosition();
-	}
-	else 
+	if(!useoplmusic || !OPL_IsHooked())
 	{
 		songtic pos;
 
 		MUSIC_GetSongPosition(&pos);
 		return pos.milliseconds;
 	}
+
+	return 0;
 }
 
 void MUSIC_SetPosition(int time)
 {
-	if(useoplmusic && OPL_IsHooked())
-	{
-		OPL_SetPosition(time);
-	}
-	else 
+	if(!useoplmusic || !OPL_IsHooked())
 	{
 		MUSIC_SetSongTime((unsigned long)time);
 	}
