@@ -2419,7 +2419,16 @@ void InterpolateMaskedWall(visobj_t* plane)
 				sprtopoffset =
 					centeryfrac - FixedMul(dc_texturemid, dc_invscale);
 
+				// column index
 				texture = ((top / bot) + (plane->texturestart >> 4)) >> 6;
+
+				// ashley added: prevent OOB in column indexing
+				// { column | 0 < column < 63 } as patches are 64x64.
+				if(texture < 0)
+					texture = 0;
+				if(texture > 63)
+					texture = 63;
+
 				SetLightLevel(height >> DHEIGHTFRACTION);
 				if (drawbottom == true)
 					ScaleTransparentPost(p->collumnofs[texture] + shape, buf,
