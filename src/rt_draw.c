@@ -2185,6 +2185,7 @@ void GetRainBoundingBox(int* xmin, int* xmax, int* ymin, int* ymax)
 ========================
 */
 
+int maxTex = 0;
 void InterpolateWall(visobj_t* plane)
 {
 	int d1, d2;
@@ -2221,6 +2222,14 @@ void InterpolateWall(visobj_t* plane)
 			if (bot)
 			{
 				texture = ((top / bot) + (plane->texturestart >> 4)) & 0xfc0;
+
+				// ashley added: prevent OOB in column indexing
+				// { column | 0 < column < 4032 }. limit is 64x higher because of texture << 4 in the wallpost struct.
+				if(texture < 0)
+					texture = 0;
+				if(texture > 4032)
+					texture = 4032;
+
 				posts[i].texture = texture << 4;
 				posts[i].lump = plane->shapenum;
 				posts[i].alttile = plane->altshapenum;
@@ -2296,6 +2305,14 @@ void InterpolateDoor(visobj_t* plane)
 					centeryfrac - FixedMul(dc_texturemid, dc_invscale);
 
 				texture = ((top / bot) + (plane->texturestart >> 4)) >> 6;
+
+				// ashley added: prevent OOB in column indexing
+				// { column | 0 < column < 63 } because patch is 64x64
+				if(texture < 0)
+					texture = 0;
+				if(texture > 63)
+					texture = 63;
+
 				SetLightLevel(height >> DHEIGHTFRACTION);
 				ScaleMaskedPost(p->collumnofs[texture] + shape, buf);
 
