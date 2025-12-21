@@ -778,13 +778,30 @@ void DrawScaleds(void)
 	objtype* obj;
 	maskedwallobj_t* tmwall;
 
+	byte tilex_next, tilex_prev, tiley_next, tiley_prev;
 
 	//
 	// place maskwall objects
 	//
 	for (tmwall = FIRSTMASKEDWALL; tmwall; tmwall = tmwall->next)
 	{
-		if (spotvis[tmwall->tilex][tmwall->tiley])
+		tilex_next = tmwall->tilex + 1;
+		tilex_prev = tmwall->tilex - 1;
+		tiley_next = tmwall->tiley + 1;
+		tiley_prev = tmwall->tiley - 1;
+
+		// ashley added: butt ugly hack to avoid masked walls being cut off on edges of view.
+
+		// check if any 2 adjacent tiles on X or Y are in view.
+		// this should be properly fixed in InitialCast or WallRefresh, but it reduces the issue.
+		// on this spot
+		if (spotvis[tmwall->tilex][tmwall->tiley]
+			// check adjacent x tiles 
+			|| spotvis[tilex_next][tmwall->tiley]
+			|| spotvis[tilex_prev][tmwall->tiley]
+			// check adjacent y tiles 
+			|| spotvis[tmwall->tilex][tiley_next]
+			|| spotvis[tmwall->tilex][tiley_prev])
 		{
 			mapseen[tmwall->tilex][tmwall->tiley] = 1;
 			if (tmwall->vertical)
@@ -2060,15 +2077,15 @@ void WallRefresh(void)
 		spotvis[player->tilex][player->tiley] = 1;
 	}
 
-	if (yzangle > ANG180)
-		pheight -= (sintable[yzangle & 2047] >> 14);
-	else
-		pheight += (sintable[yzangle & 2047] >> 14);
+	// if (yzangle > ANG180)
+	// 	pheight -= (sintable[yzangle & 2047] >> 14);
+	// else
+	// 	pheight += (sintable[yzangle & 2047] >> 14);
 
-	viewx -=
-		(FixedMul(sintable[yzangle & 2047], costable[viewangle & 2047]) >> 1);
-	viewy +=
-		(FixedMul(sintable[yzangle & 2047], sintable[viewangle & 2047]) >> 1);
+	// viewx -=
+	// 	(FixedMul(sintable[yzangle & 2047], costable[viewangle & 2047]) >> 2);
+	// viewy +=
+	// 	(FixedMul(sintable[yzangle & 2047], sintable[viewangle & 2047]) >> 2);
 
 	// Set YZ angle
 
@@ -2168,6 +2185,7 @@ void GetRainBoundingBox(int* xmin, int* xmax, int* ymin, int* ymax)
 ========================
 */
 
+int maxTex = 0;
 void InterpolateWall(visobj_t* plane)
 {
 	int d1, d2;
@@ -2204,6 +2222,14 @@ void InterpolateWall(visobj_t* plane)
 			if (bot)
 			{
 				texture = ((top / bot) + (plane->texturestart >> 4)) & 0xfc0;
+
+				// ashley added: prevent OOB in column indexing
+				// { column | 0 < column < 4032 }. limit is 64x higher because of texture << 4 in the wallpost struct.
+				if(texture < 0)
+					texture = 0;
+				if(texture > 4032)
+					texture = 4032;
+
 				posts[i].texture = texture << 4;
 				posts[i].lump = plane->shapenum;
 				posts[i].alttile = plane->altshapenum;
@@ -2279,6 +2305,14 @@ void InterpolateDoor(visobj_t* plane)
 					centeryfrac - FixedMul(dc_texturemid, dc_invscale);
 
 				texture = ((top / bot) + (plane->texturestart >> 4)) >> 6;
+
+				// ashley added: prevent OOB in column indexing
+				// { column | 0 < column < 63 } because patch is 64x64
+				if(texture < 0)
+					texture = 0;
+				if(texture > 63)
+					texture = 63;
+
 				SetLightLevel(height >> DHEIGHTFRACTION);
 				ScaleMaskedPost(p->collumnofs[texture] + shape, buf);
 
@@ -2402,7 +2436,16 @@ void InterpolateMaskedWall(visobj_t* plane)
 				sprtopoffset =
 					centeryfrac - FixedMul(dc_texturemid, dc_invscale);
 
+				// column index
 				texture = ((top / bot) + (plane->texturestart >> 4)) >> 6;
+
+				// ashley added: prevent OOB in column indexing
+				// { column | 0 < column < 63 } as patches are 64x64.
+				if(texture < 0)
+					texture = 0;
+				if(texture > 63)
+					texture = 63;
+
 				SetLightLevel(height >> DHEIGHTFRACTION);
 				if (drawbottom == true)
 					ScaleTransparentPost(p->collumnofs[texture] + shape, buf,
@@ -5702,7 +5745,7 @@ void RefreshClear(void)
 
 	if (start > 0)
 	{
-		VL_Bar(0, 0, iGLOBAL_SCREENHEIGHT, start, CEILINGCOLOR);
+		VL_Bar(0, 0, iGLOBAL_SCREENWIDTH, start, CEILINGCOLOR);
 	}
 	else
 	{
@@ -5714,6 +5757,6 @@ void RefreshClear(void)
 	start = min(viewheight - start, viewheight);
 	if (start > 0)
 	{
-		VL_Bar(0, base, iGLOBAL_SCREENHEIGHT, start, FLOORCOLOR);
+		VL_Bar(0, base, iGLOBAL_SCREENWIDTH, start, FLOORCOLOR);
 	}
 }
