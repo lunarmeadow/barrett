@@ -26,10 +26,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 //***************************************************************************
 
-#define MAXTOUCHPLATES 64
-#define MAXMASKED	   300 // max masked walls
-#define MAXDOORS	   150 // max number of sliding doors
-#define MAXPWALLS	   150 // max number of pushwalls
+#define MAXTOUCHPLATES 128
+#define MAXMASKED	   1024 // max masked walls
+#define MAXDOORS	   256 // max number of sliding doors
+#define MAXPWALLS	   256 // max number of pushwalls
 #define DF_TIMED	   0x01
 #define DF_ELEVLOCKED  0x02
 #define DF_MULTI	   0x04

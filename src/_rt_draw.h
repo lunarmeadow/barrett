@@ -28,7 +28,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define GOLOWER	 0x38000
 #define GOHIGHER 0x20000
 
-#define MAXVISIBLEDOORS 30
+#define MAXVISIBLEDOORS 64
 
 #define DHEIGHTFRACTION 8
 
