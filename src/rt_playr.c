@@ -355,6 +355,8 @@ static int turnheldtime;
 static int turnaround = 0;
 static int turnaroundtime;
 
+static int mouseactivetime = 0;
+
 //
 // Double Click variables
 //
@@ -3711,7 +3713,12 @@ void PlayerTiltHead(objtype* ob)
 	// overflow below or above the floor/ceiling. as such, both operations need to be treated the same,
 	// with a mouse inversion to rectify the problem.
 	if(abs(MY) && usemouselook)
+	{
 		dyz = MY * -1;
+
+		// return vertical control of camera to playertilthead if 3 seconds have elapsed since last vertical mouse input
+		mouseactivetime = oldpolltime + (VBLCOUNTER * 3);
+	}
 	
 	if (ob->flags & FL_SHROOMS)
 	{
@@ -3777,7 +3784,8 @@ void PlayerTiltHead(objtype* ob)
 	}
 
 	if ((yzangle != pstate->horizon) && (dyz == 0) 
-		&& !usemouselook && ((oldpolltime > tiltTimer) 
+		&& (!usemouselook || oldpolltime > mouseactivetime) 
+		&& ((oldpolltime > tiltTimer) 
 		|| (autoAim && pstate->guntarget)))
 	{
 		int speed;
