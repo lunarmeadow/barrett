@@ -70,7 +70,8 @@ int setup_homedir(void)
 	char fetchCWD[160];
 	getcwd(fetchCWD, sizeof(fetchCWD));
 
-#if PLATFORM_UNIX && !defined(__MINGW32__)
+// ashley: as this uses CWD now, it should work on windows.
+// #if PLATFORM_UNIX && !defined(__MINGW32__)
 	int err;
 
 	/* try to create the root directory */
@@ -83,9 +84,9 @@ int setup_homedir(void)
 				strerror(errno));
 		return -1;
 	}
-#else
-	sprintf(ApogeePath, "./data/");;
-#endif
+// #else
+// 	sprintf(ApogeePath, "./data/");;
+// #endif
 
 	return 0;
 }

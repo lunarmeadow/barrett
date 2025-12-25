@@ -932,6 +932,7 @@ void CheckVendor(void)
 	int lump;
 	byte* vendor;
 	char filename[128];
+	char fetchCWD[160];
 	const char *VENDORDOC, *VENDORLUMP;
 
 	if (IS_SHAREWARE)
@@ -945,7 +946,10 @@ void CheckVendor(void)
 		VENDORLUMP = "LICENSE";
 	}
 
-	GetPathFromEnvironment(filename, ApogeePath, VENDORDOC);
+	// use cwd instead of userdata folder
+	getcwd(fetchCWD, sizeof(fetchCWD));
+	GetPathFromEnvironment(filename, fetchCWD, VENDORDOC);
+
 	if (access(filename, F_OK) == 0)
 	{
 		size = LoadFile(filename, (void**)&vendor);
