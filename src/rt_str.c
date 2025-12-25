@@ -651,7 +651,7 @@ extern byte* IN_GetScanName(ScanCode scan);
 boolean US_LineInput(int x, int y, char* buf, const char* def, boolean escok,
 					 int maxchars, int maxwidth, int color)
 {
-	boolean redraw, cursorvis, cursormoved, done, result;
+	boolean redraw, cursorvis, cursormoved, done, result = false;
 	char s[MaxString], olds[MaxString];
 	int i, cursor, w, h, len;
 
@@ -670,7 +670,7 @@ boolean US_LineInput(int x, int y, char* buf, const char* def, boolean escok,
 	BKh = CurrentFont->height;
 
 	if (def)
-		strncpy(s, def, strlen(def));
+		strcpy(s, def);
 	else
 		*s = '\0';
 
@@ -751,7 +751,7 @@ boolean US_LineInput(int x, int y, char* buf, const char* def, boolean escok,
 			break;
 
 		case sc_Return:
-			strncpy(buf, s, strlen(s));
+			strcpy(buf, s);
 			done = true;
 			result = true;
 			lastkey = key_None;
@@ -772,13 +772,7 @@ boolean US_LineInput(int x, int y, char* buf, const char* def, boolean escok,
 
 			if (cursor)
 			{
-				// ashley added: fix asan detection (remove prev character and then next)
-				// logic still seems to be buggy wrt overwriting names and should be fixed.
-				s[cursor - 1] = 0;
-
-				strncpy(s + cursor - 1, s + cursor, strlen(s + cursor));
-
-				s[cursor] = 0;
+				strcpy(s + cursor - 1, s + cursor);
 
 				cursor--;
 				redraw = true;
@@ -794,12 +788,8 @@ boolean US_LineInput(int x, int y, char* buf, const char* def, boolean escok,
 
 			if (s[cursor])
 			{
-				// ashley added: fix asan detection (remove prev character and then next)
-				s[cursor] = 0;
-
-				strncpy(s + cursor, s + cursor + 1, strlen(s + cursor + 1));
-
-				s[cursor + 1] = 0;
+				strcpy(s + cursor, s + cursor + 1);
+				
 				redraw = true;
 				cursormoved = true;
 				MN_PlayMenuSnd(SD_MOVECURSORSND);
@@ -860,7 +850,7 @@ boolean US_LineInput(int x, int y, char* buf, const char* def, boolean escok,
 			else
 				EraseMenuBufRegion(x, y, BKw, BKh);
 
-			strncpy(olds, s, strlen(s));
+			strcpy(olds, s);
 
 			px = x;
 			py = y;

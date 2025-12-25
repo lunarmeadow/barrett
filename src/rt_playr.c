@@ -148,8 +148,8 @@ boolean RefreshPause = true;
 boolean buttonpoll[NUMBUTTONS];
 
 int buttonscan[NUMBUTTONS] = {
-	sc_Space, sc_Alt,		   sc_LShift,	 sc_E,	   sc_I,
-	sc_K,	sc_Enter,	   sc_Delete,	 sc_U,	   sc_M,
+	sc_Space, sc_Alt,		   sc_RShift,	 sc_E,	   sc_I,
+	sc_K,	sc_Enter,	   sc_Delete,	 sc_Q,	   sc_Z,
 	sc_1,		sc_2,		   sc_3,		 sc_4,		   sc_Control,
 	sc_F12,		sc_A,	   sc_D,	 sc_BackSpace, sc_None,
 	sc_W, sc_L, sc_S, sc_J, sc_Tab,
@@ -354,6 +354,8 @@ statetype s_tag = {false, CASSATT_S1, 20, T_Tag, 0, &s_player};
 static int turnheldtime;
 static int turnaround = 0;
 static int turnaroundtime;
+
+static int mouseactivetime = 0;
 
 //
 // Double Click variables
@@ -3711,7 +3713,12 @@ void PlayerTiltHead(objtype* ob)
 	// overflow below or above the floor/ceiling. as such, both operations need to be treated the same,
 	// with a mouse inversion to rectify the problem.
 	if(abs(MY) && usemouselook)
+	{
 		dyz = MY * -1;
+
+		// return vertical control of camera to playertilthead if 3 seconds have elapsed since last vertical mouse input
+		mouseactivetime = oldpolltime + (VBLCOUNTER * 3);
+	}
 	
 	if (ob->flags & FL_SHROOMS)
 	{
@@ -3777,7 +3784,8 @@ void PlayerTiltHead(objtype* ob)
 	}
 
 	if ((yzangle != pstate->horizon) && (dyz == 0) 
-		&& !usemouselook && ((oldpolltime > tiltTimer) 
+		&& (!usemouselook || oldpolltime > mouseactivetime) 
+		&& ((oldpolltime > tiltTimer) 
 		|| (autoAim && pstate->guntarget)))
 	{
 		int speed;
