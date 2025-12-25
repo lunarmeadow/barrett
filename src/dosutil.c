@@ -83,7 +83,7 @@ int setup_homedir(void)
 	/* try to create the root directory */
 	snprintf(ApogeePath, sizeof(ApogeePath), "%s/userdata/", fetchCWD);
 
-	#if PLATFORM_WIN32
+	#if defined(__MINGW32__)
 		err = _mkdir(ApogeePath);
 	#else
 		err = mkdir(ApogeePath, S_IRWXU);
