@@ -651,7 +651,7 @@ extern byte* IN_GetScanName(ScanCode scan);
 boolean US_LineInput(int x, int y, char* buf, const char* def, boolean escok,
 					 int maxchars, int maxwidth, int color)
 {
-	boolean redraw, cursorvis, cursormoved, done, result;
+	boolean redraw, cursorvis, cursormoved, done, result = false;
 	char s[MaxString], olds[MaxString];
 	int i, cursor, w, h, len;
 
@@ -670,7 +670,7 @@ boolean US_LineInput(int x, int y, char* buf, const char* def, boolean escok,
 	BKh = CurrentFont->height;
 
 	if (def)
-		strncpy(s, def, strlen(def));
+		strcpy(s, def);
 	else
 		*s = '\0';
 
@@ -751,7 +751,7 @@ boolean US_LineInput(int x, int y, char* buf, const char* def, boolean escok,
 			break;
 
 		case sc_Return:
-			strncpy(buf, s, strlen(s));
+			strcpy(buf, s);
 			done = true;
 			result = true;
 			lastkey = key_None;
@@ -850,7 +850,7 @@ boolean US_LineInput(int x, int y, char* buf, const char* def, boolean escok,
 			else
 				EraseMenuBufRegion(x, y, BKw, BKh);
 
-			strncpy(olds, s, strlen(s));
+			strcpy(olds, s);
 
 			px = x;
 			py = y;
