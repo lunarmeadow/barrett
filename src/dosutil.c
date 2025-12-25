@@ -6,9 +6,9 @@
 // mingw uses a different mkdir function
 #if defined(__MINGW32__)
     #include <direct.h>
-#else
-    #include <sys/stat.h>
 #endif
+
+#include <sys/stat.h>
 
 #if PLATFORM_UNIX
 	#include <sys/types.h>
