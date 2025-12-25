@@ -772,7 +772,8 @@ boolean US_LineInput(int x, int y, char* buf, const char* def, boolean escok,
 
 			if (cursor)
 			{
-				strncpy(s + cursor - 1, s + cursor, strlen(s + cursor));
+				strcpy(s + cursor - 1, s + cursor);
+
 				cursor--;
 				redraw = true;
 				cursormoved = true;
@@ -787,7 +788,8 @@ boolean US_LineInput(int x, int y, char* buf, const char* def, boolean escok,
 
 			if (s[cursor])
 			{
-				strncpy(s + cursor, s + cursor + 1, strlen(s + cursor + 1));
+				strcpy(s + cursor, s + cursor + 1);
+				
 				redraw = true;
 				cursormoved = true;
 				MN_PlayMenuSnd(SD_MOVECURSORSND);
