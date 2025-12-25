@@ -3,11 +3,17 @@
 #include <string.h>
 #include <ctype.h>
 
-#include <sys/stat.h>
+// mingw uses a different mkdir function
+#if PLATFORM_WIN32
+    #include <direct.h>
+#else
+    #include <sys/stat.h>
+#endif
+
 #if PLATFORM_UNIX
-#include <sys/types.h>
-#include <errno.h>
-#include <unistd.h>
+	#include <sys/types.h>
+	#include <errno.h>
+	#include <unistd.h>
 #endif
 
 #include <fcntl.h>
@@ -76,7 +82,12 @@ int setup_homedir(void)
 
 	/* try to create the root directory */
 	snprintf(ApogeePath, sizeof(ApogeePath), "%s/userdata/", fetchCWD);
-	err = mkdir(ApogeePath, S_IRWXU);
+
+	#if PLATFORM_WIN32
+		err = _mkdir(ApogeePath);
+	#else
+		err = mkdir(ApogeePath, S_IRWXU);
+	#endif
 
 	if (err == -1 && errno != EEXIST)
 	{
