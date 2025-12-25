@@ -4,7 +4,7 @@
 #include <ctype.h>
 
 // mingw uses a different mkdir function
-#if PLATFORM_WIN32
+#if defined(__MINGW32__)
     #include <direct.h>
 #else
     #include <sys/stat.h>
