@@ -148,8 +148,8 @@ boolean RefreshPause = true;
 boolean buttonpoll[NUMBUTTONS];
 
 int buttonscan[NUMBUTTONS] = {
-	sc_Space, sc_Alt,		   sc_LShift,	 sc_E,	   sc_I,
-	sc_K,	sc_Enter,	   sc_Delete,	 sc_U,	   sc_M,
+	sc_Space, sc_Alt,		   sc_RShift,	 sc_E,	   sc_I,
+	sc_K,	sc_Enter,	   sc_Delete,	 sc_Q,	   sc_Z,
 	sc_1,		sc_2,		   sc_3,		 sc_4,		   sc_Control,
 	sc_F12,		sc_A,	   sc_D,	 sc_BackSpace, sc_None,
 	sc_W, sc_L, sc_S, sc_J, sc_Tab,
