@@ -428,7 +428,7 @@ void TurnOffLight(int tilex, int tiley)
 	LightsInArea[MAPSPOT(tilex, tiley, 0) - AREATILE]--;
 }
 
-void ActivateLight(long light)
+void ActivateLight(intptr_t light)
 {
 	statobj_t* tstat;
 
@@ -439,7 +439,7 @@ void ActivateLight(long light)
 	TurnOnLight(tstat->tilex, tstat->tiley);
 }
 
-void DeactivateLight(long light)
+void DeactivateLight(intptr_t light)
 {
 	statobj_t* tstat;
 
