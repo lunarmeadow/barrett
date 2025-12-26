@@ -81,3 +81,6 @@ compile_commands.json
 CMakeCache.txt
 Makefile
 cmake_install.cmake
+
+userdata/
+*.DOC
