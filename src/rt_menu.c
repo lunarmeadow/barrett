@@ -3914,7 +3914,7 @@ int CalibrateJoystick(void)
 void MouseSensitivity(void)
 
 {
-	SliderMenu(&mouseadjustment, 16, 1, 21, 81, 240, 1, "block1", NULL,
+	SliderMenu(&mouseadjustment, 24, 1, 21, 81, 240, 1, "block1", NULL,
 			   "Mouse Sensitivity", "Slow", "Ludicrous");
 }
 

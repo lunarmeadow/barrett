@@ -2162,7 +2162,8 @@ void PollKeyboardMove(void)
 //
 //******************************************************************************
 
-#define MOUSE_SENSITIVITY_SCALE 1024
+// 1024 seems too slow, 1536 seems too fast
+#define MOUSE_SENSITIVITY_SCALE 1280
 
 // For some reason inputs are inverted if this isn't negative, the x-angle space must be inverted somehow
 int mousex_tofracangle = -SFRACUNIT;
