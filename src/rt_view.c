@@ -381,7 +381,7 @@ void SetupScreen(boolean flip)
 
 	SetViewSize(viewsize);
 
-	if (viewsize < 7)
+	if (viewsize <= 7)
 	{
 		shape = (pic_t*)W_CacheLumpName("backtile", PU_CACHE, Cvt_pic_t, 1);
 		// DrawTiledRegion( 0, 16, 320, 200 - 32, 0, 16, shape );
