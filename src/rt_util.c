@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "SDL.h"
 
+#include <SDL_messagebox.h>
 #include <stdarg.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -295,7 +296,7 @@ void ClearBuffer(char* buf, int size)
 
 void Error(char* error, ...)
 {
-	char msgbuf[300];
+	char msgbuf[1024];
 	va_list argptr;
 	int size;
 	char* sptr;
@@ -307,10 +308,10 @@ void Error(char* error, ...)
 		abort();
 
 	SetTextMode();
-	memset(msgbuf, 0, 300);
+	memset(msgbuf, 0, sizeof(msgbuf));
 
 	va_start(argptr, error);
-	vsprintf(&msgbuf[0], error, argptr);
+	vsnprintf(msgbuf, sizeof(msgbuf), error, argptr);
 	va_end(argptr);
 
 	scriptbuffer = &msgbuf[0];
@@ -325,36 +326,38 @@ void Error(char* error, ...)
 	px = ERRORCOL;
 	py = ERRORROW;
 
-	GetToken(true);
-	while (!endofscript)
-	{
-		if ((script_p - sptr) >= 60)
-		{
-			px = ERRORCOL;
-			py++;
-			sptr = script_p;
-		}
+	// GetToken(true);
+	// while (!endofscript)
+	// {
+	// 	if ((script_p - sptr) >= 60)
+	// 	{
+	// 		px = ERRORCOL;
+	// 		py++;
+	// 		sptr = script_p;
+	// 	}
 
-		printf("%s ", token);
+	// 	snprintf(msgbuf + strlen(msgbuf), sizeof(msgbuf) - strlen(msgbuf), "%s ", token);
 
-		px++; // SPACE
-		GetToken(true);
-	}
+	// 	px++; // SPACE
+	// 	GetToken(true);
+	// }
 
 	if (player != NULL)
 	{
-		printf("Player X     = %lx\n", (long int)player->x);
-		printf("Player Y     = %lx\n", (long int)player->y);
-		printf("Player Angle = %lx\n\n", (long int)player->angle);
+		snprintf(msgbuf + strlen(msgbuf), sizeof(msgbuf) - strlen(msgbuf), "\nPlayer X     = 0x%lX\n", (long int)player->x);
+		snprintf(msgbuf + strlen(msgbuf), sizeof(msgbuf) - strlen(msgbuf), "Player Y     = 0x%lX\n", (long int)player->y);
+		snprintf(msgbuf + strlen(msgbuf), sizeof(msgbuf) - strlen(msgbuf), "Player Angle = 0x%lX\n\n", (long int)player->angle);
 	}
-	printf("Episode      = %ld\n", (long int)gamestate.episode);
+	snprintf(msgbuf + strlen(msgbuf), sizeof(msgbuf) - strlen(msgbuf), "Episode      = %ld\n", (long int)gamestate.episode);
 
 	if (gamestate.episode > 1)
 		level = (gamestate.mapon + 1) - ((gamestate.episode - 1) << 3);
 	else
 		level = gamestate.mapon + 1;
 
-	printf("Area         = %ld\n", (long int)level);
+	snprintf(msgbuf + strlen(msgbuf), sizeof(msgbuf) - strlen(msgbuf), "Area         = %ld\n", (long int)level);
+
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Barrett Error", msgbuf, NULL);
 
 	ShutDown(); // DDOI - moved this so that it doesn't try to access player
 	// which is freed by this function.
