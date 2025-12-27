@@ -317,7 +317,12 @@ void SetViewSize(int size)
 	centerx = viewwidth >> 1;
 	centery = viewheight >> 1;
 	centeryfrac = (centery << 16);
-	yzangleconverter = (0xaf85 * viewheight) / 300;
+
+	// 0xE82A = tan(30deg) * (65536 / 2*pi)
+	// scale it by ratio of focal width to default
+	// 320 seems to work better than 200, 300, and 360. can't find a better value atm.
+	// this could probably be further refined.
+	yzangleconverter = (int)((0xE82A * ((double)focalwidth / 160)) * ((double)viewheight / 320));
 
 	// Center the view horizontally
 	screenx = (iGLOBAL_SCREENWIDTH - viewwidth) >> 1;
