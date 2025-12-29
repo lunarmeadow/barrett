@@ -31,6 +31,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "SDL.h"
 
 #include "rt_actor.h"
+#include "rt_inicfg.h"
 #include "rt_stat.h"
 #include "rt_vid.h"
 #include "rt_menu.h"
@@ -249,12 +250,14 @@ int main(int argc, char* argv[])
 	if (standalone == false)
 	{
 		ReadConfig();
+		INI_Startup();
 		ReadSETUPFiles();
 		doublestep = 0;
 		SetupWads();
 		BuildTables();
 		GetMenuInfo();
 	}
+
 
 	SetRottScreenRes(iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT);
 

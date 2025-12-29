@@ -17,11 +17,13 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+#include "ini.h"
 #include "rt_def.h"
 #include "rt_sound.h"
 #include "_rt_soun.h"
 #include "fx_man.h"
 #include "music.h"
+#include "rt_inicfg.h"
 #include "z_zone.h"
 #include "w_wad.h"
 #include "rt_main.h"
@@ -165,8 +167,11 @@ int SD_Startup(boolean bombonerror)
 	int status;
 	int voices;
 	int channels;
+	unsigned int samplerate;
 	int bits;
 	int i;
+
+	sndCfg cfg;
 
 	if (SD_Started == true)
 		SD_Shutdown();
@@ -199,11 +204,24 @@ int SD_Startup(boolean bombonerror)
 		soundstart = 0;
 	}
 
-	voices = NumVoices;
-	channels = NumChannels;
-	bits = NumBits;
+	// voices = NumVoices;
+	// channels = NumChannels;
+	// bits = NumBits;
 
-	status = FX_Init(voices, channels, bits, 44100);
+	if(!INI_CheckError())
+		printf("GraphicsMode: ini failed!");
+
+	if (ini_parse(iniPath, Sound_FetchConfig, &cfg) < 0)
+	{
+		printf("SD_Startup: ini failed to parse!");
+	}
+
+	voices = cfg.maxVoices ? cfg.maxVoices : 64;
+	channels = cfg.channels ? cfg.channels : 2;
+	samplerate = cfg.sampleRate ? cfg.sampleRate : 44100;
+	bits = cfg.bitDepth ? cfg.bitDepth : 16;
+	
+	status = FX_Init(voices, channels, bits, samplerate);
 
 	if (status != FX_Ok)
 	{

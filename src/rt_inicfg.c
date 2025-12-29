@@ -27,21 +27,23 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "rt_inicfg.h"
 
+char iniPath[MAX_PATH];
+boolean iniStarted = false;
+
 int OPL_FetchConfig(void* user, const char* section, 
                             const char* name, const char* value)
 {
     oplCfg* cfg = (oplCfg*)user;
-
-    #define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
-    if(MATCH("chip", "bank"))
+    
+    if(MATCH("OPL", "Bank"))
     {
         cfg->bankNum = atoi(value);
     }
-    else if(MATCH("chip", "count"))
+    else if(MATCH("OPL", "Count"))
     {
         cfg->oplChipNum = atoi(value);
     }
-    else if(MATCH("chip", "emulator"))
+    else if(MATCH("OPL", "Emulator"))
     {
         cfg->emulator = atoi(value);
     }
@@ -52,9 +54,68 @@ int OPL_FetchConfig(void* user, const char* section,
     return 1;
 }
 
+int ModeX_FetchConfig(void* user, const char* section, 
+                            const char* name, const char* value)
+{
+    modeXCfg* cfg = (modeXCfg*)user;
+
+    if(MATCH("ModeX", "Backend"))
+    {
+        cfg->renderBackend = atoi(value);
+    }
+    if(MATCH("ModeX", "ScaleMode"))
+    {
+        cfg->scaleMode = strdup(value);
+    }
+    else
+    {
+        return 0;
+    }
+    return 1;
+}
+
+int Sound_FetchConfig(void* user, const char* section, 
+                            const char* name, const char* value)
+{
+    sndCfg* cfg = (sndCfg*)user;
+
+    if(MATCH("Audio", "MaxVoices"))
+    {
+        cfg->maxVoices = atoi(value);
+    }
+    if(MATCH("Audio", "SampleRate"))
+    {
+        cfg->sampleRate = atoi(value);
+    }
+    if(MATCH("Audio", "BitDepth"))
+    {
+        cfg->bitDepth = atoi(value);
+    }
+    if(MATCH("Audio", "Channels"))
+    {
+        cfg->channels = atoi(value);
+    }
+    else
+    {
+        return 0;
+    }
+    return 1;
+}
+
+
 void INI_Startup(void)
 {
     GetPathFromEnvironment(iniPath, ApogeePath, "barrett.ini");
+
+    if (access(iniPath, F_OK) != 0)
+    {
+        printf("barrett.ini doesn't exist!\n");
+
+        if(!INI_WriteDefault())
+            printf("barrett.ini creation failed.\n");
+        else
+            printf("barrett.ini creation succeeded in %s.\n", ApogeePath);
+    }
 
     iniStarted = true;
 }
@@ -63,19 +124,19 @@ boolean INI_CheckError(void)
 {
     if(*iniPath == '\0')
     {
-        printf("INI_CheckError: INI not found!");
+        printf("INI_CheckError: INI not found!\n");
         return false;
     }
 
     if(access(iniPath, F_OK) != 0)
     {
-        printf("INI_CheckError: INI can't be accessed!");
+        printf("INI_CheckError: INI can't be accessed!\n");
         return false;
     }
 
     if(!iniStarted)
     {
-        printf("INI_CheckError: INI subsystem not started!");
+        printf("INI_CheckError: INI subsystem not started!\n");
         return false;
     }
 
@@ -84,8 +145,6 @@ boolean INI_CheckError(void)
 
 boolean INI_WriteDefault(void)
 {
-    INI_CheckError();
-
     FILE *ini = fopen(iniPath, "w");
     
     if(ini == NULL)
@@ -95,7 +154,7 @@ boolean INI_WriteDefault(void)
 
     // ! OPL SETTINGS !
 
-    fputs("[opl]\n", ini);
+    fputs("[OPL]\n", ini);
 
     // kvp for bank
     fputs("; - notable banks - \n\n", ini);
@@ -105,12 +164,12 @@ boolean INI_WriteDefault(void)
     fputs("; 72 = DMXOPL (default)\n\n", ini);
     fputs("; for more: https://github.com/Wohlstand/libADLMIDI/blob/master/banks.ini\n", ini);
 
-    fputs("bank=72\n\n", ini);
+    fputs("Bank=72\n\n", ini);
 
     // kvp for chip count
     fputs("; how many opl chips to emulate\n", ini);
 
-    fputs("count=2\n\n", ini);
+    fputs("Count=2\n\n", ini);
 
     // kvp for OPL emulator
     fputs("; opl emulator choices: \n\n", ini);
@@ -127,7 +186,35 @@ boolean INI_WriteDefault(void)
     fputs("; 9 = Nuked OPL2 LLE\n", ini);
     fputs("; 10 = Nuked OPL3 LLE\n", ini);
 
-    fputs("emulator=2", ini);
+    fputs("Emulator=2", ini);
+
+    // ! MODEX SETTINGS !
+
+    fputs("\n\n[ModeX]\n", ini);
+    fputs("; backend is a bit field containing guarantees for how renderer is created. Simply add the numbers for your desired selection\n", ini);
+    fputs("; 1 = Software\n", ini);
+    fputs("; 2 = Accelerated (default)\n", ini);
+    fputs("; 4 = Present w/ VSync\n", ini);
+    fputs("; 8 = Use Target Texture\n", ini);
+    fputs("Backend=2\n\n", ini);
+
+    fputs("; this controls how SDL scales window content\n", ini);
+    fputs("; options: \n", ini);
+    fputs("; nearest (default)\n", ini);
+    fputs("; linear\n", ini);
+    fputs("; best\n", ini);
+    fputs("ScaleMode=nearest\n\n", ini);
+
+    // ! Audio SETTINGS !
+
+    fputs("[Audio]\n", ini);
+    fputs("; how many in-game sounds to mix\n", ini);
+    fputs("MaxVoices=64\n", ini);
+
+    fputs("\n; sample format\n", ini);
+    fputs("SampleRate=44100\n", ini);
+    fputs("Channels=2\n", ini);
+    fputs("BitDepth=16\n", ini);
 
     // clean up
     fclose(ini);

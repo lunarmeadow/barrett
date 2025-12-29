@@ -29,6 +29,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <sys/stat.h>
 #include "modexlib.h"
+#include "ini.h"
+#include "rt_inicfg.h"
 #include "rt_util.h"
 #include "rt_net.h" // for GamePaused
 #include "rt_view.h"
@@ -105,7 +107,11 @@ static void GetIconMasks(Uint32* r, Uint32* g, Uint32* b, Uint32* a)
 
 void GraphicsMode(void)
 {
+	modeXCfg cfg;
 	Uint32 flags = 0;
+
+	unsigned int backend;
+	char* scaleMode;
 
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
 	{
@@ -114,7 +120,17 @@ void GraphicsMode(void)
 
 	// SDL_SetRelativeMouseMode(SDL_TRUE);
 
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
+	if(!INI_CheckError())
+		printf("GraphicsMode: ini failed!");
+
+	if (ini_parse(iniPath, ModeX_FetchConfig, &cfg) < 0)
+	{
+		printf("GraphicsMode: ini failed to parse!");
+	}
+
+	scaleMode = cfg.scaleMode ? cfg.scaleMode : "nearest";
+
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, scaleMode);
 	if (sdl_fullscreen)
 		flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
 
@@ -128,7 +144,9 @@ void GraphicsMode(void)
 		exit(1);
 	}
 
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+	backend = cfg.renderBackend ? cfg.renderBackend : SDL_RENDERER_ACCELERATED;
+
+	renderer = SDL_CreateRenderer(window, -1, backend);
 
 	sdl_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888,
 									SDL_TEXTUREACCESS_STREAMING,

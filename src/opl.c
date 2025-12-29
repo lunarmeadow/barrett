@@ -29,8 +29,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "rt_cfg.h"
 #include "rt_inicfg.h"
 
+static void (*OPL_Callback)(void *cbFunc, Uint8 *stream, int len);
 
-static void OPLcallback(void *cbFunc, Uint8 *stream, int len);
+static void* cbFunc;
 
 static boolean isPlaying = 0;
 static boolean isHooked = false;
@@ -44,15 +45,118 @@ static struct ADLMIDI_AudioFormat s_audioFormat;
 static Uint16                   obtained_format;
 static struct ADL_MIDIPlayer    *midi_player = NULL;
 
+static void OPL_Callback8Bit(void *cbFunc, Uint8 *stream, int len)
+{
+    if (!isPlaying)
+      return;
+
+    int samples_count = len / s_audioFormat.containerSize;
+
+    samples_count = adl_playFormat(cbFunc, samples_count,
+                                   stream,
+                                   stream + s_audioFormat.containerSize,
+                                   &s_audioFormat);
+
+    // still using signed type here because we create audio device as signed
+    int8_t* sampleBuf = (int8_t*)stream;
+
+    for(int i = 0; i < samples_count; i++)
+    {
+        double clampVal = (double)sampleBuf[i] * volume;
+
+        clampVal = clampVal > INT16_MAX ? INT16_MAX : 
+                   clampVal < INT16_MIN ? INT16_MIN 
+                   : clampVal;
+        
+        sampleBuf[i] = (int8_t)clampVal;
+    }
+
+    if(samples_count <= 0)
+    {
+        isPlaying = false;
+        SDL_memset(stream, 0, len);
+    }
+}
+
+static void OPL_Callback16Bit(void *cbFunc, Uint8 *stream, int len)
+{
+    if (!isPlaying)
+      return;
+
+    int samples_count = len / s_audioFormat.containerSize;
+
+    samples_count = adl_playFormat(cbFunc, samples_count,
+                                   stream,
+                                   stream + s_audioFormat.containerSize,
+                                   &s_audioFormat);
+
+    // assuming signed 16-bit due to that being used for Mix_OpenAudio
+    int16_t* sampleBuf = (int16_t*)stream;
+
+    for(int i = 0; i < samples_count; i++)
+    {
+        double clampVal = (double)sampleBuf[i] * volume;
+
+        clampVal = clampVal > INT16_MAX ? INT16_MAX : 
+                   clampVal < INT16_MIN ? INT16_MIN 
+                   : clampVal;
+        
+        sampleBuf[i] = (int16_t)clampVal;
+    }
+
+    if(samples_count <= 0)
+    {
+        isPlaying = false;
+        SDL_memset(stream, 0, len);
+    }
+}
+
+static void OPL_Callback32Bit(void *cbFunc, Uint8 *stream, int len)
+{
+    if (!isPlaying)
+      return;
+
+    int samples_count = len / s_audioFormat.containerSize;
+
+    samples_count = adl_playFormat(cbFunc, samples_count,
+                                   stream,
+                                   stream + s_audioFormat.containerSize,
+                                   &s_audioFormat);
+
+    int32_t* sampleBuf = (int32_t*)stream;
+
+    for(int i = 0; i < samples_count / 4; i++)
+    {
+        double clampVal = (double)sampleBuf[i] * volume;
+
+        clampVal = clampVal > INT32_MAX ? INT32_MAX : 
+                   clampVal < INT32_MIN ? INT32_MIN 
+                   : clampVal;
+        
+        sampleBuf[i] = (int32_t)clampVal;
+    }
+
+    if(samples_count <= 0)
+    {
+        isPlaying = false;
+        SDL_memset(stream, 0, len);
+    }
+}
 
 void OPL_Init(void)
 {
     oplCfg cfg;
+    sndCfg sCfg;
 
-    if (access(iniPath, F_OK) != 0)
-    {
-        printf("barrett.ini doesn't exist!\n");
-    }
+    unsigned int sampleRate;
+    int channels;
+    int bitDepth;
+
+    int sampleFormat;
+
+    // ensure INI succeeds
+    if(!INI_CheckError())
+        return;
 
     if (ini_parse(iniPath, OPL_FetchConfig, &cfg) < 0) 
     {
@@ -60,15 +164,58 @@ void OPL_Init(void)
         exit(0);
     }
 
-    midi_player = adl_init(44100);
+    if (ini_parse(iniPath, Sound_FetchConfig, &sCfg) < 0) 
+    {
+        printf("Can't load %s\n", iniPath);
+        exit(0);
+    }
+
+    sampleRate = sCfg.sampleRate ? sCfg.sampleRate : 44100;
+    channels = sCfg.channels ? sCfg.channels : 2;
+    bitDepth = sCfg.bitDepth ? sCfg.bitDepth : 16;
+
+    // your eardrums are worth somethin ya know
+    switch(bitDepth)
+    {
+        case 8:
+            sampleFormat = AUDIO_S8;
+
+            OPL_Callback = OPL_Callback8Bit;
+
+            s_audioFormat.type = ADLMIDI_SampleType_S8;
+            s_audioFormat.containerSize = sizeof(int8_t);
+            s_audioFormat.sampleOffset = sizeof(int8_t) * 2;
+        case 16:
+            sampleFormat = AUDIO_S16SYS;
+
+            OPL_Callback = OPL_Callback16Bit;
+
+            s_audioFormat.type = ADLMIDI_SampleType_S16;
+            s_audioFormat.containerSize = sizeof(int16_t);
+            s_audioFormat.sampleOffset = sizeof(int16_t) * 2;
+        case 32:
+            sampleFormat = AUDIO_S32SYS;
+
+            OPL_Callback = OPL_Callback32Bit;
+
+            s_audioFormat.type = ADLMIDI_SampleType_S32;
+            s_audioFormat.containerSize = sizeof(int32_t);
+            s_audioFormat.sampleOffset = sizeof(int32_t) * 2;
+        default:
+            sampleFormat = AUDIO_S16SYS;
+
+            OPL_Callback = OPL_Callback16Bit;
+
+            s_audioFormat.type = ADLMIDI_SampleType_S16;
+            s_audioFormat.containerSize = sizeof(int16_t);
+            s_audioFormat.sampleOffset = sizeof(int16_t) * 2;
+    }
+
+    midi_player = adl_init(sampleRate);
+
     if (!midi_player)
     {
         fprintf(stderr, "Couldn't initialize ADLMIDI: %s\n", adl_errorString());
-    }
-
-    if (Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 2048) < 0)
-    {
-        fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
     }
 
     // get emulator count from ini - default to 2 (dosbox).
@@ -86,40 +233,45 @@ void OPL_Init(void)
 
     adl_setVolumeRangeModel(midi_player, ADLMIDI_VolumeModel_AUTO);
 
-    Mix_QuerySpec(NULL, &obtained_format, NULL);
+    // Mix_QuerySpec(NULL, &obtained_format, NULL);
 
-    switch(obtained_format)
+    // switch(obtained_format)
+    // {
+    // case AUDIO_S8:
+    //     s_audioFormat.type = ADLMIDI_SampleType_S8;
+    //     s_audioFormat.containerSize = sizeof(int8_t);
+    //     s_audioFormat.sampleOffset = sizeof(int8_t) * 2;
+    //     break;
+    // case AUDIO_U8:
+    //     s_audioFormat.type = ADLMIDI_SampleType_U8;
+    //     s_audioFormat.containerSize = sizeof(uint8_t);
+    //     s_audioFormat.sampleOffset = sizeof(uint8_t) * 2;
+    //     break;
+    // case AUDIO_S16:
+    //     s_audioFormat.type = ADLMIDI_SampleType_S16;
+    //     s_audioFormat.containerSize = sizeof(int16_t);
+    //     s_audioFormat.sampleOffset = sizeof(int16_t) * 2;
+    //     break;
+    // case AUDIO_U16:
+    //     s_audioFormat.type = ADLMIDI_SampleType_U16;
+    //     s_audioFormat.containerSize = sizeof(uint16_t);
+    //     s_audioFormat.sampleOffset = sizeof(uint16_t) * 2;
+    //     break;
+    // case AUDIO_S32:
+    //     s_audioFormat.type = ADLMIDI_SampleType_S32;
+    //     s_audioFormat.containerSize = sizeof(int32_t);
+    //     s_audioFormat.sampleOffset = sizeof(int32_t) * 2;
+    //     break;
+    // case AUDIO_F32:
+    //     s_audioFormat.type = ADLMIDI_SampleType_F32;
+    //     s_audioFormat.containerSize = sizeof(float);
+    //     s_audioFormat.sampleOffset = sizeof(float) * 2;
+    //     break;
+    // }
+
+    if (Mix_OpenAudio(sampleRate, sampleFormat, channels, 2048) < 0)
     {
-    case AUDIO_S8:
-        s_audioFormat.type = ADLMIDI_SampleType_S8;
-        s_audioFormat.containerSize = sizeof(int8_t);
-        s_audioFormat.sampleOffset = sizeof(int8_t) * 2;
-        break;
-    case AUDIO_U8:
-        s_audioFormat.type = ADLMIDI_SampleType_U8;
-        s_audioFormat.containerSize = sizeof(uint8_t);
-        s_audioFormat.sampleOffset = sizeof(uint8_t) * 2;
-        break;
-    case AUDIO_S16:
-        s_audioFormat.type = ADLMIDI_SampleType_S16;
-        s_audioFormat.containerSize = sizeof(int16_t);
-        s_audioFormat.sampleOffset = sizeof(int16_t) * 2;
-        break;
-    case AUDIO_U16:
-        s_audioFormat.type = ADLMIDI_SampleType_U16;
-        s_audioFormat.containerSize = sizeof(uint16_t);
-        s_audioFormat.sampleOffset = sizeof(uint16_t) * 2;
-        break;
-    case AUDIO_S32:
-        s_audioFormat.type = ADLMIDI_SampleType_S32;
-        s_audioFormat.containerSize = sizeof(int32_t);
-        s_audioFormat.sampleOffset = sizeof(int32_t) * 2;
-        break;
-    case AUDIO_F32:
-        s_audioFormat.type = ADLMIDI_SampleType_F32;
-        s_audioFormat.containerSize = sizeof(float);
-        s_audioFormat.sampleOffset = sizeof(float) * 2;
-        break;
+        fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
     }
 
     if(useoplmusic)
@@ -134,7 +286,7 @@ void OPL_Free(void)
 
 void OPL_RegisterHook(void)
 {
-    Mix_HookMusic(OPLcallback, midi_player);
+    Mix_HookMusic(OPL_Callback, midi_player);
     isHooked = true;
 }
 
@@ -215,38 +367,4 @@ void OPL_Stop(void)
 void OPL_Pause(void)
 {
     isPlaying = false;
-}
-
-
-static void OPLcallback(void *cbFunc, Uint8 *stream, int len)
-{
-    if (!isPlaying)
-      return;
-
-    int samples_count = len / s_audioFormat.containerSize;
-
-    samples_count = adl_playFormat(cbFunc, samples_count,
-                                   stream,
-                                   stream + s_audioFormat.containerSize,
-                                   &s_audioFormat);
-
-    // assuming signed 16-bit due to that being used for Mix_OpenAudio
-    int16_t* sampleBuf = (int16_t*)stream;
-
-    for(int i = 0; i < samples_count; i++)
-    {
-        double clampVal = (double)sampleBuf[i] * volume;
-
-        clampVal = clampVal > INT16_MAX ? INT16_MAX : 
-                   clampVal < INT16_MIN ? INT16_MIN 
-                   : clampVal;
-        
-        sampleBuf[i] = (int16_t)clampVal;
-    }
-
-    if(samples_count <= 0)
-    {
-        isPlaying = false;
-        SDL_memset(stream, 0, len);
-    }
 }

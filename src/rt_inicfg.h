@@ -23,8 +23,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "rt_def.h"
 
-char iniPath[MAX_PATH];
-boolean iniStarted = false;
+extern char iniPath[MAX_PATH];
+extern boolean iniStarted;
+
+#define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
 
 typedef struct opl
 {
@@ -33,10 +35,28 @@ typedef struct opl
     int emulator;
 } oplCfg;
 
+typedef struct modeX
+{
+    unsigned int renderBackend;
+    char* scaleMode;
+} modeXCfg;
+
+typedef struct snd
+{
+    int maxVoices;
+    unsigned int sampleRate;
+    int bitDepth;
+    int channels;
+} sndCfg;
+
 boolean INI_WriteDefault(void);
 void INI_Startup(void);
 boolean INI_CheckError(void);
 int OPL_FetchConfig(void* user, const char* section, 
                             const char* name, const char* value);
+int ModeX_FetchConfig(void* user, const char* section, 
+                            const char* name, const char* value);
+int Sound_FetchConfig(void* user, const char* section, 
+                            const char* name, const char* value);                                                
 
 #endif

@@ -242,15 +242,15 @@ boolean ParseSoundFile(void)
 
 		// Read in numvoices
 
-		ReadInt("NumVoices", &NumVoices);
+		//ReadInt("NumVoices", &NumVoices);
 
 		// Read in numchannels
 
-		ReadInt("NumChannels", &NumChannels);
+		//ReadInt("NumChannels", &NumChannels);
 
 		// Read in numbits
 
-		ReadInt("NumBits", &NumBits);
+		//ReadInt("NumBits", &NumBits);
 
 		// Read in stereo reversal
 
