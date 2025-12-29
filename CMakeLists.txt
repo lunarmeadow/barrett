@@ -145,7 +145,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
-    target_compile_options(barrett PRIVATE -O3 -flto)
+    target_compile_options(barrett PRIVATE -O3)
 endif()
 
 # statically link libc on windows bc mingw is a royal pain in the ass.
