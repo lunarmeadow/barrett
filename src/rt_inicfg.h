@@ -18,27 +18,25 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef OPL_H_
-#define OPL_H_
+#ifndef INICFG_H_
+#define INICFG_H_
 
 #include "rt_def.h"
 
-void OPL_Init(void);
-void OPL_Free(void);
+char iniPath[MAX_PATH];
+boolean iniStarted = false;
 
-void OPL_RegisterHook(void);
-void OPL_DeregisterHook(void);
-void OPL_CheckForStateChange(void);
+typedef struct opl
+{
+    int oplChipNum;
+    int bankNum;
+    int emulator;
+} oplCfg;
 
-// int OPL_GetPosition(void);
-// void OPL_SetPosition(int ms);
-
-void OPL_SetVolume(double newVol);
-int OPL_IsPlaying(void);
-int OPL_IsHooked(void);
-
-boolean OPL_Play(char* buffer, int siz, int loopflag);
-void OPL_Stop(void);
-void OPL_Pause(void);
+boolean INI_WriteDefault(void);
+void INI_Startup(void);
+boolean INI_CheckError(void);
+int OPL_FetchConfig(void* user, const char* section, 
+                            const char* name, const char* value);
 
 #endif

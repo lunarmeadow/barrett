@@ -27,6 +27,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "rt_def.h"
 #include "rt_util.h"
 #include "rt_cfg.h"
+#include "rt_inicfg.h"
+
 
 static void OPLcallback(void *cbFunc, Uint8 *stream, int len);
 
@@ -42,101 +44,19 @@ static struct ADLMIDI_AudioFormat s_audioFormat;
 static Uint16                   obtained_format;
 static struct ADL_MIDIPlayer    *midi_player = NULL;
 
-static int OPL_FetchConfig(void* user, const char* section, 
-                            const char* name, const char* value)
-{
-    oplCfg* cfg = (oplCfg*)user;
-
-    #define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
-    if(MATCH("chip", "bank"))
-    {
-        cfg->bankNum = atoi(value);
-    }
-    else if(MATCH("chip", "count"))
-    {
-        cfg->oplChipNum = atoi(value);
-    }
-    else if(MATCH("chip", "emulator"))
-    {
-        cfg->emulator = atoi(value);
-    }
-    else
-    {
-        return 0;
-    }
-    return 1;
-}
-
-static boolean OPL_WriteDefault(const char* path)
-{
-    FILE *ini = fopen(path, "w");
-    
-    if(ini == NULL)
-    {
-        return false;
-    }
-
-    // open chip section
-    fputs("[chip]\n", ini);
-
-    // kvp for bank
-    fputs("; - notable banks - \n\n", ini);
-
-    fputs("; 67 = ROTT v1.3\n", ini);
-    fputs("; 70 = ROTT v1.0-1.2\n", ini);
-    fputs("; 72 = DMXOPL (default)\n\n", ini);
-    fputs("; for more: https://github.com/Wohlstand/libADLMIDI/blob/master/banks.ini\n", ini);
-
-    fputs("bank=72\n\n", ini);
-
-    // kvp for chip count
-    fputs("; how many opl chips to emulate\n", ini);
-
-    fputs("count=2\n\n", ini);
-
-    // kvp for OPL emulator
-    fputs("; opl emulator choices: \n\n", ini);
-
-    fputs("; 0 = Nuked\n", ini);
-    fputs("; 1 = Nuked v1.7.4\n", ini);
-    fputs("; 2 = DOSBox (default)\n", ini);
-    fputs("; 3 = Opal\n", ini);
-    fputs("; 4 = Java\n", ini);
-    fputs("; 5 = ESFMu\n", ini);
-    fputs("; 6 = MAME OPL2\n", ini);
-    fputs("; 7 = YMFM OPL2\n", ini);
-    fputs("; 8 = YMFM OPL3\n", ini);
-    fputs("; 9 = Nuked OPL2 LLE\n", ini);
-    fputs("; 10 = Nuked OPL3 LLE\n", ini);
-
-    fputs("emulator=2", ini);
-
-    // clean up
-    fclose(ini);
-
-    return true;
-}
 
 void OPL_Init(void)
 {
-    char oplCfgPath[512];
     oplCfg cfg;
 
-    GetPathFromEnvironment(oplCfgPath, ApogeePath, "opl.ini");
-
-    if (access(oplCfgPath, F_OK) != 0)
+    if (access(iniPath, F_OK) != 0)
     {
-        printf("opl.ini doesn't exist!\n");
-
-        if(!OPL_WriteDefault(oplCfgPath))
-            printf("opl.ini creation failed.\n");
-        else
-            printf("opl.ini creation succeeded in %s.\n", ApogeePath);
+        printf("barrett.ini doesn't exist!\n");
     }
-    
-    if (ini_parse(oplCfgPath, OPL_FetchConfig, &cfg) < 0) 
+
+    if (ini_parse(iniPath, OPL_FetchConfig, &cfg) < 0) 
     {
-        printf("Can't load 'opl.ini'\n");
+        printf("Can't load %s\n", iniPath);
         exit(0);
     }
 
