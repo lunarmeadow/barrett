@@ -170,16 +170,11 @@ void ScaleTransparentPost(byte* src, byte* buf, int level)
 	byte* oldlevel;
 	byte* seelevel;
 
-	// this was based on the maximum size of a patch, but it does appear this is specifically for a single column at a time.
-	// as columns are 64 high, this should be the last reasonable index or close to it. anything less tends to result in graphical glitches.
-	// setting it to 64 cuts off some columns on for instance, a low guards foot. collumnofs is also a short, so 128 seems like a reasonable cutoff.
-	byte* lastsrc = src + 128;
-
 	seelevel = colormap + (((level + 64) >> 2) << 8);
 	oldlevel = shadingtable;
 	offset = *(src++);
 
-	for (; offset != 255 && src < lastsrc;)
+	for (; offset != 255 ;)
 	{
 		length = *(src++);
 		topscreen = sprtopoffset + (dc_invscale * offset);
@@ -220,10 +215,8 @@ void ScaleMaskedPost(byte* src, byte* buf)
 	int topscreen;
 	int bottomscreen;
 
-	byte* lastsrc = src + 128;
-
 	offset = *(src++);
-	for (; offset != 255 && src < lastsrc;)
+	for (; offset != 255 ;)
 	{
 		length = *(src++);
 		topscreen = sprtopoffset + (dc_invscale * offset);
