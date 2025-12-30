@@ -163,7 +163,7 @@ void SetViewDelta(void)
 	// divide heightnumerator by a posts distance to get the posts height for
 	// the heightbuffer.  The pixel height is height>>HEIGHTFRACTION
 	//
-	heightnumerator = ((int)(((double)focalwidth / 10) * centerx * 4096) * 64);
+	heightnumerator = ((int)(((float)focalwidth / 10) * centerx * 4096) * 64);
 }
 
 /*
@@ -322,7 +322,7 @@ void SetViewSize(int size)
 	// scale it by ratio of focal width to default
 	// 320 seems to work better than 200, 300, and 360. can't find a better value atm.
 	// this could probably be further refined.
-	yzangleconverter = (int)((0xA000 * ((double)focalwidth / 160)) * ((double)viewheight / 200));
+	yzangleconverter = (int)((0xA000 * ((float)focalwidth / 160)) * ((float)viewheight / 200));
 
 	// Center the view horizontally
 	screenx = (iGLOBAL_SCREENWIDTH - viewwidth) >> 1;
