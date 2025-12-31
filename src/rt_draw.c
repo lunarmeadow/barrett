@@ -113,6 +113,10 @@ short tantable[FINEANGLES];
 int sintable[FINEANGLES + FINEANGLEQUAD + 1],
 	*costable = sintable + (FINEANGLES / 4);
 
+
+// precompute (i * 200) / screenHeight
+int skyScalers[MAXSCREENHEIGHT];
+
 //
 // refresh variables
 //
@@ -191,6 +195,17 @@ void InterpolateWall(visobj_t* plane);
 =
 ==================
 */
+
+// precompute (i * 200 / screenheight) to avoid expensive, constant floating point division for DrawSkyPost
+void GenerateSkyScalerTable(void)
+{
+	const int screenH = iGLOBAL_SCREENHEIGHT;
+
+	for(int i = 0; i < MAXSCREENHEIGHT; i++)
+	{
+		skyScalers[i] = (int)((200 * i) / screenH);
+	}
+}
 
 void BuildTables(void)
 {
@@ -5702,7 +5717,7 @@ void DrawSkyPost(byte* buf, byte* src, int height)
 
 	// force globals to be pre-loaded in register
 	const byte* restrict colormap = shadingtable;
-	const int screenH = iGLOBAL_SCREENHEIGHT;
+	const int* restrict scalers = skyScalers;
 	const int lineW = linewidth;
 
 	while (height--)
@@ -5710,7 +5725,7 @@ void DrawSkyPost(byte* buf, byte* src, int height)
 		*buf = colormap[*src];
 
 		buf += lineW;
-		src = orig_src + (++i * 200 / screenH);
+		src = orig_src + scalers[++i];
 	}
 }
 
