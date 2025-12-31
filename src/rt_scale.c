@@ -1198,7 +1198,7 @@ void R_DrawClippedColumn(byte* buf)
 	frac = dc_texturemid + (dc_yl - centeryclipped) * fracstep;
 
 	if(blackwpns)
-		shadingtable = blckmap + (1 << 12);
+		colormap = blckmap + (1 << 12);
 
 	while (count--)
 	{
