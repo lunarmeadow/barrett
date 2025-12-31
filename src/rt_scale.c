@@ -1100,8 +1100,8 @@ void R_DrawColumn(byte* buf)
 
 	// force compiler to preload globals in a register
 	const int screenW = iGLOBAL_SCREENWIDTH;
-	byte* colormap = shadingtable;
-	byte* texture = dc_source;
+	const byte* restrict colormap = shadingtable;
+	const byte* restrict texture = dc_source;
 
 	count = dc_yh - dc_yl + 1;
 	if (count < 0)
@@ -1128,7 +1128,7 @@ void R_TransColumn(byte* buf)
 
 	// force compiler to preload globals in a register
 	const int screenW = iGLOBAL_SCREENWIDTH;
-	byte* colormap = shadingtable;
+	const byte* restrict colormap = shadingtable;
 
 	count = dc_yh - dc_yl + 1;
 	if (count < 0)
@@ -1152,8 +1152,8 @@ void R_DrawWallColumn(byte* buf)
 
 	// force compiler to preload globals in a register
 	const int screenW = iGLOBAL_SCREENWIDTH;
-	byte* colormap = shadingtable;
-	byte* texture = dc_source;
+	const byte* restrict colormap = shadingtable;
+	const byte* restrict texture = dc_source;
 
 	count = dc_yh - dc_yl;
 	if (count < 0)
@@ -1185,8 +1185,8 @@ void R_DrawClippedColumn(byte* buf)
 
 	// force compiler to preload globals in a register
 	const int screenW = iGLOBAL_SCREENWIDTH;
-	byte* colormap = shadingtable;
-	byte* texture = dc_source;
+	const byte* restrict colormap = shadingtable;
+	const byte* restrict texture = dc_source;
 
 	count = dc_yh - dc_yl + 1;
 	if (count < 0)

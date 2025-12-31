@@ -608,7 +608,7 @@ void DrawRow(int count, byte* dest, byte* src)
 	xfrac = mr_xfrac;
 	yfrac = mr_yfrac;
 
-	byte* colormap = shadingtable;
+	const byte* restrict colormap = shadingtable;
 	const int xstep = mr_xstep;
 	const int ystep = mr_ystep;
 
