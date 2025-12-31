@@ -5703,12 +5703,13 @@ void DrawSkyPost(byte* buf, byte* src, int height)
 	// force globals to be pre-loaded in register
 	byte* colormap = shadingtable;
 	const int screenH = iGLOBAL_SCREENHEIGHT;
+	const int lineW = linewidth;
 
 	while (height--)
 	{
 		*buf = colormap[*src];
 
-		buf += linewidth;
+		buf += lineW;
 		src = orig_src + (++i * 200 / screenH);
 	}
 }
