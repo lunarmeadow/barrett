@@ -172,6 +172,9 @@ void DrawTiledRegion(int x, int y, int width, int height, int offx, int offy,
 	int HeightIndex;
 	int WidthIndex;
 
+	// don't reload register constantly
+	const int screenW = iGLOBAL_SCREENWIDTH;
+
 	start = (byte*)(bufferofs + x + ylookup[y]);
 
 	source = &tile->data;
@@ -207,7 +210,7 @@ void DrawTiledRegion(int x, int y, int width, int height, int offx, int offy,
 				*dest = sourceoff[sourcex];
 
 				// ashley added: fix asan detection (clamp dest to not overflow on X-axis)
-				if(dest + 4 < origdest + iGLOBAL_SCREENWIDTH)
+				if(dest + 4 < origdest + screenW)
 					dest += 4;
 
 				sourcex++;
@@ -216,7 +219,7 @@ void DrawTiledRegion(int x, int y, int width, int height, int offx, int offy,
 					sourcex = 0;
 				}
 			}
-			origdest += iGLOBAL_SCREENWIDTH;
+			origdest += screenW;
 
 			sourceoff += sourcewidth;
 			sourcey++;
