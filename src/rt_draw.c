@@ -5697,34 +5697,20 @@ void DrawMaskedRotRow(int count, byte* dest, byte* src)
 
 void DrawSkyPost(byte* buf, byte* src, int height)
 {
+	int i = 0;
+	byte* orig_src = src;
+
+	// force globals to be pre-loaded in register
+	byte* colormap = shadingtable;
+	const int screenH = iGLOBAL_SCREENHEIGHT;
+
+	while (height--)
 	{
-		int i = 0;
-		byte* orig_src = src;
-		// org code
-		while (height--)
-		{
-			*buf = shadingtable[*src];
+		*buf = colormap[*src];
 
-			buf += linewidth;
-			src = orig_src + (++i * 200 / iGLOBAL_SCREENHEIGHT);
-		}
-		//
+		buf += linewidth;
+		src = orig_src + (++i * 200 / screenH);
 	}
-
-	/*
-	int lw = linewidth * 2;
-	int h  = height;
-
-	while (h--) {
-		*(buf) = shadingtable[*src];
-		buf += lw;
-		*(buf) = shadingtable[*src];
-		buf += lw;
-
-		//buf += lw;
-		src++;
-
-	}*/
 }
 
 #define CEILINGCOLOR 24 // default color when no sky or floor
