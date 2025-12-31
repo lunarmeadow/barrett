@@ -35,7 +35,7 @@ static boolean isHooked = false;
 
 extern boolean useoplmusic;
 
-static double volume = 0;
+static float volume = 0;
 
 static struct ADLMIDI_AudioFormat s_audioFormat;
 
@@ -244,16 +244,16 @@ void OPL_CheckForStateChange(void)
 
 // void OPL_SetPosition(int ms)
 // {
-//     adl_positionSeek(midi_player, (double)ms / 1000);
+//     adl_positionSeek(midi_player, (float)ms / 1000);
 // }
 
 
-void OPL_SetVolume(double newVol)
+void OPL_SetVolume(float newVol)
 {
     // newvol/127 = normalize to 0.0-1.0
     // y = 10 * (newVol / 127) ^ 2
     // essentially, 0.0-10.0f scaled to square of volumescale
-    double volumescale = newVol / 127;
+    float volumescale = newVol / 127;
     volume = 10 * pow(volumescale, 2);
 }
 
@@ -315,7 +315,7 @@ static void OPLcallback(void *cbFunc, Uint8 *stream, int len)
 
     for(int i = 0; i < samples_count; i++)
     {
-        double clampVal = (double)sampleBuf[i] * volume;
+        float clampVal = (float)sampleBuf[i] * volume;
 
         clampVal = clampVal > INT16_MAX ? INT16_MAX : 
                    clampVal < INT16_MIN ? INT16_MIN 

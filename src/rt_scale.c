@@ -170,16 +170,11 @@ void ScaleTransparentPost(byte* src, byte* buf, int level)
 	byte* oldlevel;
 	byte* seelevel;
 
-	// this was based on the maximum size of a patch, but it does appear this is specifically for a single column at a time.
-	// as columns are 64 high, this should be the last reasonable index or close to it. anything less tends to result in graphical glitches.
-	// setting it to 64 cuts off some columns on for instance, a low guards foot. collumnofs is also a short, so 128 seems like a reasonable cutoff.
-	byte* lastsrc = src + 128;
-
 	seelevel = colormap + (((level + 64) >> 2) << 8);
 	oldlevel = shadingtable;
 	offset = *(src++);
 
-	for (; offset != 255 && src < lastsrc;)
+	for (; offset != 255 ;)
 	{
 		length = *(src++);
 		topscreen = sprtopoffset + (dc_invscale * offset);
@@ -220,10 +215,8 @@ void ScaleMaskedPost(byte* src, byte* buf)
 	int topscreen;
 	int bottomscreen;
 
-	byte* lastsrc = src + 128;
-
 	offset = *(src++);
-	for (; offset != 255 && src < lastsrc;)
+	for (; offset != 255 ;)
 	{
 		length = *(src++);
 		topscreen = sprtopoffset + (dc_invscale * offset);
@@ -1105,6 +1098,11 @@ void R_DrawColumn(byte* buf)
 	int frac, fracstep;
 	byte* dest;
 
+	// force compiler to preload globals in a register
+	const int screenW = iGLOBAL_SCREENWIDTH;
+	const byte* restrict colormap = shadingtable;
+	const byte* restrict texture = dc_source;
+
 	count = dc_yh - dc_yl + 1;
 	if (count < 0)
 		return;
@@ -1117,8 +1115,8 @@ void R_DrawColumn(byte* buf)
 	while (count--)
 	{
 		//*dest = test++;
-		*dest = shadingtable[dc_source[(frac >> SFRACBITS)]];
-		dest += iGLOBAL_SCREENWIDTH;
+		*dest = colormap[texture[(frac >> SFRACBITS)]];
+		dest += screenW;
 		frac += fracstep;
 	}
 }
@@ -1128,6 +1126,10 @@ void R_TransColumn(byte* buf)
 	int count;
 	byte* dest;
 
+	// force compiler to preload globals in a register
+	const int screenW = iGLOBAL_SCREENWIDTH;
+	const byte* restrict colormap = shadingtable;
+
 	count = dc_yh - dc_yl + 1;
 	if (count < 0)
 		return;
@@ -1136,8 +1138,8 @@ void R_TransColumn(byte* buf)
 
 	while (count--)
 	{
-		*dest = shadingtable[*dest];
-		dest += iGLOBAL_SCREENWIDTH;
+		*dest = colormap[*dest];
+		dest += screenW;
 	}
 }
 
@@ -1147,6 +1149,11 @@ void R_DrawWallColumn(byte* buf)
 	int count;
 	int frac, fracstep;
 	byte* dest;
+
+	// force compiler to preload globals in a register
+	const int screenW = iGLOBAL_SCREENWIDTH;
+	const byte* restrict colormap = shadingtable;
+	const byte* restrict texture = dc_source;
 
 	count = dc_yh - dc_yl;
 	if (count < 0)
@@ -1162,8 +1169,8 @@ void R_DrawWallColumn(byte* buf)
 	while (count--)
 	{
 		//*dest = 6;
-		*dest = shadingtable[dc_source[(((unsigned)frac) >> 26)]];
-		dest += iGLOBAL_SCREENWIDTH;
+		*dest = colormap[texture[(((unsigned)frac) >> 26)]];
+		dest += screenW;
 		frac += fracstep;
 	}
 }
@@ -1175,6 +1182,11 @@ void R_DrawClippedColumn(byte* buf)
 	int frac, fracstep;
 	byte* dest;
 	//		byte *b;int y;
+
+	// force compiler to preload globals in a register
+	const int screenW = iGLOBAL_SCREENWIDTH;
+	const byte* restrict colormap = shadingtable;
+	const byte* restrict texture = dc_source;
 
 	count = dc_yh - dc_yl + 1;
 	if (count < 0)
@@ -1190,8 +1202,8 @@ void R_DrawClippedColumn(byte* buf)
 
 	while (count--)
 	{
-		*dest = shadingtable[dc_source[(((unsigned)frac) >> SFRACBITS)]];
-		dest += iGLOBAL_SCREENWIDTH;
+		*dest = colormap[texture[(((unsigned)frac) >> SFRACBITS)]];
+		dest += screenW;
 		frac += fracstep;
 	}
 }
@@ -1205,11 +1217,14 @@ void R_DrawSolidColumn(int color, byte* buf)
 	if (count < 0)
 		return;
 
+	// force compiler to preload globals in a register
+	const int screenW = iGLOBAL_SCREENWIDTH;
+
 	dest = buf + ylookup[dc_yl];
 
 	while (count--)
 	{
 		*dest = (byte)color;
-		dest += iGLOBAL_SCREENWIDTH;
+		dest += screenW;
 	}
 }

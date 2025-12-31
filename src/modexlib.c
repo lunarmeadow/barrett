@@ -29,6 +29,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <sys/stat.h>
 #include "modexlib.h"
+#include "isr.h"
+#include "rt_draw.h"
 #include "rt_util.h"
 #include "rt_net.h" // for GamePaused
 #include "rt_view.h"
@@ -184,9 +186,17 @@ void SetTextMode(void)
 =
 ====================
 */
+
+// duplicate in-game frame sync method
 void WaitVBL(void)
 {
-	SDL_Delay(16667 / 1000);
+	int tc, oldtime;
+
+	tc = oldtime = GetTicCount();
+	while (tc == oldtime)
+	{
+		tc = GetTicCount();
+	}
 }
 
 /*

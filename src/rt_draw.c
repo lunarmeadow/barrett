@@ -113,6 +113,10 @@ short tantable[FINEANGLES];
 int sintable[FINEANGLES + FINEANGLEQUAD + 1],
 	*costable = sintable + (FINEANGLES / 4);
 
+
+// precompute (i * 200) / screenHeight
+int skyScalers[MAXSCREENHEIGHT];
+
 //
 // refresh variables
 //
@@ -191,6 +195,17 @@ void InterpolateWall(visobj_t* plane);
 =
 ==================
 */
+
+// precompute (i * 200 / screenheight) to avoid expensive, constant floating point division for DrawSkyPost
+void GenerateSkyScalerTable(void)
+{
+	const int screenH = iGLOBAL_SCREENHEIGHT;
+
+	for(int i = 0; i < MAXSCREENHEIGHT; i++)
+	{
+		skyScalers[i] = (int)((200 * i) / screenH);
+	}
+}
 
 void BuildTables(void)
 {
@@ -5697,34 +5712,21 @@ void DrawMaskedRotRow(int count, byte* dest, byte* src)
 
 void DrawSkyPost(byte* buf, byte* src, int height)
 {
+	int i = 0;
+	byte* orig_src = src;
+
+	// force globals to be pre-loaded in register
+	const byte* restrict colormap = shadingtable;
+	const int* restrict scalers = skyScalers;
+	const int lineW = linewidth;
+
+	while (height--)
 	{
-		int i = 0;
-		byte* orig_src = src;
-		// org code
-		while (height--)
-		{
-			*buf = shadingtable[*src];
+		*buf = colormap[*src];
 
-			buf += linewidth;
-			src = orig_src + (++i * 200 / iGLOBAL_SCREENHEIGHT);
-		}
-		//
+		buf += lineW;
+		src = orig_src + scalers[++i];
 	}
-
-	/*
-	int lw = linewidth * 2;
-	int h  = height;
-
-	while (h--) {
-		*(buf) = shadingtable[*src];
-		buf += lw;
-		*(buf) = shadingtable[*src];
-		buf += lw;
-
-		//buf += lw;
-		src++;
-
-	}*/
 }
 
 #define CEILINGCOLOR 24 // default color when no sky or floor

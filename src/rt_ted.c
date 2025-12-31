@@ -1058,7 +1058,7 @@ void PreCache(void)
 	int ticdelay;
 	byte* tempbuf;
 
-	double Gs;
+	float Gs;
 	Gs = (iGLOBAL_SCREENWIDTH * 100 / 320);
 	Gs = Gs / 100;
 
@@ -1091,25 +1091,25 @@ void PreCache(void)
 
 	SortPreCache();
 
-	double ratioNewToOldWidth = ((double)iGLOBAL_SCREENWIDTH) / 320.0;
+	float ratioNewToOldWidth = ((float)iGLOBAL_SCREENWIDTH) / 320.0;
 
-	double ratioNewToOldHeight = ((double)iGLOBAL_SCREENHEIGHT) / 200.0;
+	float ratioNewToOldHeight = ((float)iGLOBAL_SCREENHEIGHT) / 200.0;
 
-	double newPrecacheBarX = ratioNewToOldWidth * 28.0; // PRECACHEBARX = 28
+	float newPrecacheBarX = ratioNewToOldWidth * 28.0; // PRECACHEBARX = 28
 
-	double newPrecacheBarY = ratioNewToOldHeight * 178.0; // PRECACHEBARY = 178
+	float newPrecacheBarY = ratioNewToOldHeight * 178.0; // PRECACHEBARY = 178
 
-	double newPrecacheBar1LedX =
-		ratioNewToOldWidth * (double)9.0; // PRECACHEBAR1LEDX = 9
+	float newPrecacheBar1LedX =
+		ratioNewToOldWidth * (float)9.0; // PRECACHEBAR1LEDX = 9
 
-	double newPrecacheBar1LedY =
-		ratioNewToOldHeight * (double)8.0; // PRECACHEBAR1LEDY = 8
+	float newPrecacheBar1LedY =
+		ratioNewToOldHeight * (float)8.0; // PRECACHEBAR1LEDY = 8
 
-	double newPrecacheBar2LedX =
+	float newPrecacheBar2LedX =
 		newPrecacheBar1LedX; // PRECACHEBAR2LEDX = PRECACHEBAR1LEDX
 
-	double newPrecacheBar2LedY =
-		ratioNewToOldHeight * (double)12.0; // PRECACHEBAR2LEDY = 12
+	float newPrecacheBar2LedY =
+		ratioNewToOldHeight * (float)12.0; // PRECACHEBAR2LEDY = 12
 
 	if (loadedgame == false)
 	{
@@ -1210,7 +1210,7 @@ void PreCache(void)
 		{
 			int width, height;
 			char buf[30]; // byte * shape;
-			double WHratio = 16200 / 200;
+			float WHratio = 16200 / 200;
 			WHratio = WHratio / 100;
 			///	iGLOBAL_SCREENWIDTH = 640;
 			//	iGLOBAL_SCREENHEIGHT = 480;

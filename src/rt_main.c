@@ -258,6 +258,8 @@ int main(int argc, char* argv[])
 
 	SetRottScreenRes(iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT);
 
+	GenerateSkyScalerTable();
+
 	//   if (modemgame==true)
 	//      {
 	//      SCREENSHOTS=true;

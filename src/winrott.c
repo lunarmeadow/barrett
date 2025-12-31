@@ -17,7 +17,7 @@ int iGLOBAL_AMMO_X;
 int iGLOBAL_AMMO_Y;
 
 int iGLOBAL_FOCALWIDTH;
-double dGLOBAL_FPFOCALWIDTH;
+float fGLOBAL_FPFOCALWIDTH;
 
 int iG_X_center;
 int iG_Y_center;
@@ -35,7 +35,7 @@ extern int FocalWidthOffset;
 void RecalculateFocalWidth(void)
 {
 	iGLOBAL_FOCALWIDTH = 160 - FocalWidthOffset;
-	dGLOBAL_FPFOCALWIDTH = (double)FocalWidthOffset;
+	fGLOBAL_FPFOCALWIDTH = (float)FocalWidthOffset;
 }
 
 void SetRottScreenRes(int Width, int Height)
@@ -45,7 +45,7 @@ void SetRottScreenRes(int Width, int Height)
 	iGLOBAL_SCREENHEIGHT = Height;
 
 	iGLOBAL_FOCALWIDTH = 160 - FocalWidthOffset;
-	dGLOBAL_FPFOCALWIDTH = (double)iGLOBAL_FOCALWIDTH;
+	fGLOBAL_FPFOCALWIDTH = (float)iGLOBAL_FOCALWIDTH;
 
 	int middleWidth = Width / 2;
 

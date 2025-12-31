@@ -40,7 +40,7 @@ void OPL_CheckForStateChange(void);
 // int OPL_GetPosition(void);
 // void OPL_SetPosition(int ms);
 
-void OPL_SetVolume(double newVol);
+void OPL_SetVolume(float newVol);
 int OPL_IsPlaying(void);
 int OPL_IsHooked(void);
 

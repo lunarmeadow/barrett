@@ -100,6 +100,7 @@ extern int firstcoloffset;
 
 //=========================== functions =============================
 
+void GenerateSkyScalerTable(void);
 void BuildTables(void);
 void CalcTics(void);
 void ThreeDRefresh(void);
