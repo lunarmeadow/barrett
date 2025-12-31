@@ -1185,7 +1185,7 @@ void R_DrawClippedColumn(byte* buf)
 
 	// force compiler to preload globals in a register
 	const int screenW = iGLOBAL_SCREENWIDTH;
-	const byte* restrict colormap = shadingtable;
+	byte* restrict colormap = shadingtable;
 	const byte* restrict texture = dc_source;
 
 	count = dc_yh - dc_yl + 1;
