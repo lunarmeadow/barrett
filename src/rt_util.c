@@ -1351,57 +1351,57 @@ int SideOfLine(int x1, int y1, int x2, int y2, int x3, int y3)
 //
 //******************************************************************************
 
-typedef int (*PFI)();  /* pointer to a function returning int  */
-typedef void (*PFV)(); /* pointer to a function returning int  */
-static PFI Comp;	   /* pointer to comparison routine                */
-static PFV Switch;	   /* pointer to comparison routine                */
-static int Width;	   /* width of an object in bytes                  */
-static char* Base;	   /* pointer to element [-1] of array             */
+typedef int (*PFI)(void *, void*); /* pointer to a function returning int  */
+typedef void (*PFV)(void *, void*); /* pointer to a function returning int  */
+static PFI Comp;                        /* pointer to comparison routine                */
+static PFV Switch;                        /* pointer to comparison routine                */
+static int Width;                       /* width of an object in bytes                  */
+static char *Base;                      /* pointer to element [-1] of array             */
 
-static void newsift_down(L, U) int L, U;
-{
+static void newsift_down(int L, int U)
+{  
 	int c;
 
-	while (1)
+   	while(1)
 	{
-		c = L + L;
-		if (c > U)
-			break;
-		if ((c + Width <= U) && ((*Comp)(Base + c + Width, Base + c) > 0))
-			c += Width;
-		if ((*Comp)(Base + L, Base + c) >= 0)
-			break;
-		(*Switch)(Base + L, Base + c);
-		L = c;
+		c=L+L;
+		if(c>U) break;
+		if( (c+Width <= U) && ((*Comp)(Base+c+Width,Base+c)>0) ) c+= Width;
+		if ((*Comp)(Base+L,Base+c)>=0) break;
+		(*Switch)(Base+L, Base+c);
+		L=c;
 	}
 }
 
-void hsort(char* base, int nel, int width, int (*compare)(), void (*switcher)())
+void hsort(char * base, int nel, int width, int (*compare)(void *, void*), void (*switcher)(void *, void*))
 {
-	static int i, n, stop;
-	/*      Perform a heap sort on an array starting at base.  The array is
-			nel elements large and width is the size of a single element in
-			bytes.  Compare is a pointer to a comparison routine which will
-			be passed pointers to two elements of the array.  It should
-			return a negative number if the left-most argument is less than
-			the rightmost, 0 if the two arguments are equal, a positive
-			number if the left argument is greater than the right.  (That
-			is, it acts like a "subtract" operator.) If compare is 0 then
-			the default comparison routine, argvcmp (which sorts an
-			argv-like array of pointers to strings), is used. */
+	static int i,n,stop;
+	/*  
+		Perform a heap sort on an array starting at base.  The array is
+		nel elements large and width is the size of a single element in
+		bytes.  Compare is a pointer to a comparison routine which will
+		be passed pointers to two elements of the array.  It should
+		return a negative number if the left-most argument is less than
+		the rightmost, 0 if the two arguments are equal, a positive
+		number if the left argument is greater than the right.  (That
+		is, it acts like a "subtract" operator.) If compare is 0 then
+		the default comparison routine, argvcmp (which sorts an
+		argv-like array of pointers to strings), is used.                                       
+	*/
 
-	Width = width;
-	Comp = compare;
-	Switch = switcher;
-	n = nel * Width;
-	Base = base - Width;
-	for (i = (n / Width / 2) * Width; i >= Width; i -= Width)
-		newsift_down(i, n);
-	stop = Width + Width;
-	for (i = n; i >= stop;)
+	Width=width;
+	Comp= compare;
+	Switch= switcher;
+	n=nel*Width;
+	Base=base-Width;
+
+	for (i=(n/Width/2)*Width; i>=Width; i-=Width) newsift_down(i,n);
+		stop=Width+Width;
+
+	for (i=n; i>=stop;)
 	{
-		(*Switch)(base, Base + i);
-		newsift_down(Width, i -= Width);
+		(*Switch)(base, Base+i);
+		newsift_down(Width,i-=Width);
 	}
 }
 

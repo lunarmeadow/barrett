@@ -42,12 +42,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define SF_FAKING	0x80
 #define SF_DEAD		0x80
 
+typedef struct objstruct objtype;
+
 typedef struct statestruct
 {
 	byte rotate;
 	short shapenum; // a shapenum of -1 means get from ob->temp1
 	short tictime;
-	void (*think)();
+	void (*think)(objtype *);
 	signed char condition;
 	struct statestruct* next;
 } statetype;
