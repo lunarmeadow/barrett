@@ -1095,7 +1095,7 @@ void R_DrawColumn(byte* buf)
 {
 	// This is *NOT* 100% correct - DDOI
 	int count;
-	int frac, fracstep;
+	uint32_t frac, fracstep;
 	byte* dest;
 
 	// force compiler to preload globals in a register
@@ -1147,7 +1147,7 @@ void R_DrawWallColumn(byte* buf)
 {
 	// This is *NOT* 100% correct - DDOI
 	int count;
-	int frac, fracstep;
+	uint32_t frac, fracstep;
 	byte* dest;
 
 	// force compiler to preload globals in a register
@@ -1169,7 +1169,7 @@ void R_DrawWallColumn(byte* buf)
 	while (count--)
 	{
 		//*dest = 6;
-		*dest = colormap[texture[(((unsigned)frac) >> 26)]];
+		*dest = colormap[texture[(frac >> 26)]];
 		dest += screenW;
 		frac += fracstep;
 	}
@@ -1179,7 +1179,7 @@ void R_DrawClippedColumn(byte* buf)
 {
 	// This is *NOT* 100% correct - DDOI zxcv
 	int count;
-	int frac, fracstep;
+	uint32_t frac, fracstep;
 	byte* dest;
 	//		byte *b;int y;
 
@@ -1202,7 +1202,7 @@ void R_DrawClippedColumn(byte* buf)
 
 	while (count--)
 	{
-		*dest = colormap[texture[(((unsigned)frac) >> SFRACBITS)]];
+		*dest = colormap[texture[(frac >> SFRACBITS)]];
 		dest += screenW;
 		frac += fracstep;
 	}

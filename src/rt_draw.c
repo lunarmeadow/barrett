@@ -5686,6 +5686,9 @@ void DrawMaskedRotRow(int count, byte* dest, byte* src)
 	unsigned eax;
 	unsigned xfrac, yfrac;
 
+	const int xstep = mr_xstep;
+	const int ystep = mr_ystep;
+
 	xfrac = mr_xfrac;
 	yfrac = mr_yfrac;
 
@@ -5705,8 +5708,8 @@ void DrawMaskedRotRow(int count, byte* dest, byte* src)
 			*dest = src[eax];
 		dest++;
 
-		xfrac += mr_xstep;
-		yfrac += mr_ystep;
+		xfrac += xstep;
+		yfrac += ystep;
 	}
 }
 
