@@ -109,6 +109,6 @@ typedef struct
 } song_t;
 
 int SD_PlayIt(int sndnum, int angle, int distance, int pitch);
-boolean SD_SoundOkay(int sndnum);
+bool SD_SoundOkay(int sndnum);
 
 #endif

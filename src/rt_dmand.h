@@ -71,7 +71,7 @@ recordstate SD_GetSoundData(byte* data, word length);
 //
 //***************************************************************************
 
-boolean SD_SoundDataReady(void);
+bool SD_SoundDataReady(void);
 
 //***************************************************************************
 //
@@ -95,7 +95,7 @@ void SD_ClearRecordingActive(void);
 //
 //***************************************************************************
 
-boolean SD_RecordingActive(void);
+bool SD_RecordingActive(void);
 
 //***************************************************************************
 //
@@ -103,7 +103,7 @@ boolean SD_RecordingActive(void);
 //
 //***************************************************************************
 
-boolean SD_StartRecordingSound(void);
+bool SD_StartRecordingSound(void);
 
 //***************************************************************************
 //

@@ -27,10 +27,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //***************************************************************************
 #include "cin_glob.h"
 
-void GrabMovieScript(char const* basename, boolean uselumpy);
-void PlayMovie(char* name, boolean uselumpy);
+void GrabMovieScript(char const* basename, bool uselumpy);
+void PlayMovie(char* name, bool uselumpy);
 void GetCinematicTics(void);
 
-extern boolean cinematicdone;
+extern bool cinematicdone;
 
 #endif

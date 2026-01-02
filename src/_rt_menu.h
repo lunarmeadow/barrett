@@ -249,7 +249,7 @@ void DrawPlayerMenu(void);
 
 void DoMainMenu(void);
 
-boolean CP_DisplayMsg(char* s, int number);
+bool CP_DisplayMsg(char* s, int number);
 void CP_EndGame(void);
 int CP_SaveGame(void);
 void CP_Control(void);
@@ -280,7 +280,7 @@ void DefineJoyBtns2(void);
 void DefineSpecialBtns1(void);
 void DefineSpecialBtns2(void);
 
-void DrawSTMenuBuf(int x, int y, int w, int h, boolean up);
+void DrawSTMenuBuf(int x, int y, int w, int h, bool up);
 
 void MusicVolume(void);
 void FXVolume(void);
@@ -306,7 +306,7 @@ void MCERROR(void);
 
 void DrawKeyboardMenu(void);
 void CP_KeyboardMenu(void);
-boolean SliderMenu(int* number, int upperbound, int lowerbound, int erasex,
+bool SliderMenu(int* number, int upperbound, int lowerbound, int erasex,
 				   int erasey, int erasew, int numadjust, char* blockname,
 				   void (*routine)(int w), char* title, char* left,
 				   char* right);
@@ -350,7 +350,7 @@ void DrawDangerMenu(void);
 void CP_DangerOptions(void);
 void DrawTimeLimitMenu(void);
 void CP_TimeLimitOptions(void);
-void PrintBattleOption(boolean inmenu, int x, int y, char* text);
+void PrintBattleOption(bool inmenu, int x, int y, char* text);
 
 void CP_OnePlayerWarningMessage(void);
 

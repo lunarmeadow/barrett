@@ -55,12 +55,12 @@ message_t Messages[MAXMSGS];
 static int UpdateMessageBackground;
 static int MessageSystemStarted = 0;
 static int LastMessageTime;
-static boolean EraseMessage[MAXMSGS];
+static bool EraseMessage[MAXMSGS];
 static int MessageOrder[MAXMSGS];
 static int TotalMessages = 0;
 static int MsgPos = 0;
 
-boolean MessagesEnabled = true;
+bool MessagesEnabled = true;
 
 int StringLength(char* string)
 {
@@ -101,7 +101,7 @@ void InitializeMessages(void)
 
 {
 	int i;
-	boolean start;
+	bool start;
 
 	start = false;
 
@@ -153,7 +153,7 @@ void GetMessageOrder(void)
 	int lowest;
 	int lowesttime;
 	byte done[MAXMSGS];
-	boolean found;
+	bool found;
 
 	memset(&done[0], 0, sizeof(done));
 	memset(MessageOrder, -1, sizeof(MessageOrder));
@@ -197,7 +197,7 @@ void DeleteMessage(int num)
 {
 	int i;
 	int msg;
-	boolean found;
+	bool found;
 
 	found = false;
 	for (i = 0; i < TotalMessages; i++)
@@ -303,7 +303,7 @@ void SetMessage(int num, char* text, int flags)
 	int i;
 	int msg;
 	int length;
-	boolean found;
+	bool found;
 
 	if (iGLOBAL_SCREENWIDTH >= 640)
 	{
@@ -718,7 +718,7 @@ void DrawPlayerSelectionMenu(void)
 =
 ====================
 */
-void FinishModemMessage(int num, boolean send)
+void FinishModemMessage(int num, bool send)
 {
 	if ((!MSG.inmenu) && (MSG.length > 0))
 	{

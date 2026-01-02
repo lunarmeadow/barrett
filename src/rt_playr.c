@@ -120,9 +120,9 @@ playertype PLAYERSTATE[MAXPLAYERS], *locplayerstate;
 
 gametype gamestate;
 
-boolean godmode = false;
+bool godmode = false;
 
-boolean missilecam = false;
+bool missilecam = false;
 objtype* missobj = NULL;
 // Player control variables
 
@@ -143,9 +143,9 @@ int lastmom = 0;
 int first = 1;
 
 int pausedstartedticcount;
-boolean RefreshPause = true;
+bool RefreshPause = true;
 
-boolean buttonpoll[NUMBUTTONS];
+bool buttonpoll[NUMBUTTONS];
 
 int buttonscan[NUMBUTTONS] = {
 	sc_Space, sc_Alt,		   sc_RShift,	 sc_E,	   sc_I,
@@ -318,7 +318,7 @@ weaponinfo WEAPONS[MAXWEAPONS] =
 
 void CheckPlayerSpecials(objtype* ob);
 void CheckWeaponStates(objtype* ob);
-boolean CheckSprite(statobj_t*, int*);
+bool CheckSprite(statobj_t*, int*);
 void T_Tag(objtype* ob);
 void T_Player(objtype* ob);
 void T_BatBlast(objtype* ob);
@@ -1074,7 +1074,7 @@ void PlayerMissileAttack(objtype* ob)
 
 //====================================================================
 
-boolean InRange(objtype* p, objtype* victim, int distance)
+bool InRange(objtype* p, objtype* victim, int distance)
 {
 	int dx, dy;
 	int angle;
@@ -1891,7 +1891,7 @@ void PollKeyboardButtons(void)
 // PollMouseButtons
 //
 //******************************************************************************
-extern boolean usemouselook;
+extern bool usemouselook;
 void PollMouseButtons(void)
 {
 	int i;
@@ -2169,7 +2169,7 @@ void PollKeyboardMove(void)
 int mousex_tofracangle = -SFRACUNIT;
 
 extern int inverse_mouse;
-extern boolean allowMovementWithMouseYAxis;
+extern bool allowMovementWithMouseYAxis;
 
 void PollMouseMove(void)
 {
@@ -2254,8 +2254,8 @@ void PollJoystickMove(void)
 //
 //******************************************************************************
 
-boolean aimbuttonpressed = false;
-extern boolean allowMovementWithMouseYAxis;
+bool aimbuttonpressed = false;
+extern bool allowMovementWithMouseYAxis;
 
 void PollMove(void)
 {
@@ -2569,7 +2569,7 @@ void SaveWeapons(objtype*ob)
 		gamestate.supercount++;                                                \
 	}
 
-boolean GivePowerup(objtype* ob, int flag, int time, int sound)
+bool GivePowerup(objtype* ob, int flag, int time, int sound)
 {
 	playertype* pstate;
 
@@ -2611,7 +2611,7 @@ void GiveLifePoints(objtype* ob, int points)
 		DrawTriads(false);
 }
 
-boolean GiveBulletWeapon(objtype* ob, int bulletweapon, statobj_t* check)
+bool GiveBulletWeapon(objtype* ob, int bulletweapon, statobj_t* check)
 {
 	playertype* pstate;
 
@@ -2635,7 +2635,7 @@ boolean GiveBulletWeapon(objtype* ob, int bulletweapon, statobj_t* check)
 	return true;
 }
 
-boolean DetermineAmmoPickup(playertype* pstate, statobj_t* check)
+bool DetermineAmmoPickup(playertype* pstate, statobj_t* check)
 {
 	if ((GetWeaponForItem(check->itemnumber) == pstate->missileweapon) &&
 		(pstate->ammo < stats[check->itemnumber].ammo))
@@ -2648,7 +2648,7 @@ boolean DetermineAmmoPickup(playertype* pstate, statobj_t* check)
 	}
 }
 
-boolean GivePlayerMissileWeapon(objtype* ob, playertype* pstate,
+bool GivePlayerMissileWeapon(objtype* ob, playertype* pstate,
 								statobj_t* check)
 {
 	if ((ob->flags & FL_DOGMODE) || (ob->flags & FL_GODMODE))
@@ -2803,7 +2803,7 @@ void GetBonus(objtype* ob, statobj_t* check)
 {
 	int heal;
 	playertype* pstate;
-	boolean randompowerup;
+	bool randompowerup;
 
 	M_LINKSTATE(ob, pstate);
 
@@ -3666,7 +3666,7 @@ void SetNormalHorizon(objtype* ob)
 */
 extern int iG_playerTilt;
 
-boolean IsPlayerFalling(objtype* ob)
+bool IsPlayerFalling(objtype* ob)
 {
 	if (!(ob->flags & FL_DOGMODE) && !(ob->flags & FL_GODMODE) &&
 		!(ob->flags & FL_FLEET) && !(ob->flags & FL_RIDING) &&
@@ -3675,7 +3675,7 @@ boolean IsPlayerFalling(objtype* ob)
 	else
 	 	return false;
 }
-boolean HasPlayerJustLanded(objtype* ob)
+bool HasPlayerJustLanded(objtype* ob)
 {
 	playertype* pstate;
 	M_LINKSTATE(ob, pstate);
@@ -4641,7 +4641,7 @@ void CheckWeaponStates(objtype* ob)
 
 static int dyingvolume = 255;
 
-extern boolean disablelowhpsnd;
+extern bool disablelowhpsnd;
 
 void CheckSpecialSounds(objtype* ob, playertype* pstate)
 {

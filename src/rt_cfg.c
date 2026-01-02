@@ -61,10 +61,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 //******************************************************************************
 
-extern boolean iG_aimCross;
+extern bool iG_aimCross;
 extern int hudRescaleFactor;
 
-boolean WriteSoundFile = true;
+bool WriteSoundFile = true;
 
 int FXMode = 0;
 int MusicMode = 0;
@@ -72,42 +72,42 @@ int MusicMode = 0;
 int MUvolume = 196;
 int FXvolume = 196;
 
-boolean mouseenabled = 1;
-boolean usemouselook = 0;
-boolean useoplmusic = 0;
-boolean blackwpns = 0;
-boolean doombobbing = 0;
-boolean disablelowhpsnd = 1;
+bool mouseenabled = 1;
+bool usemouselook = 0;
+bool useoplmusic = 0;
+bool blackwpns = 0;
+bool doombobbing = 0;
+bool disablelowhpsnd = 1;
 int inverse_mouse = 1; // set  to -1 to invert mouse
-boolean sdl_fullscreen = 1;
-boolean borderWindow = 0;
-boolean borderlessWindow = 0;
-boolean autoAimMissileWeps = 0;
-boolean autoAim = 1;
-boolean allowMovementWithMouseYAxis = 1;
+bool sdl_fullscreen = 1;
+bool borderWindow = 0;
+bool borderlessWindow = 0;
+bool autoAimMissileWeps = 0;
+bool autoAim = 1;
+bool allowMovementWithMouseYAxis = 1;
 int FocalWidthOffset = 0;
 int ScreenHeightToWriteToCfg = 0;
 int HudScaleToWriteToCfg = 0;
 int ScreenWidthToWriteToCfg = 0;
-boolean writeNewResIntoCfg = false;
+bool writeNewResIntoCfg = false;
 
-boolean joystickenabled = 0;
-boolean joypadenabled = 0;
+bool joystickenabled = 0;
+bool joypadenabled = 0;
 int joystickport = 0;
 int mouseadjustment = 5;
 int threshold = 1;
 int NumVoices = 4;
 int NumChannels = 1;
 int NumBits = 8;
-boolean AutoDetailOn = true;
+bool AutoDetailOn = true;
 int DoubleClickSpeed = 20;
-boolean BobbinOn = true;
+bool BobbinOn = true;
 int Menuflipspeed = 15;
 int DetailLevel = 2; // HI DETAIL
 int fandc = 1;
 int blanktime = (2 * 60 * VBLCOUNTER);
-boolean ConfigLoaded = false;
-boolean stereoreversed = false;
+bool ConfigLoaded = false;
+bool stereoreversed = false;
 
 int DefaultDifficulty = 2;
 int DefaultPlayerCharacter = 0;
@@ -181,17 +181,17 @@ void ReadInt(const char* s1, int* val)
 
 //******************************************************************************
 //
-// ReadBoolean
+// Readbool
 //
 //******************************************************************************
 
-void ReadBoolean(const char* s1, boolean* val)
+void Readbool(const char* s1, bool* val)
 {
 	int temp;
 
 	temp = (int)(*val);
 	ReadInt(s1, &temp);
-	*val = (boolean)temp;
+	*val = (bool)temp;
 }
 
 //******************************************************************************
@@ -215,9 +215,9 @@ void ReadUnsigned(const char* s1, unsigned long* val)
 //
 //******************************************************************************
 
-boolean ParseSoundFile(void)
+bool ParseSoundFile(void)
 {
-	boolean retval = true;
+	bool retval = true;
 	int version = 0;
 
 	ReadInt("Version", &version);
@@ -254,7 +254,7 @@ boolean ParseSoundFile(void)
 
 		// Read in stereo reversal
 
-		ReadBoolean("StereoReverse", &stereoreversed);
+		Readbool("StereoReverse", &stereoreversed);
 	}
 	else
 		retval = false;
@@ -397,10 +397,10 @@ void ConvertPasswordToPasswordString(void)
 //
 //******************************************************************************
 
-boolean ParseConfigFile(void)
+bool ParseConfigFile(void)
 {
 	//   int temp;
-	boolean retval = true;
+	bool retval = true;
 	int version = 0;
 
 	ReadInt("Version", &version);
@@ -408,46 +408,46 @@ boolean ParseConfigFile(void)
 	if (version == ROTTVERSION)
 	{
 		// Read in AutoAim
-		ReadBoolean("AutoAim", &autoAim);
+		Readbool("AutoAim", &autoAim);
 
 		// Read in AutoAimMissileWeps
-		ReadBoolean("AutoAimMissileWeps", &autoAimMissileWeps);
+		Readbool("AutoAimMissileWeps", &autoAimMissileWeps);
 
 		// Read in scaleOffset
 		ReadInt("FocalWidthOffset", &FocalWidthOffset);
 
 		// Read in MouseEnabled
-		ReadBoolean("MouseEnabled", &mouseenabled);
+		Readbool("MouseEnabled", &mouseenabled);
 
 		// Read in UseMouseLook
-		ReadBoolean("UseMouseLook", &usemouselook);
+		Readbool("UseMouseLook", &usemouselook);
 
 		// Read in UseOPLMusic
-		ReadBoolean("UseOPLMusic", &useoplmusic);
+		Readbool("UseOPLMusic", &useoplmusic);
 
 		ReadInt("InverseMouse", &inverse_mouse);
 
-		ReadBoolean("AllowMovementWithMouseYAxis",
+		Readbool("AllowMovementWithMouseYAxis",
 					&allowMovementWithMouseYAxis);
 
 		// Read in CrossHair
-		ReadBoolean("CrossHair", &iG_aimCross);
+		Readbool("CrossHair", &iG_aimCross);
 
 		// Read in JoystickEnabled
-		ReadBoolean("JoystickEnabled", &joystickenabled);
+		Readbool("JoystickEnabled", &joystickenabled);
 
 		// Read in JoypadEnabled
-		ReadBoolean("JoypadEnabled", &joypadenabled);
+		Readbool("JoypadEnabled", &joypadenabled);
 
 		// Read in JoystickPort
 		ReadInt("JoystickPort", &joystickport);
 
 		// Read in fullscreen
-		ReadBoolean("FullScreen", &sdl_fullscreen);
+		Readbool("FullScreen", &sdl_fullscreen);
 
-		ReadBoolean("BorderWindow", &borderWindow);
+		Readbool("BorderWindow", &borderWindow);
 
-		ReadBoolean("BorderlessWindow", &borderlessWindow);
+		Readbool("BorderlessWindow", &borderlessWindow);
 
 		// Read in resolution
 		ReadInt("ScreenWidth", &iGLOBAL_SCREENWIDTH);
@@ -466,13 +466,13 @@ boolean ParseConfigFile(void)
 		ReadInt("Threshold", &threshold);
 
 		// Read in Auto Detail
-		ReadBoolean("AutoDetail", &AutoDetailOn);
+		Readbool("AutoDetail", &AutoDetailOn);
 
 		// Read in Light Dim
 		ReadInt("LightDim", &fulllight);
 
 		// Read in Bobbin' On
-		ReadBoolean("BobbingOn", &BobbinOn);
+		Readbool("BobbingOn", &BobbinOn);
 
 		// Read in Double Click Speed
 		ReadInt("DoubleClickSpeed", &DoubleClickSpeed);
@@ -487,7 +487,7 @@ boolean ParseConfigFile(void)
 		ReadInt("FloorCeiling", &fandc);
 
 		// Read in MessagesEnabled
-		ReadBoolean("Messages", &MessagesEnabled);
+		Readbool("Messages", &MessagesEnabled);
 
 		// Read in Autorun
 		ReadInt("AutoRun", &gamestate.autorun);
@@ -587,9 +587,9 @@ boolean ParseConfigFile(void)
 // ParseBattleFile ()
 //
 //******************************************************************************
-boolean ParseBattleFile(void)
+bool ParseBattleFile(void)
 {
-	boolean retval = true;
+	bool retval = true;
 	int version = 0;
 	int index;
 	int temp;
@@ -600,7 +600,7 @@ boolean ParseBattleFile(void)
 		retval = false;
 	else
 	{
-		ReadBoolean("ShowKillCount", &BATTLE_ShowKillCount);
+		Readbool("ShowKillCount", &BATTLE_ShowKillCount);
 
 		ReadInt("GodModeTime", &BattleSpecialsTimes.GodModeTime);
 		ReadInt("DogModeTime", &BattleSpecialsTimes.DogModeTime);
@@ -625,7 +625,7 @@ boolean ParseBattleFile(void)
 		ReadInt("MercuryModeRespawnTime",
 				&BattleSpecialsTimes.MercuryModeRespawnTime);
 
-		ReadBoolean("EKG", &battlegibs);
+		Readbool("EKG", &battlegibs);
 
 		for (index = battle_Normal; index < battle_NumBattleModes; index++)
 		{
@@ -925,7 +925,7 @@ void ReadConfig(void)
 
 void CheckVendor(void)
 {
-	boolean saveout = false;
+	bool saveout = false;
 	int wadcrc;
 	int filecrc;
 	int size;
@@ -1519,7 +1519,7 @@ void WriteSoundConfig(void)
 //
 //******************************************************************************
 
-extern boolean writeNewResIntoCfg;
+extern bool writeNewResIntoCfg;
 extern int ScreenWidthToWriteToCfg;
 extern int ScreenHeightToWriteToCfg;
 

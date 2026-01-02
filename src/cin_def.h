@@ -63,8 +63,8 @@ typedef struct cineactor_t
 typedef struct
 {
 	char name[10];
-	boolean loop;
-	boolean usefile;
+	bool loop;
+	bool usefile;
 } cine_event;
 
 typedef struct

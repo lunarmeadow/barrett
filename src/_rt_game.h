@@ -155,7 +155,7 @@ typedef struct
 //******************************************************************************
 
 void DrawMPPic(int xpos, int ypos, int width, int height, int heightmod,
-			   byte* src, boolean bufferofsonly);
+			   byte* src, bool bufferofsonly);
 void DrawHighScores(void);
 void GM_MemToScreen(byte* source, int width, int height, int x, int y);
 

@@ -270,14 +270,14 @@ typedef uint32_t longword;
 
 //////////////////      GLOBAL ENUMERATED TYPES    ///////////////////////
 
-/* boolean is serialized at the moment, and watcomc made it a byte. */
+/* bool is serialized at the moment, and watcomc made it a byte. */
 
-typedef uint8_t boolean;
-enum
-{
-	false,
-	true
-};
+// typedef uint8_t bool;
+// enum
+// {
+// 	false,
+// 	true
+// };
 
 typedef enum
 {

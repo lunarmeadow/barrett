@@ -31,7 +31,7 @@ int GetCinematicTime(void)
 	return GetTicCount();
 }
 
-boolean CinematicAbort(void)
+bool CinematicAbort(void)
 {
 	return (IN_CheckAck());
 }

@@ -35,7 +35,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "cin_evnt.h"
 #include "cin_efct.h"
 
-boolean cinematicdone;
+bool cinematicdone;
 static int cinematictime;
 static int cinematictics;
 static int cinematictictime;
@@ -158,7 +158,7 @@ void CacheScriptFile(char* filename)
 =================
 */
 
-void GrabCinematicScript(char const* basename, boolean uselumpy)
+void GrabCinematicScript(char const* basename, bool uselumpy)
 {
 	char script[256];
 
@@ -197,7 +197,7 @@ void GetCinematicTics(void)
 	cinematictics = profiletics;
 }
 
-void PlayMovie(char* movie_name, boolean uselumpy)
+void PlayMovie(char* movie_name, bool uselumpy)
 {
 	int i;
 
