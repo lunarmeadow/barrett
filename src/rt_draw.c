@@ -744,15 +744,17 @@ int CalcRotate(objtype* ob)
 #define SGN(x) ((x > 0) ? (1) : ((x == 0) ? (0) : (-1)))
 
 /*--------------------------------------------------------------------------*/
-int CompareHeights(s1p, s2p)
-visobj_t **s1p, **s2p;
+int CompareHeights(void *v1p, void *v2p)
 {
-	return SGN((*s1p)->viewheight - (*s2p)->viewheight);
+	visobj_t** s1p = (visobj_t**) v1p;
+	visobj_t** s2p = (visobj_t**) v2p;
+	return SGN((*s1p)->viewheight-(*s2p)->viewheight);
 }
 
-void SwitchPointers(s1p, s2p) visobj_t **s1p, **s2p;
+void SwitchPointers(void *v1p, void *v2p)
 {
-	visobj_t* temp;
+	visobj_t **s1p = (visobj_t**) v1p, **s2p = (visobj_t**) v2p;
+	visobj_t *temp;
 
 	temp = *s1p;
 	*s1p = *s2p;
