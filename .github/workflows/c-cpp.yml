@@ -24,9 +24,9 @@ jobs:
               shell: bash,
             }
           - {
-              name: macOS GCC,
+              name: macOS Clang,
               os: macos-latest,
-              compiler: gcc,
+              compiler: clang,
               shell: bash,
             }
           - {
