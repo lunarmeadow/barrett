@@ -167,9 +167,11 @@ int GetLumpForTile(int tile);
 #define SGN(x) ((x > 0) ? (1) : ((x == 0) ? (0) : (-1)))
 
 /*--------------------------------------------------------------------------*/
-int CompareTags(s1p, s2p)
-cache_t *s1p, *s2p;
+int CompareTags(void* v1p, void* v2p)
 {
+	cache_t* s1p = (cache_t*) v1p;
+	cache_t* s2p = (cache_t*) v2p;
+
 	// Sort according to lump
 	if (DoPanicMapping() == true)
 		return SGN(s1p->cachelevel - s2p->cachelevel);
@@ -178,8 +180,11 @@ cache_t *s1p, *s2p;
 		return SGN(s1p->lump - s2p->lump);
 }
 
-void SwitchCacheEntries(s1p, s2p) cache_t *s1p, *s2p;
+void SwitchCacheEntries(void* v1p, void* v2p)
 {
+	cache_t* s1p = (cache_t*) v1p;
+	cache_t* s2p = (cache_t*) v2p;
+
 	cache_t temp;
 
 	temp = *s1p;
