@@ -60,13 +60,13 @@ int IgnoreMouse = 0;
 
 // configuration variables
 //
-boolean MousePresent;
-boolean JoysPresent[MaxJoys];
-boolean JoyPadPresent = 0;
+bool MousePresent;
+bool JoysPresent[MaxJoys];
+bool JoyPadPresent = 0;
 
 //    Global variables
 //
-boolean Paused;
+bool Paused;
 char LastASCII;
 volatile int LastScan;
 
@@ -85,7 +85,7 @@ static word sdl_sticks_joybits = 0;
 // static unsigned int scancodes[SDL_NUM_SCANCODES]; //TODO: replace with a
 // hashtable if possible
 static HashTable* scancodes;
-extern boolean sdl_fullscreen;
+extern bool sdl_fullscreen;
 
 extern SDL_Window* window;
 
@@ -125,7 +125,7 @@ static KeyboardDef KbdDefs = {0x1d, 0x38, 0x47, 0x48, 0x49,
 static JoystickDef JoyDefs[MaxJoys];
 static ControlType Controls[MAXPLAYERS];
 
-static boolean IN_Started;
+static bool IN_Started;
 
 static Direction DirTable[] = // Quick lookup for total direction
 	{dir_NorthWest, dir_North,	   dir_NorthEast, dir_West,		dir_None,
@@ -528,10 +528,10 @@ word INL_GetJoyButtons(word joy)
 //
 //******************************************************************************
 
-boolean INL_StartMouse(void)
+bool INL_StartMouse(void)
 {
 
-	boolean retval = false;
+	bool retval = false;
 
 	/* no-op. */
 	retval = true;
@@ -594,7 +594,7 @@ void IN_SetupJoy(word joy, word minx, word maxx, word miny, word maxy)
 //
 //******************************************************************************
 
-boolean INL_StartJoy(word joy)
+bool INL_StartJoy(word joy)
 {
 	word x, y;
 
@@ -655,7 +655,7 @@ void INL_ShutJoy(word joy)
 
 void IN_Startup(void)
 {
-	boolean checkjoys, checkmouse;
+	bool checkjoys, checkmouse;
 
 	word i;
 
@@ -869,7 +869,7 @@ void IN_ClearKeysDown(void)
 
 void IN_ReadControl(int player, ControlInfo* info)
 {
-	boolean realdelta;
+	bool realdelta;
 	word buttons;
 	int dx, dy;
 	Motion mx, my;
@@ -952,7 +952,7 @@ ScanCode IN_WaitForKey(void)
 //
 //******************************************************************************
 
-boolean btnstate[8];
+bool btnstate[8];
 
 void IN_StartAck(void)
 {
@@ -983,7 +983,7 @@ void IN_StartAck(void)
 //
 //******************************************************************************
 
-boolean IN_CheckAck(void)
+bool IN_CheckAck(void)
 {
 	unsigned i, buttons = 0;
 
@@ -1034,7 +1034,7 @@ void IN_Ack(void)
 //
 //******************************************************************************
 
-boolean IN_UserInput(long delay)
+bool IN_UserInput(long delay)
 {
 	long lasttime;
 
@@ -1135,7 +1135,7 @@ int IN_InputUpdateKeyboard(void)
 {
 	int key;
 	int returnval = 0;
-	boolean done = false;
+	bool done = false;
 
 	//   _disable ();
 
@@ -1197,7 +1197,7 @@ void QueueLetterInput(void)
 	int tail = Keytail;
 	char c;
 	int scancode;
-	boolean send = false;
+	bool send = false;
 
 	/* HACK HACK HACK */
 	/*

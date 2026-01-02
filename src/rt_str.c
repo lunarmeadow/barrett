@@ -597,7 +597,7 @@ void US_CPrint(const char* string)
 
 static void USL_XORICursor(int x, int y, const char* s, int cursor, int color)
 {
-	static boolean status; // VGA doesn't XOR...
+	static bool status; // VGA doesn't XOR...
 	char buf[MaxString];
 
 	int w, h;
@@ -648,10 +648,10 @@ static void USL_XORICursor(int x, int y, const char* s, int cursor, int color)
 
 extern byte* IN_GetScanName(ScanCode scan);
 
-boolean US_LineInput(int x, int y, char* buf, const char* def, boolean escok,
+bool US_LineInput(int x, int y, char* buf, const char* def, bool escok,
 					 int maxchars, int maxwidth, int color)
 {
-	boolean redraw, cursorvis, cursormoved, done, result = false;
+	bool redraw, cursorvis, cursormoved, done, result = false;
 	char s[MaxString], olds[MaxString];
 	int i, cursor, w, h, len;
 
@@ -925,10 +925,10 @@ boolean US_LineInput(int x, int y, char* buf, const char* def, boolean escok,
 //
 ///******************************************************************************
 
-boolean US_lineinput(int x, int y, char* buf, const char* def, boolean escok,
+bool US_lineinput(int x, int y, char* buf, const char* def, bool escok,
 					 int maxchars, int maxwidth, int color)
 {
-	boolean redraw, cursorvis, cursormoved, done, result;
+	bool redraw, cursorvis, cursormoved, done, result;
 	char s[MaxString], xx[MaxString], olds[MaxString];
 	int i, cursor, w, h, len;
 
@@ -1429,7 +1429,7 @@ int GetColor(int num)
 //******************************************************************************
 
 static int oldfontcolor = 0;
-static boolean highlight = false;
+static bool highlight = false;
 
 void DrawIString(unsigned short int x, unsigned short int y, const char* string,
 				 int flags)

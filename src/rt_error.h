@@ -20,7 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _rt_error_public
 #define _rt_error_public
 
-extern boolean DivisionError;
+extern bool DivisionError;
 
 void UL_ErrorStartup(void);
 void UL_ErrorShutdown(void);

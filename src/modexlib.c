@@ -42,9 +42,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 static void StretchMemPicture();
 // GLOBAL VARIABLES
 
-boolean StretchScreen = 0; // bn�++
-extern boolean iG_aimCross;
-extern boolean sdl_fullscreen;
+bool StretchScreen = 0; // bn�++
+extern bool iG_aimCross;
+extern bool sdl_fullscreen;
 extern int iG_X_center;
 extern int iG_Y_center;
 char* iG_buf_center;
@@ -63,7 +63,7 @@ SDL_Surface* temp = NULL;
 
 // Queue *sdl_draw_obj_queue = NULL;
 
-boolean doRescaling = false;
+bool doRescaling = false;
 
 int linewidth;
 // int    ylookup[MAXSCREENHEIGHT];
@@ -74,7 +74,7 @@ byte* page3start;
 int screensize;
 byte* bufferofs;
 byte* displayofs;
-boolean graphicsmode = false;
+bool graphicsmode = false;
 char* bufofsTopLimit;
 char* bufofsBottomLimit;
 
@@ -442,7 +442,7 @@ static void StretchMemPicture()
 }
 
 // bna function added start
-extern boolean ingame;
+extern bool ingame;
 extern exit_t playstate;
 int iG_playerTilt;
 

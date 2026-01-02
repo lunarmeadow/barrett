@@ -314,7 +314,7 @@ void BuildTables(void)
 ========================
 */
 
-boolean TransformObject(int x, int y, int* dispx, int* dispheight)
+bool TransformObject(int x, int y, int* dispx, int* dispheight)
 {
 
 	fixed gx, gy, gxt, gyt, nx, ny;
@@ -494,7 +494,7 @@ void TransformPoint(int x, int y, int* screenx, int* height, int* texture,
 ========================
 */
 
-boolean TransformSimplePoint(int x, int y, int* screenx, int* height,
+bool TransformSimplePoint(int x, int y, int* screenx, int* height,
 							 int* texture, int vertical)
 {
 
@@ -547,11 +547,11 @@ boolean TransformSimplePoint(int x, int y, int* screenx, int* height,
 ========================
 */
 
-boolean TransformPlane(int x1, int y1, int x2, int y2, visobj_t* plane)
+bool TransformPlane(int x1, int y1, int x2, int y2, visobj_t* plane)
 {
-	boolean result2;
-	boolean result1;
-	boolean vertical;
+	bool result2;
+	bool result1;
+	bool vertical;
 	int txstart, txend;
 
 	vertical = ((x2 - x1) == 0);
@@ -788,7 +788,7 @@ void DrawScaleds(void)
 	int i, numvisible;
 	int gx, gy;
 	byte* visspot;
-	boolean result;
+	bool result;
 	statobj_t* statptr;
 	objtype* obj;
 	maskedwallobj_t* tmwall;
@@ -1780,7 +1780,7 @@ void TransformDoors(void)
 {
 	int i;
 	int numvisible;
-	boolean result;
+	bool result;
 	int gx, gy;
 	visobj_t visdoorlist[MAXVISIBLEDOORS], *doorptr;
 
@@ -1868,7 +1868,7 @@ void TransformPushWalls(void)
 	byte* visspot;
 	visobj_t* savedptr;
 	int numvisible;
-	boolean result;
+	bool result;
 
 	savedptr = visptr;
 	//
@@ -2384,7 +2384,7 @@ void InterpolateMaskedWall(visobj_t* plane)
 	transpatch_t* p;
 	patch_t* p2;
 	patch_t* p3;
-	boolean drawbottom, drawmiddle, drawtop;
+	bool drawbottom, drawmiddle, drawtop;
 	int topoffset;
 
 	dx = (plane->x2 - plane->x1 + 1);
@@ -2525,11 +2525,11 @@ void DrawPlayerLocation(void)
 */
 
 // void RotateScreen(int startAngle, int endAngle, int startScale, int endScale,
-// int time, int option, boolean fadeOut);
+// int time, int option, bool fadeOut);
 
 void RotateScreenScaleFloat(float startAngle, float endAngle, float startScale,
-							float endScale, int time, boolean fadeOut,
-							boolean drawPlayScreen);
+							float endScale, int time, bool fadeOut,
+							bool drawPlayScreen);
 
 int playerview = 0;
 void ThreeDRefresh(void)
@@ -2802,7 +2802,7 @@ void DoLoadGameSequence(void)
 //
 //******************************************************************************
 byte* RotatedImage;
-boolean RotateBufferStarted = false;
+bool RotateBufferStarted = false;
 void StartupRotateBuffer(int masked)
 {
 	int k; ////zxcv
@@ -3057,7 +3057,7 @@ void ScaleAndRotateBuffer(int startangle, int endangle, int startscale,
 //
 //******************************************************************************
 
-extern boolean skipRotate;
+extern bool skipRotate;
 
 void RotateBuffer(int startangle, int endangle, int startscale, int endscale,
 				  int time)
@@ -3078,8 +3078,8 @@ void VL_FadeOutScaledScreen(int start, int end, int red, int green, int blue,
 							int steps, float scale);
 
 void RotateScreenScaleFloat(float startAngle, float endAngle, float startScale,
-							float endScale, int time, boolean fadeOut,
-							boolean drawPlayScreen)
+							float endScale, int time, bool fadeOut,
+							bool drawPlayScreen)
 {
 	DisableScreenStretch();
 
@@ -3152,7 +3152,7 @@ void RotateScreenScaleFloat(float startAngle, float endAngle, float startScale,
 //     zooming out from the screen.
 /*
 void RotateScreen(int startAngle, int endAngle, int startScale, int endScale,
-int time, int option, boolean fadeOut)
+int time, int option, bool fadeOut)
 {
 	DisableScreenStretch();
 
@@ -3589,7 +3589,7 @@ void RotationFun(void)
 	ShutdownRotateBuffer();
 }
 
-boolean ScreenSaverStarted = false;
+bool ScreenSaverStarted = false;
 screensaver_t* ScreenSaver;
 #define PAUSETIME (70)
 
@@ -4725,7 +4725,7 @@ void DestroyEarth(void)
 	SafeFree(back);
 }
 
-boolean DestroyedAllEggs(void)
+bool DestroyedAllEggs(void)
 {
 	statobj_t* temp;
 
@@ -5318,7 +5318,7 @@ void DrawPreviousCredits(int num, CreditText* Credits)
 //
 //******************************************************************************
 
-extern boolean dopefish;
+extern bool dopefish;
 void WarpCreditString(int time, byte* back, int num, CreditText* Credits)
 {
 	int dy;
@@ -5327,7 +5327,7 @@ void WarpCreditString(int time, byte* back, int num, CreditText* Credits)
 	int y;
 	int width;
 	int height;
-	boolean soundplayed;
+	bool soundplayed;
 
 	LastScan = 0;
 

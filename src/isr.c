@@ -45,8 +45,8 @@ volatile int Keystate[MAXKEYBOARDSCAN];
 volatile int Keyhead;
 volatile int Keytail;
 
-volatile boolean PausePressed = false;
-volatile boolean PanicPressed = false;
+volatile bool PausePressed = false;
+volatile bool PanicPressed = false;
 int KeyboardStarted = false;
 
 // global tic cache to reduce expensive SDL timer calls during game loop.

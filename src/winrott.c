@@ -24,7 +24,7 @@ int iG_Y_center;
 
 // int topBarCenterOffset = 0;
 
-boolean iG_aimCross = 0;
+bool iG_aimCross = 0;
 
 extern int viewheight;
 extern int viewwidth;

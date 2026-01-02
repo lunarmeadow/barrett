@@ -45,9 +45,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "w_wad.h"
 
 extern int iDemoNames;
-extern boolean iG_aimCross;
+extern bool iG_aimCross;
 
-boolean ricochetingRocketsEnabled = false;
+bool ricochetingRocketsEnabled = false;
 
 extern void DisplayMessage(int num, int position);
 
@@ -381,7 +381,7 @@ void DoWarp(void)
 {
 	/*
 		char str[10];
-		boolean esc;
+		bool esc;
 		int level;
 
 	   CurrentFont = smallfont;
@@ -731,7 +731,7 @@ void HurtPlayer(void)
 ================
 */
 
-void SetLightDiminish(boolean off)
+void SetLightDiminish(bool off)
 {
 	if (off)
 	{
@@ -753,7 +753,7 @@ void SetLightDiminish(boolean off)
 ================
 */
 
-void SetFog(boolean on)
+void SetFog(bool on)
 {
 	if (on)
 	{
@@ -836,7 +836,7 @@ void EndLevel(void)
 ================
 */
 
-void FloorandCeiling(boolean off)
+void FloorandCeiling(bool off)
 {
 	if (off)
 	{
@@ -969,7 +969,7 @@ void RestartCurrentLevel(void)
 void EndDemo(void)
 {
 	char str[10];
-	boolean esc;
+	bool esc;
 	int demonumber;
 
 	if (demorecord == false)
@@ -1020,7 +1020,7 @@ void EndDemo(void)
 void RecordDemoQuery(void)
 {
 	char str[10];
-	boolean esc;
+	bool esc;
 	int level;
 
 	ShutdownClientControls();
@@ -1076,7 +1076,7 @@ void RecordDemoQuery(void)
 void PlaybackDemoQuery(void)
 {
 	char str[10];
-	boolean esc;
+	bool esc;
 	int level;
 
 	ShutdownClientControls();
@@ -1152,7 +1152,7 @@ void WeaponCheat(int weapon)
 ================
 */
 
-extern boolean ricochetingRocketsEnabled;
+extern bool ricochetingRocketsEnabled;
 
 void RotationFunSDL(void);
 

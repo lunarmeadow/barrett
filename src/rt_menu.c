@@ -87,13 +87,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 int CP_Acknowledge;
 
-boolean POK = false;
+bool POK = false;
 char pword[13];
 
-boolean ingame = false;
-boolean inmenu = false;
-boolean pickquick = false;
-boolean NewGame = false;
+bool ingame = false;
+bool inmenu = false;
+bool pickquick = false;
+bool NewGame = false;
 
 //
 // Global window coords
@@ -119,7 +119,7 @@ font_t* smallfont;
 font_t* bigfont;
 font_t* tinyfont;
 
-boolean loadedgame = false;
+bool loadedgame = false;
 
 battle_cfg_t BATTLE_Options[battle_NumBattleModes];
 
@@ -142,7 +142,7 @@ char order[21] = {di_west,		 di_east,		 di_north,		 di_south,
 
 #define RETURNVAL 100
 
-static boolean loadsavesound = false;
+static bool loadsavesound = false;
 static int numdone;
 
 static char* endStrings[7] = {
@@ -258,7 +258,7 @@ static int DangerNums[3] = {bo_danger_low, bo_danger_normal, bo_danger_kill};
 static int MenuNum = 0;
 static int handlewhich;
 static int CSTactive = 0;
-static boolean INFXSETUP = false;
+static bool INFXSETUP = false;
 
 //
 // MENU CURSOR SHAPES
@@ -817,7 +817,7 @@ static int CUSTOM_y[7] = {31, 0, 63, 0, 94, 0, 126};
 //
 // Save globals
 //
-static boolean StartGame = false;
+static bool StartGame = false;
 
 static int SaveGamesAvail[NUMSAVEGAMES];
 static char SaveGameNames[NUMSAVEGAMES][32];
@@ -1087,7 +1087,7 @@ void ScanForSavedGames()
 	char filename[256];
 	char str[45];
 	int which;
-	boolean found = false;
+	bool found = false;
 	char* pathsave;
 
 	//
@@ -1323,7 +1323,7 @@ void CleanUpControlPanel(void)
 // CP_CheckQuick ()
 //
 //******************************************************************************
-boolean CP_CheckQuick(byte scancode)
+bool CP_CheckQuick(byte scancode)
 
 {
 	if (demoplayback == true)
@@ -1559,7 +1559,7 @@ int HandleMenu(CP_iteminfo* item_i, CP_itemtype* items, void (*routine)(int w))
 	int newpos;
 	volatile int timer;
 	ControlInfo ci;
-	boolean playsnd = false;
+	bool playsnd = false;
 
 	handlewhich = item_i->curpos;
 	x = item_i->x;
@@ -2216,7 +2216,7 @@ void CP_Quit(int which)
 //
 //******************************************************************************
 
-boolean CP_DisplayMsg(char* s, int number)
+bool CP_DisplayMsg(char* s, int number)
 
 {
 #define Q_W 184
@@ -2238,11 +2238,11 @@ boolean CP_DisplayMsg(char* s, int number)
 #define NO	"q_no\0"
 
 	ControlInfo ci;
-	boolean retval;
-	boolean done;
-	boolean YESON;
-	boolean redraw;
-	boolean blowout;
+	bool retval;
+	bool done;
+	bool YESON;
+	bool redraw;
+	bool blowout;
 	char* temp;
 	char* active;
 	char* inactive;
@@ -2643,7 +2643,7 @@ void CP_NewGame(void)
 void CP_EndGame(void)
 
 {
-	boolean action;
+	bool action;
 
 	SetMenuTitle("End Game");
 	action = CP_DisplayMsg(ENDGAMESTR, 12);
@@ -3232,8 +3232,8 @@ void CP_Keyboard(void)
 void DefineKey(void)
 
 {
-	boolean tick;
-	boolean picked;
+	bool tick;
+	bool picked;
 	int timer;
 	int x;
 	int y;
@@ -3778,7 +3778,7 @@ int CalibrateJoystick(void)
 	word xmax, ymax, xmin, ymin, jb;
 	int checkbits;
 	int status;
-	boolean done;
+	bool done;
 
 	if (joypadenabled)
 	{
@@ -3971,7 +3971,7 @@ void DrawCtlScreen(void)
 void DrawCtlButtons(void)
 {
 	int i, x, y;
-	static boolean first = true;
+	static bool first = true;
 	int button_on;
 	int button_off;
 
@@ -4224,7 +4224,7 @@ void DisplayInfo(int which)
 //
 //******************************************************************************
 
-void DrawSTMenuBuf(int x, int y, int w, int h, boolean up)
+void DrawSTMenuBuf(int x, int y, int w, int h, bool up)
 {
 	if (!up)
 	{
@@ -4622,7 +4622,7 @@ void CP_RestartProgramMessage(void)
 extern int ScreenWidthToWriteToCfg;
 extern int ScreenHeightToWriteToCfg;
 extern int HudScaleToWriteToCfg;
-extern boolean writeNewResIntoCfg;
+extern bool writeNewResIntoCfg;
 
 void CP_ScreenResolution(void)
 {
@@ -4645,9 +4645,9 @@ void CP_ScreenResolution(void)
 
 	DrawVisualsMenu();
 }
-extern boolean sdl_fullscreen;
-extern boolean borderWindow;
-extern boolean borderlessWindow;
+extern bool sdl_fullscreen;
+extern bool borderWindow;
+extern bool borderlessWindow;
 
 void DrawDisplayOptionsButtons(void)
 {
@@ -4831,14 +4831,14 @@ void DrawExtOptionDescription(int w)
 }
 
 extern int inverse_mouse;
-extern boolean usemouselook;
-extern boolean useoplmusic;
-extern boolean iG_aimCross;
-extern boolean autoAimMissileWeps;
-extern boolean autoAim;
-extern boolean allowMovementWithMouseYAxis;
+extern bool usemouselook;
+extern bool useoplmusic;
+extern bool iG_aimCross;
+extern bool autoAimMissileWeps;
+extern bool autoAim;
+extern bool allowMovementWithMouseYAxis;
 
-boolean oplchanged;
+bool oplchanged;
 
 void CP_ExtOptionsMenu(void)
 {
@@ -5501,7 +5501,7 @@ void CP_BattleMenu(void)
 //
 //****************************************************************************
 
-extern boolean dopefish;
+extern bool dopefish;
 void MN_PlayMenuSnd(int which)
 {
 	if (INFXSETUP || (SD_Started == false))
@@ -5530,7 +5530,7 @@ void MN_PlayMenuSnd(int which)
 //
 //******************************************************************************
 
-boolean SliderMenu(int* number, int upperbound, int lowerbound, int erasex,
+bool SliderMenu(int* number, int upperbound, int lowerbound, int erasex,
 				   int erasey, int erasew, int numadjust, char* blockname,
 				   void (*routine)(int w), char* title, char* left, char* right)
 
@@ -5538,8 +5538,8 @@ boolean SliderMenu(int* number, int upperbound, int lowerbound, int erasex,
 	ControlInfo ci;
 	Direction lastdir;
 	patch_t* shape;
-	boolean returnval;
-	boolean moved;
+	bool returnval;
+	bool moved;
 	unsigned long scale;
 	int exit;
 	int range;
@@ -5823,7 +5823,7 @@ void CP_ViolenceLevel(void)
 {
 	int which;
 	char p1[13];
-	boolean passok = false;
+	bool passok = false;
 
 	if (ingame)
 	{
@@ -5947,9 +5947,9 @@ void CP_PWMenu(void)
 {
 	char p1[13];
 	char p2[13];
-	boolean EnterNewPassword;
-	boolean AskForNew;
-	boolean RetypePassword;
+	bool EnterNewPassword;
+	bool AskForNew;
+	bool RetypePassword;
 
 	memset(p1, 0, 13);
 	memset(p2, 0, 13);
@@ -6570,8 +6570,8 @@ int ColorMenu(void)
 	int timer;
 	int baseshape;
 	int status;
-	boolean update;
-	boolean done;
+	bool update;
+	bool done;
 
 	colorindex = DefaultPlayerColor;
 	timer = GetTicCount();
@@ -7662,7 +7662,7 @@ void CP_TimeLimitOptions(void)
 	DrawBattleOptions();
 }
 
-void PrintBattleOption(boolean inmenu, int x, int y, char* text)
+void PrintBattleOption(bool inmenu, int x, int y, char* text)
 
 {
 	if (inmenu)
@@ -7679,7 +7679,7 @@ void PrintBattleOption(boolean inmenu, int x, int y, char* text)
 	}
 }
 
-void ShowBattleOption(boolean inmenu, int PosX, int PosY, int column, int Line,
+void ShowBattleOption(bool inmenu, int PosX, int PosY, int column, int Line,
 					  char* text1, char* text2)
 
 {
@@ -7698,7 +7698,7 @@ void ShowBattleOption(boolean inmenu, int PosX, int PosY, int column, int Line,
 	PrintBattleOption(inmenu, x + 60, y, text);
 }
 
-void ShowBattleOptions(boolean inmenu, int PosX, int PosY)
+void ShowBattleOptions(bool inmenu, int PosX, int PosY)
 
 {
 	battle_cfg_t* options;
@@ -7973,10 +7973,10 @@ void DrawMultiPageCustomMenu(char* title, void (*redrawfunc)(void))
 
 int HandleMultiPageCustomMenu(char** names, int amount, int curpos, char* title,
 							  void (*routine)(int w), void (*redrawfunc)(void),
-							  boolean exitonselect)
+							  bool exitonselect)
 
 {
-	boolean redraw;
+	bool redraw;
 	int page;
 	int cursorpos;
 	int maxpos;

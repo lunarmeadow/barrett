@@ -62,7 +62,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // GLOBAL VARIABLES
 //========================================
 
-extern boolean UseBaseMarker;
+extern bool UseBaseMarker;
 
 teamtype TEAM[MAXPLAYERS];
 int numareatiles[NUMAREAS + 1];
@@ -88,8 +88,8 @@ int mapwidth;
 int mapheight;
 int lastlevelloaded = -1;
 
-boolean insetupgame;
-boolean ISRTL = false;
+bool insetupgame;
+bool ISRTL = false;
 
 unsigned MapSpecials = 0;
 
@@ -101,7 +101,7 @@ char LevelName[80];
 
 static cache_t* cachelist;
 static word cacheindex;
-static boolean CachingStarted = false;
+static bool CachingStarted = false;
 static char* ROTTMAPS;
 char* BATTMAPS;
 
@@ -886,7 +886,7 @@ void MiscPreCache(void)
 ========================
 */
 
-boolean IsChristmas(void)
+bool IsChristmas(void)
 {
 	struct dosdate_t date;
 
@@ -944,7 +944,7 @@ void CheckHolidays(void)
 =
 ======================
 */
-extern boolean dopefish;
+extern bool dopefish;
 void DrawPreCache(void)
 {
 	if (loadedgame == false)
@@ -1043,7 +1043,7 @@ void DrawPreCache(void)
 ======================
 */
 
-extern boolean doRescaling;
+extern bool doRescaling;
 void PreCache(void)
 {
 	int i;
@@ -1189,7 +1189,7 @@ void PreCache(void)
 				ticdelay--;
 				if (ticdelay == 0)
 				{
-					extern boolean dopefish;
+					extern bool dopefish;
 
 					if (dopefish == true)
 					{
@@ -1533,7 +1533,7 @@ int GetNextMap(int tilex, int tiley)
 {
 	word next;
 	word icon;
-	boolean done;
+	bool done;
 
 	next = MAPSPOT(tilex, tiley, 2);
 	icon = MAPSPOT(tilex, tiley, 1);
@@ -2102,7 +2102,7 @@ word GetNearestAreaNumber(int tilex, int tiley)
 void SetupWindows(void)
 {
 	int i, j;
-	boolean skythere;
+	bool skythere;
 
 	skythere = SkyExists();
 
@@ -3541,7 +3541,7 @@ void LinkElevatorDiskGroups(void)
 	int maxplatformheight[30] = {-1};
 	int num_distinct_max_heights = 0;
 	int i;
-	boolean newdiskheight;
+	bool newdiskheight;
 
 #define M_ISELEVDISK(actor)                                                    \
 	((actor->obclass == diskobj) && (actor->state == &s_elevdisk))
@@ -4148,7 +4148,7 @@ void PrintMapStats(void)
 	MapDebug("\nTotal size of level : %6d\n", total);
 }
 
-boolean IsWeapon(int tile)
+bool IsWeapon(int tile)
 {
 	if ((tile >= 46) && (tile <= 56))
 		return true;
@@ -5353,7 +5353,7 @@ void DoRegisterConversion(void)
 =
 =======================
 */
-boolean DoPanicMapping(void)
+bool DoPanicMapping(void)
 {
 	if ((lowmemory == true) && (modemgame == false) && (demorecord == false) &&
 		(demoplayback == false))

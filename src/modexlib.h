@@ -47,7 +47,7 @@ screen width in bytes
 //
 //***************************************************************************
 
-extern boolean StretchScreen; // bn�++
+extern bool StretchScreen; // bn�++
 
 // extern  int      ylookup[MAXSCREENHEIGHT];      // Table of row offsets
 extern int ylookup[MAXSCREENHEIGHT]; // just set to max res
@@ -58,7 +58,7 @@ extern byte* page3start;
 extern int screensize;
 extern byte* bufferofs;
 extern byte* displayofs;
-extern boolean graphicsmode;
+extern bool graphicsmode;
 
 // extern SDL_Window* window;
 

@@ -30,10 +30,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 static void OPLcallback(void *cbFunc, Uint8 *stream, int len);
 
-static boolean isPlaying = 0;
-static boolean isHooked = false;
+static bool isPlaying = 0;
+static bool isHooked = false;
 
-extern boolean useoplmusic;
+extern bool useoplmusic;
 
 static float volume = 0;
 
@@ -67,7 +67,7 @@ static int OPL_FetchConfig(void* user, const char* section,
     return 1;
 }
 
-static boolean OPL_WriteDefault(const char* path)
+static bool OPL_WriteDefault(const char* path)
 {
     FILE *ini = fopen(path, "w");
     
@@ -269,7 +269,7 @@ int OPL_IsHooked(void)
 
 
 
-boolean OPL_Play(char* buffer, int size, int loopflag)
+bool OPL_Play(char* buffer, int size, int loopflag)
 {
     if(adl_openData(midi_player, buffer, size) < 0)
     {

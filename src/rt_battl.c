@@ -56,12 +56,12 @@ static int NumberOfPlayers;
 static int BattleRound;
 static int BattleMode;
 
-static boolean RoundOver;
-static boolean KillsEndGame;
-static boolean KeepTrackOfKills;
-boolean UpdateKills;
+static bool RoundOver;
+static bool KillsEndGame;
+static bool KeepTrackOfKills;
+bool UpdateKills;
 
-static boolean SwapFlag;
+static bool SwapFlag;
 
 static battle_cfg_t BattleOptions;
 
@@ -96,9 +96,9 @@ int PointGoal;
 int DisplayPoints;
 int BATTLE_It;
 
-boolean BATTLE_ShowKillCount;
+bool BATTLE_ShowKillCount;
 
-boolean BATTLEMODE = false;
+bool BATTLEMODE = false;
 
 /*---------------------------------------------------------------------
 	Function Prototypes:

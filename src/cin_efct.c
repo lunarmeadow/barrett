@@ -47,7 +47,7 @@ void DrawClearBuffer(void);
 ===============
 */
 
-cine_event* SpawnCinematicFlic(char* name, boolean loop, boolean usefile)
+cine_event* SpawnCinematicFlic(char* name, bool loop, bool usefile)
 {
 	cine_event* f;
 
@@ -636,7 +636,7 @@ void DrawClearBuffer(void)
 ===============
 */
 
-boolean UpdateCinematicBack(cine_bgevent* back)
+bool UpdateCinematicBack(cine_bgevent* back)
 {
 	back->duration--;
 
@@ -655,7 +655,7 @@ boolean UpdateCinematicBack(cine_bgevent* back)
 =
 =================
 */
-boolean UpdateCinematicSprite(cinespr_event* sprite)
+bool UpdateCinematicSprite(cinespr_event* sprite)
 {
 	sprite->duration--;
 
@@ -686,7 +686,7 @@ boolean UpdateCinematicSprite(cinespr_event* sprite)
 =
 =================
 */
-boolean UpdateCinematicEffect(e_cinefxevent_t type, void* effect)
+bool UpdateCinematicEffect(e_cinefxevent_t type, void* effect)
 {
 	switch (type)
 	{
@@ -724,7 +724,7 @@ boolean UpdateCinematicEffect(e_cinefxevent_t type, void* effect)
 =
 =================
 */
-boolean DrawCinematicEffect(e_cinefxevent_t type, void* effect)
+bool DrawCinematicEffect(e_cinefxevent_t type, void* effect)
 {
 	switch (type)
 	{
