@@ -541,13 +541,20 @@ CP_MenuNames OptionsNames[] = {
 	"DETAIL LEVELS",	  "VIOLENCE LEVEL",		"SCREEN SIZE"};
 // bna added
 CP_MenuNames ExtOptionsNames[] = {
-	"MOUSELOOK", "INVERSE MOUSE",		 "ALLOW Y AXIS MOUSE", "CROSS HAIR",
+	"MOUSELOOK", "INVERSE MOUSE",		 "ALLOW Y AXIS MOUSE", "CROSSHAIR",
 	"AUTOAIM MISSILE WEPS", "ENABLE AUTOAIM",	   "USE OPL MUSIC"};
 
 CP_MenuNames ExtGameOptionsNames[] = {"LOW MEMORY MODE", "WEAPON RECOLOURS", "DOOM BOBBING", "NO LOW HP SOUND"}; // erysdren added
 
 CP_MenuNames VisualOptionsNames[] = {"SCREEN RESOLUTION", "ADJUST FOCAL WIDTH",
-									 "HUD SCALING", "DISPLAY OPTIONS"};
+									 "HUD SCALING", "DISPLAY OPTIONS", "CROSSHAIR OPTIONS"};
+
+CP_MenuNames CrosshairOptionsNames[] = {"SHAPE", "COLOUR", "SETTINGS",
+									 "GAP", "LENGTH", "THICKNESS"}; // ashley added									 
+
+// draw prongs, dot, t shape, use health colour, dynamic spread									 
+CP_MenuNames CrosshairParamsNames[] = {"PRONGS", "T-SHAPE PRONGS", "CENTER DOT",
+									 "COLOUR BY HEALTH", "DYNAMIC SPREAD"}; // ashley added		
 
 typedef struct
 {
@@ -581,7 +588,10 @@ CP_itemtype DisplayOptionsItems[] = {
 	{1, "", 'F', NULL}, {1, "", 'B', NULL}, {1, "", 'B', NULL}};
 
 CP_iteminfo VisualOptionsItems = {
-	20, MENU_Y, 4, 0, 43, VisualOptionsNames, mn_largefont};
+	20, MENU_Y, 5, 0, 43, VisualOptionsNames, mn_largefont};
+
+CP_iteminfo CrosshairOptionsItems = {
+	20, MENU_Y, 6, 0, 43, CrosshairOptionsNames, mn_largefont}; // ashley added
 
 CP_iteminfo ScreenResolutionItems; // This gets filled in at run time
 
@@ -594,6 +604,10 @@ CP_iteminfo ExtGameOptionsItems = {
 CP_iteminfo DisplayOptionsMenu = {
 	20, MENU_Y, 3, 0, 43, DisplayOptionsNames, mn_largefont}; // LT added
 
+// draw prongs, dot, t shape, use health colour, dynamic spread
+CP_iteminfo CrosshairParamsMenu = {
+	20, MENU_Y, 5, 0, 43, CrosshairParamsNames, mn_largefont}; // ashley added
+
 void CP_ScreenResolution(void);
 
 void CP_DisplayOptions(void);
@@ -603,6 +617,17 @@ CP_itemtype VisualsOptionsMenu[] = {{1, "", 'S', (menuptr)CP_ScreenResolution},
 									{1, "", 'F', (menuptr)DoAdjustFocalWidth},
 									{1, "", 'H', (menuptr)DoAdjustHudScale},
 									{1, "", 'D', (menuptr)CP_DisplayOptions}};
+
+
+// CP_MenuNames CrosshairOptionsNames[] = {"SHAPE", "COLOUR", "PARAMETERS",
+// 									 "GAP", "LENGTH", "THICKNESS"};								 
+								
+CP_itemtype CrosshairOptionsMenu[] = {{1, "", 'S', (menuptr)CP_CrosshairShape},
+									{1, "", 'C', (menuptr)CP_CrosshairColour},
+									{1, "", 'P', (menuptr)CP_CrosshairParameters},
+									{1, "", 'G', (menuptr)CP_CrosshairGap},
+									{1, "", 'L', (menuptr)CP_CrosshairLength},
+									{1, "", 'T', (menuptr)CP_CrosshairThickness}}; // ashley added
 
 CP_itemtype ExtOptionsMenu[] = {
 	{1, "", 'M', NULL}, {1, "", 'I', NULL}, {1, "", 'D', NULL},
@@ -4515,6 +4540,19 @@ void DrawVisualsMenu(void)
 }
 
 void CP_VisualsMenu(void)
+{
+	int which;
+	DrawVisualsMenu();
+
+	do
+	{
+		which = HandleMenu(&VisualOptionsItems, &VisualsOptionsMenu[0], NULL);
+	} while (which >= 0);
+
+	DrawControlMenu();
+}
+
+void CP_CrosshairMenu(void)
 {
 	int which;
 	DrawVisualsMenu();
