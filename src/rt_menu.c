@@ -630,6 +630,8 @@ void DoAdjustCrosshairLength(void);
 void CP_CrosshairMenu(void);
 void CP_CrosshairParameters(void);
 
+void DrawCrosshairOptionsButtons(void);
+
 CP_itemtype VisualsOptionsMenu[] = {{1, "", 'S', (menuptr)CP_ScreenResolution},
 									{1, "", 'F', (menuptr)DoAdjustFocalWidth},
 									{1, "", 'H', (menuptr)DoAdjustHudScale},
@@ -4575,22 +4577,24 @@ void DrawCrosshairMenu(void)
 	FlipMenuBuf();
 }
 
+
 void DrawCrosshairParamsMenu(void)
 {
 	MenuNum = 1;
+
 	SetAlternateMenuBuf();
 	ClearMenuBuf();
 	SetMenuTitle("Crosshair Parameters");
 
 	MN_GetCursorLocation(&CrosshairParamsItems, &CrosshairParamsMenu[0]);
 	DrawMenu(&CrosshairParamsItems, &CrosshairParamsMenu[0]);
-	DrawMenuBufItem(
-		CrosshairParamsItems.x,
-		((CrosshairParamsItems.curpos * 14) + (CrosshairParamsItems.y - 2)),
-		W_GetNumForName(LargeCursor) + CursorFrame[CursorNum]);
+	DrawCrosshairOptionsButtons();
+
 	DisplayInfo(0);
+
 	FlipMenuBuf();
 }
+
 
 void CP_VisualsMenu(void)
 {
@@ -4967,7 +4971,7 @@ void CP_DisplayOptions(void)
 // ashley added
 void CP_CrosshairParameters(void)
 {
-	DrawCrosshairOptionsButtons();
+	DrawCrosshairParamsMenu();
 
 	int which;
 
