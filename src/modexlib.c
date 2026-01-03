@@ -444,6 +444,7 @@ static void StretchMemPicture()
 // bna function added start
 extern bool ingame;
 extern exit_t playstate;
+int iG_playerTilt;
 
 void DrawCenterAim()
 {
@@ -452,6 +453,8 @@ void DrawCenterAim()
 	int colour;
 	int gap = 4, length = 6;
 
+	int thickness = 3, startY = 0;
+
 	int x;
 
 	int percenthealth = (locplayerstate->health * 10) /
@@ -459,6 +462,14 @@ void DrawCenterAim()
 	int hpcolour = percenthealth < 3	? egacolor[RED]
 				: percenthealth < 4 ? egacolor[YELLOW]
 									: egacolor[GREEN];
+
+
+	// re-center crosshair to compensate for thickness.
+	// e.g. a thickness of 3 will result in a starting position of -1, thus the pixel range will be -1 to 1.
+	// as is the generally case with crosshairs, even numbered thicknesses are a pain, but still follow this rule for consistency.
+	// this will truncate, and thus is always the floor of this operation.
+	if(thickness > 1)
+		startY = 0 - thickness / 2;
 
 	if (iG_aimCross && !GamePaused && 
 		playstate != ex_died && ingame == true &&
@@ -474,23 +485,36 @@ void DrawCenterAim()
 		if(drawDot)
 			*(iG_buf_center + iG_X_center) = colour;
 
+
 		// left line
 		for (x = iG_X_center - (gap + length); x <= iG_X_center - gap; x++)
 		{
-			if ((iG_buf_center + x < bufofsTopLimit) &&
-				(iG_buf_center + x > bufofsBottomLimit))
+			for(int y = startY; y < thickness; y++)
 			{
-				*(iG_buf_center + x) = colour;
+				// add nothing when current y thickness is zero, to avoid shifting down by screenwidth.
+				int ycoord = y != 0 ? iGLOBAL_SCREENWIDTH * y : 0;
+
+				if ((iG_buf_center + x + ycoord < bufofsTopLimit) &&
+					(iG_buf_center + x + ycoord > bufofsBottomLimit))
+				{
+					*(iG_buf_center + x + ycoord) = colour;
+				}
 			}
 		}
 		
 		// right line
 		for (x = iG_X_center + gap; x <= iG_X_center + (gap + length); x++)
 		{
-			if ((iG_buf_center + x < bufofsTopLimit) &&
-				(iG_buf_center + x > bufofsBottomLimit))
+			for(int y = startY; y < thickness; y++)
 			{
-				*(iG_buf_center + x) = colour;
+				// add nothing when current y thickness is zero, to avoid shifting down by screenwidth.
+				int ycoord = y != 0 ? iGLOBAL_SCREENWIDTH * y : 0;
+
+				if ((iG_buf_center + x + ycoord < bufofsTopLimit) &&
+					(iG_buf_center + x + ycoord > bufofsBottomLimit))
+				{
+					*(iG_buf_center + x + ycoord) = colour;
+				}
 			}
 		}
 		
