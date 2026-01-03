@@ -471,6 +471,7 @@ void DrawCenterAim()
 	if(thickness > 1)
 	{
 		start = 0 - thickness / 2;
+		gap += thickness;
 	}
 
 	if (iG_aimCross && !GamePaused && 
@@ -485,8 +486,15 @@ void DrawCenterAim()
 
 		// draw center dot
 		if(drawDot)
-			*(iG_buf_center + iG_X_center) = colour;
+		{
+			for(int x = start; x < thickness; x++)
+			for(int y = start; y < thickness; y++)
+			{
+				int ycoord = y != 0 ? iGLOBAL_SCREENWIDTH * y : 0;
 
+				*(iG_buf_center + iG_X_center + x + ycoord) = colour;
+			}
+		}
 
 		// left line
 		for (x = iG_X_center - (gap + length); x <= iG_X_center - gap; x++)
