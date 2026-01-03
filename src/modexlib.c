@@ -448,9 +448,11 @@ int iG_playerTilt;
 
 void DrawCenterAim()
 {
-	bool drawDot = true, drawProngs = true, drawTShape = false;
-	bool usePercentHealth = true;
-	int colour;
+	bool drawDot = true, drawProngs = true, drawTShape = true;
+	bool usePercentHealth = false;
+	bool outline = true;
+	int tempc;
+	int colour = egacolor[GREEN], outlinecolour = egacolor[BLACK];
 	int gap = 4, length = 6;
 
 	int thickness = 1, start = 0;
@@ -459,18 +461,15 @@ void DrawCenterAim()
 
 	int percenthealth = (locplayerstate->health * 10) /
 						MaxHitpointsForCharacter(locplayerstate);
+
 	int hpcolour = percenthealth < 3	? egacolor[RED]
 				: percenthealth < 4 ? egacolor[YELLOW]
 									: egacolor[GREEN];
 
 
-	// re-center crosshair to compensate for thickness.
-	// e.g. a thickness of 3 will result in a starting position of -1, thus the pixel range will be -1 to 1.
-	// as is the generally case with crosshairs, even numbered thicknesses are a pain, but still follow this rule for consistency.
-	// this will truncate, and thus is always the floor of this operation.
 	if(thickness > 1)
 	{
-		start = 0 - thickness / 2;
+		start = round(0 - (float)thickness / 2);
 		gap += thickness;
 	}
 
@@ -492,7 +491,14 @@ void DrawCenterAim()
 			{
 				int ycoord = y != 0 ? iGLOBAL_SCREENWIDTH * y : 0;
 
+				tempc = colour;
+
+				if(outline && (y == start || y == thickness - 1 || x == start || x == thickness - 1))
+					colour = outlinecolour;
+
 				*(iG_buf_center + iG_X_center + x + ycoord) = colour;
+
+				colour = tempc;
 			}
 		}
 
@@ -506,11 +512,18 @@ void DrawCenterAim()
 					// add nothing when current y thickness is zero, to avoid shifting down by screenwidth.
 					int ycoord = yc != 0 ? iGLOBAL_SCREENWIDTH * yc : 0;
 
+					tempc = colour;
+
+					if(outline && (yc == start || yc == thickness - 1 || x == iG_X_center - (gap + length) || x == iG_X_center - gap))
+						colour = outlinecolour;
+
 					if ((iG_buf_center + x + ycoord < bufofsTopLimit) &&
 						(iG_buf_center + x + ycoord > bufofsBottomLimit))
 					{
 						*(iG_buf_center + x + ycoord) = colour;
 					}
+
+					colour = tempc;
 				}
 			}
 			
@@ -522,11 +535,18 @@ void DrawCenterAim()
 					// add nothing when current y thickness is zero, to avoid shifting down by screenwidth.
 					int ycoord = yc != 0 ? iGLOBAL_SCREENWIDTH * yc : 0;
 
+					tempc = colour;
+
+					if(outline && (yc == start || yc == thickness - 1 || x == iG_X_center + gap || x == iG_X_center + (gap + length)))
+						colour = outlinecolour;
+
 					if ((iG_buf_center + x + ycoord < bufofsTopLimit) &&
 						(iG_buf_center + x + ycoord > bufofsBottomLimit))
 					{
 						*(iG_buf_center + x + ycoord) = colour;
 					}
+
+					colour = tempc;
 				}
 			}
 			
@@ -539,6 +559,11 @@ void DrawCenterAim()
 					{
 						// int xcoord = xc != 0 ? iGLOBAL_SCREENWIDTH * xc : 0;
 
+						tempc = colour;
+
+						if(outline && (xc == start || xc == thickness - 1 || x == gap + length || x == gap))
+							colour = outlinecolour;
+
 						if (((iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) <
 								bufofsTopLimit) &&
 							((iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) >
@@ -546,6 +571,8 @@ void DrawCenterAim()
 						{
 							*(iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) = colour;
 						}
+
+						colour = tempc;
 					}
 				}
 			}
@@ -557,6 +584,11 @@ void DrawCenterAim()
 				{
 					// int xcoord = xc != 0 ? iG_X_center * xc : iG_X_center;
 
+					tempc = colour;
+
+					if(outline && (xc == start || xc == thickness - 1 || x == gap + length || x == gap))
+						colour = outlinecolour;
+
 					if (((iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) <
 							bufofsTopLimit) &&
 						((iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) >
@@ -564,6 +596,8 @@ void DrawCenterAim()
 					{
 						*(iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) = colour;
 					}
+
+					colour = tempc;
 				}
 			}
 		}
