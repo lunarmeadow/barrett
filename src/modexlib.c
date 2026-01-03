@@ -30,6 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <sys/stat.h>
 #include "modexlib.h"
 #include "isr.h"
+#include "rt_cfg.h"
 #include "rt_draw.h"
 #include "rt_util.h"
 #include "rt_net.h" // for GamePaused
@@ -446,19 +447,40 @@ extern bool ingame;
 extern exit_t playstate;
 int iG_playerTilt;
 
+extern int xhair_colour;
+extern int xhair_gap;
+extern int xhair_length;
+extern int xhair_thickness;
+extern bool xhair_prongs;
+extern bool xhair_tshape;
+extern bool xhair_dot;
+extern bool xhair_spread;
+extern bool xhair_usehp;
+extern bool xhair_outline;
+
 void DrawCenterAim()
 {
-	bool drawDot = true, drawProngs = true, drawTShape = true;
-	bool usePercentHealth = false;
-	bool outline = true;
-	int tempc;
-	int colour = egacolor[GREEN], outlinecolour = egacolor[BLACK];
-	int gap = 4, length = 6;
+	// avoid continually realoading globals, keep everything local
 
-	int thickness = 1, start = 0;
+	// drawing variables
+	bool drawDot = xhair_dot, drawProngs = xhair_prongs, drawTShape = xhair_tshape;
+	bool usePercentHealth = xhair_usehp;
+	bool outline = xhair_outline;
+	int tempc;
+	int colour = egacolor[xhair_colour], outlinecolour = egacolor[BLACK];
+	int gap = xhair_gap, length = xhair_length;
+	int thickness = xhair_thickness, start = 0;
+
+	// increase locality of globals, such as placing in register or nearby memory
+	const int xcenter = iG_X_center;
+	const int ycenter = iG_Y_center;
+	const int screenW = iGLOBAL_SCREENWIDTH;
+	const char* backbufferTop = bufofsTopLimit;
+	const char* backbufferBottom = bufofsBottomLimit;
 
 	int x;
 
+	// dynamic health
 	int percenthealth = (locplayerstate->health * 10) /
 						MaxHitpointsForCharacter(locplayerstate);
 
@@ -475,13 +497,13 @@ void DrawCenterAim()
 
 	if (iG_aimCross && !GamePaused && 
 		playstate != ex_died && ingame == true &&
-		iGLOBAL_SCREENWIDTH > 320)
+		screenW > 320)
 	{
 		if(usePercentHealth)
 			colour = hpcolour;
 
 		// get center of back buffer as char pointer
-		iG_buf_center = (char*)(bufferofs + ((iG_Y_center) * iGLOBAL_SCREENWIDTH));
+		iG_buf_center = (char*)(bufferofs + ((ycenter) * screenW));
 
 		// draw center dot
 		if(drawDot)
@@ -489,14 +511,14 @@ void DrawCenterAim()
 			for(int x = start; x < thickness; x++)
 			for(int y = start; y < thickness; y++)
 			{
-				int ycoord = y != 0 ? iGLOBAL_SCREENWIDTH * y : 0;
+				int ycoord = y != 0 ? screenW * y : 0;
 
 				tempc = colour;
 
 				if(outline && (y == start || y == thickness - 1 || x == start || x == thickness - 1))
 					colour = outlinecolour;
 
-				*(iG_buf_center + iG_X_center + x + ycoord) = colour;
+				*(iG_buf_center + xcenter + x + ycoord) = colour;
 
 				colour = tempc;
 			}
@@ -505,20 +527,20 @@ void DrawCenterAim()
 		if(drawProngs)
 		{
 			// left line
-			for (x = iG_X_center - (gap + length); x <= iG_X_center - gap; x++)
+			for (x = xcenter - (gap + length); x <= xcenter - gap; x++)
 			{
 				for(int yc = start; yc < thickness; yc++)
 				{
 					// add nothing when current y thickness is zero, to avoid shifting down by screenwidth.
-					int ycoord = yc != 0 ? iGLOBAL_SCREENWIDTH * yc : 0;
+					int ycoord = yc != 0 ? screenW * yc : 0;
 
 					tempc = colour;
 
-					if(outline && (yc == start || yc == thickness - 1 || x == iG_X_center - (gap + length) || x == iG_X_center - gap))
+					if(outline && (yc == start || yc == thickness - 1 || x == xcenter - (gap + length) || x == xcenter - gap))
 						colour = outlinecolour;
 
-					if ((iG_buf_center + x + ycoord < bufofsTopLimit) &&
-						(iG_buf_center + x + ycoord > bufofsBottomLimit))
+					if ((iG_buf_center + x + ycoord < backbufferTop) &&
+						(iG_buf_center + x + ycoord > backbufferBottom))
 					{
 						*(iG_buf_center + x + ycoord) = colour;
 					}
@@ -528,20 +550,20 @@ void DrawCenterAim()
 			}
 			
 			// right line
-			for (x = iG_X_center + gap; x <= iG_X_center + (gap + length); x++)
+			for (x = xcenter + gap; x <= xcenter + (gap + length); x++)
 			{
 				for(int yc = start; yc < thickness; yc++)
 				{
 					// add nothing when current y thickness is zero, to avoid shifting down by screenwidth.
-					int ycoord = yc != 0 ? iGLOBAL_SCREENWIDTH * yc : 0;
+					int ycoord = yc != 0 ? screenW * yc : 0;
 
 					tempc = colour;
 
-					if(outline && (yc == start || yc == thickness - 1 || x == iG_X_center + gap || x == iG_X_center + (gap + length)))
+					if(outline && (yc == start || yc == thickness - 1 || x == xcenter + gap || x == xcenter + (gap + length)))
 						colour = outlinecolour;
 
-					if ((iG_buf_center + x + ycoord < bufofsTopLimit) &&
-						(iG_buf_center + x + ycoord > bufofsBottomLimit))
+					if ((iG_buf_center + x + ycoord < backbufferTop) &&
+						(iG_buf_center + x + ycoord > backbufferBottom))
 					{
 						*(iG_buf_center + x + ycoord) = colour;
 					}
@@ -564,12 +586,12 @@ void DrawCenterAim()
 						if(outline && (xc == start || xc == thickness - 1 || x == gap + length || x == gap))
 							colour = outlinecolour;
 
-						if (((iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) <
-								bufofsTopLimit) &&
-							((iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) >
-								bufofsBottomLimit))
+						if (((iG_buf_center - (x * screenW) + xcenter + xc) <
+								backbufferTop) &&
+							((iG_buf_center - (x * screenW) + xcenter + xc) >
+								backbufferBottom))
 						{
-							*(iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) = colour;
+							*(iG_buf_center - (x * screenW) + xcenter + xc) = colour;
 						}
 
 						colour = tempc;
@@ -589,12 +611,12 @@ void DrawCenterAim()
 					if(outline && (xc == start || xc == thickness - 1 || x == gap + length || x == gap))
 						colour = outlinecolour;
 
-					if (((iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) <
-							bufofsTopLimit) &&
-						((iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) >
-							bufofsBottomLimit))
+					if (((iG_buf_center + (x * screenW) + xcenter + xc) <
+							backbufferTop) &&
+						((iG_buf_center + (x * screenW) + xcenter + xc) >
+							backbufferBottom))
 					{
-						*(iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) = colour;
+						*(iG_buf_center + (x * screenW) + xcenter + xc) = colour;
 					}
 
 					colour = tempc;
