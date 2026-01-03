@@ -453,7 +453,7 @@ void DrawCenterAim()
 	int colour;
 	int gap = 4, length = 6;
 
-	int thickness = 3, startY = 0;
+	int thickness = 3, start = 0;
 
 	int x;
 
@@ -469,7 +469,9 @@ void DrawCenterAim()
 	// as is the generally case with crosshairs, even numbered thicknesses are a pain, but still follow this rule for consistency.
 	// this will truncate, and thus is always the floor of this operation.
 	if(thickness > 1)
-		startY = 0 - thickness / 2;
+	{
+		start = 0 - thickness / 2;
+	}
 
 	if (iG_aimCross && !GamePaused && 
 		playstate != ex_died && ingame == true &&
@@ -489,10 +491,10 @@ void DrawCenterAim()
 		// left line
 		for (x = iG_X_center - (gap + length); x <= iG_X_center - gap; x++)
 		{
-			for(int y = startY; y < thickness; y++)
+			for(int yc = start; yc < thickness; yc++)
 			{
 				// add nothing when current y thickness is zero, to avoid shifting down by screenwidth.
-				int ycoord = y != 0 ? iGLOBAL_SCREENWIDTH * y : 0;
+				int ycoord = yc != 0 ? iGLOBAL_SCREENWIDTH * yc : 0;
 
 				if ((iG_buf_center + x + ycoord < bufofsTopLimit) &&
 					(iG_buf_center + x + ycoord > bufofsBottomLimit))
@@ -505,10 +507,10 @@ void DrawCenterAim()
 		// right line
 		for (x = iG_X_center + gap; x <= iG_X_center + (gap + length); x++)
 		{
-			for(int y = startY; y < thickness; y++)
+			for(int yc = start; yc < thickness; yc++)
 			{
 				// add nothing when current y thickness is zero, to avoid shifting down by screenwidth.
-				int ycoord = y != 0 ? iGLOBAL_SCREENWIDTH * y : 0;
+				int ycoord = yc != 0 ? iGLOBAL_SCREENWIDTH * yc : 0;
 
 				if ((iG_buf_center + x + ycoord < bufofsTopLimit) &&
 					(iG_buf_center + x + ycoord > bufofsBottomLimit))
@@ -521,24 +523,34 @@ void DrawCenterAim()
 		// top line
 		for (x = (gap + length); x >= gap; x--)
 		{
-			if (((iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center) <
-					bufofsTopLimit) &&
-				((iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center) >
-					bufofsBottomLimit))
+			for(int xc = start; xc < thickness; xc++)
 			{
-				*(iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center) = colour;
+				// int xcoord = xc != 0 ? iGLOBAL_SCREENWIDTH * xc : 0;
+
+				if (((iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) <
+						bufofsTopLimit) &&
+					((iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) >
+						bufofsBottomLimit))
+				{
+					*(iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) = colour;
+				}
 			}
 		}
 
 		// bottom line
 		for (x = gap; x <= (gap + length); x++)
 		{
-			if (((iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center) <
-					bufofsTopLimit) &&
-				((iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center) >
-					bufofsBottomLimit))
+			for(int xc = start; xc < thickness; xc++)
 			{
-				*(iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center) = colour;
+				// int xcoord = xc != 0 ? iG_X_center * xc : iG_X_center;
+
+				if (((iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) <
+						bufofsTopLimit) &&
+					((iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) >
+						bufofsBottomLimit))
+				{
+					*(iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) = colour;
+				}
 			}
 		}
 }
