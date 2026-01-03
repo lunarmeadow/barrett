@@ -30,8 +30,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <sys/stat.h>
 #include "modexlib.h"
 #include "isr.h"
+#include "rt_actor.h"
 #include "rt_cfg.h"
+#include "rt_def.h"
 #include "rt_draw.h"
+#include "rt_playr.h"
 #include "rt_util.h"
 #include "rt_net.h" // for GamePaused
 #include "rt_view.h"
@@ -458,18 +461,24 @@ extern bool xhair_spread;
 extern bool xhair_usehp;
 extern bool xhair_outline;
 
+extern int shootcone;
+
 void DrawCenterAim()
 {
 	// avoid continually realoading globals, keep everything local
 
 	// drawing variables
 	bool drawDot = xhair_dot, drawProngs = xhair_prongs, drawTShape = xhair_tshape;
-	bool usePercentHealth = xhair_usehp;
 	bool outline = xhair_outline;
-	int tempc;
-	int colour = egacolor[xhair_colour], outlinecolour = egacolor[BLACK];
-	int gap = xhair_gap, length = xhair_length;
-	int thickness = xhair_thickness, start = 0;
+
+	bool usePercentHealth = xhair_usehp;
+	bool dynamicSpread = xhair_spread;
+
+	int colour = egacolor[xhair_colour], outlinecolour = egacolor[BLACK], tempc;
+
+	int gap = xhair_gap, length = xhair_length, thickness = xhair_thickness;
+	int start = 0;
+	
 
 	// increase locality of globals, such as placing in register or nearby memory
 	const int xcenter = iG_X_center;
@@ -485,13 +494,16 @@ void DrawCenterAim()
 						MaxHitpointsForCharacter(locplayerstate);
 
 	int hpcolour = percenthealth < 3	? egacolor[RED]
-				: percenthealth < 4 ? egacolor[YELLOW]
-									: egacolor[GREEN];
+				 : percenthealth < 4 	? egacolor[YELLOW]
+										: egacolor[GREEN];
 
 
 	if(thickness > 1)
 	{
+		// find left edge of thickness (for instance, 3 means -1 to 1 in terms of line offsets)
 		start = round(0 - (float)thickness / 2);
+
+		// compensate for thickness on center dot/small gaps
 		gap += thickness;
 	}
 
@@ -505,9 +517,23 @@ void DrawCenterAim()
 		// get center of back buffer as char pointer
 		iG_buf_center = (char*)(bufferofs + ((ycenter) * screenW));
 
+		if(dynamicSpread)
+		{
+			if(locplayerstate->buttonheld[bt_attack])
+			{
+				// x + y shoot offset
+				gap += abs(shootcone);
+			}
+			else
+			{
+				gap = 0;
+			}
+		}
+
 		// draw center dot
 		if(drawDot)
 		{
+			// draw pixels along center with x/y thickness offsets
 			for(int x = start; x < thickness; x++)
 			for(int y = start; y < thickness; y++)
 			{
@@ -515,11 +541,13 @@ void DrawCenterAim()
 
 				tempc = colour;
 
+				// calculate edges
 				if(outline && (y == start || y == thickness - 1 || x == start || x == thickness - 1))
 					colour = outlinecolour;
 
 				*(iG_buf_center + xcenter + x + ycoord) = colour;
 
+				// swap colour back for non-edge pixels
 				colour = tempc;
 			}
 		}
@@ -529,6 +557,7 @@ void DrawCenterAim()
 			// left line
 			for (x = xcenter - (gap + length); x <= xcenter - gap; x++)
 			{
+				// loop and draw lines vertically offset along thickness
 				for(int yc = start; yc < thickness; yc++)
 				{
 					// add nothing when current y thickness is zero, to avoid shifting down by screenwidth.
@@ -536,15 +565,18 @@ void DrawCenterAim()
 
 					tempc = colour;
 
+					// calculate edges
 					if(outline && (yc == start || yc == thickness - 1 || x == xcenter - (gap + length) || x == xcenter - gap))
 						colour = outlinecolour;
 
+					// calculate screen position
 					if ((iG_buf_center + x + ycoord < backbufferTop) &&
 						(iG_buf_center + x + ycoord > backbufferBottom))
 					{
 						*(iG_buf_center + x + ycoord) = colour;
 					}
 
+					// swap colour back for non-edge pixels
 					colour = tempc;
 				}
 			}
@@ -552,6 +584,7 @@ void DrawCenterAim()
 			// right line
 			for (x = xcenter + gap; x <= xcenter + (gap + length); x++)
 			{
+				// loop and draw lines vertically offset along thickness
 				for(int yc = start; yc < thickness; yc++)
 				{
 					// add nothing when current y thickness is zero, to avoid shifting down by screenwidth.
@@ -559,15 +592,18 @@ void DrawCenterAim()
 
 					tempc = colour;
 
+					// calculate edges
 					if(outline && (yc == start || yc == thickness - 1 || x == xcenter + gap || x == xcenter + (gap + length)))
 						colour = outlinecolour;
 
+					// calculate screen position
 					if ((iG_buf_center + x + ycoord < backbufferTop) &&
 						(iG_buf_center + x + ycoord > backbufferBottom))
 					{
 						*(iG_buf_center + x + ycoord) = colour;
 					}
 
+					// swap colour back for non-edge pixels
 					colour = tempc;
 				}
 			}
@@ -577,15 +613,18 @@ void DrawCenterAim()
 			{
 				for (x = (gap + length); x >= gap; x--)
 				{
+					// loop and draw lines horizontally offset along thickness
 					for(int xc = start; xc < thickness; xc++)
 					{
 						// int xcoord = xc != 0 ? iGLOBAL_SCREENWIDTH * xc : 0;
 
 						tempc = colour;
 
+						// calculate edges
 						if(outline && (xc == start || xc == thickness - 1 || x == gap + length || x == gap))
 							colour = outlinecolour;
 
+						// calculate screen position
 						if (((iG_buf_center - (x * screenW) + xcenter + xc) <
 								backbufferTop) &&
 							((iG_buf_center - (x * screenW) + xcenter + xc) >
@@ -594,6 +633,7 @@ void DrawCenterAim()
 							*(iG_buf_center - (x * screenW) + xcenter + xc) = colour;
 						}
 
+						// swap colour back for non-edge pixels
 						colour = tempc;
 					}
 				}
@@ -602,15 +642,18 @@ void DrawCenterAim()
 			// bottom line
 			for (x = gap; x <= (gap + length); x++)
 			{
+				// loop and draw lines horizontally offset along thickness
 				for(int xc = start; xc < thickness; xc++)
 				{
 					// int xcoord = xc != 0 ? iG_X_center * xc : iG_X_center;
 
 					tempc = colour;
 
+					// calculate edges
 					if(outline && (xc == start || xc == thickness - 1 || x == gap + length || x == gap))
 						colour = outlinecolour;
 
+					// calculate screen position
 					if (((iG_buf_center + (x * screenW) + xcenter + xc) <
 							backbufferTop) &&
 						((iG_buf_center + (x * screenW) + xcenter + xc) >
