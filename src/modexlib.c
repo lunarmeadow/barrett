@@ -448,6 +448,8 @@ int iG_playerTilt;
 
 void DrawCenterAim()
 {
+	bool drawDot = true;
+	int gap = 4, length = 6;
 	int x;
 
 	int percenthealth = (locplayerstate->health * 10) /
@@ -456,64 +458,61 @@ void DrawCenterAim()
 				: percenthealth < 4 ? egacolor[YELLOW]
 									: egacolor[GREEN];
 
-	if (iG_aimCross && !GamePaused && playstate != ex_died)
+	if (iG_aimCross && !GamePaused && 
+		playstate != ex_died && ingame == true &&
+		iGLOBAL_SCREENWIDTH > 320)
 	{
-		if ((ingame == true) && (iGLOBAL_SCREENWIDTH > 320))
-		{
-			if ((iG_playerTilt < 0) ||
-				(iG_playerTilt > iGLOBAL_SCREENHEIGHT / 2))
-			{
-				iG_playerTilt = -(2048 - iG_playerTilt);
-			}
-			if (iGLOBAL_SCREENWIDTH == 640)
-			{
-				x = iG_playerTilt;
-				iG_playerTilt = x / 2;
-			}
-			iG_buf_center =
-				(char*)(bufferofs + ((iG_Y_center) *
-									 iGLOBAL_SCREENWIDTH)); //+iG_X_center;
+		// get center of back buffer as char pointer
+		iG_buf_center = (char*)(bufferofs + ((iG_Y_center) * iGLOBAL_SCREENWIDTH));
 
-			for (x = iG_X_center - 10; x <= iG_X_center - 4; x++)
+		// draw center dot
+		if(drawDot)
+			*(iG_buf_center + iG_X_center) = color;
+
+		// left line
+		for (x = iG_X_center - (gap + length); x <= iG_X_center - gap; x++)
+		{
+			if ((iG_buf_center + x < bufofsTopLimit) &&
+				(iG_buf_center + x > bufofsBottomLimit))
 			{
-				if ((iG_buf_center + x < bufofsTopLimit) &&
-					(iG_buf_center + x > bufofsBottomLimit))
-				{
-					*(iG_buf_center + x) = color;
-				}
-			}
-			for (x = iG_X_center + 4; x <= iG_X_center + 10; x++)
-			{
-				if ((iG_buf_center + x < bufofsTopLimit) &&
-					(iG_buf_center + x > bufofsBottomLimit))
-				{
-					*(iG_buf_center + x) = color;
-				}
-			}
-			for (x = 10; x >= 4; x--)
-			{
-				if (((iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center) <
-					 bufofsTopLimit) &&
-					((iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center) >
-					 bufofsBottomLimit))
-				{
-					*(iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center) =
-						color;
-				}
-			}
-			for (x = 4; x <= 10; x++)
-			{
-				if (((iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center) <
-					 bufofsTopLimit) &&
-					((iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center) >
-					 bufofsBottomLimit))
-				{
-					*(iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center) =
-						color;
-				}
+				*(iG_buf_center + x) = color;
 			}
 		}
-	}
+		
+		// right line
+		for (x = iG_X_center + gap; x <= iG_X_center + (gap + length); x++)
+		{
+			if ((iG_buf_center + x < bufofsTopLimit) &&
+				(iG_buf_center + x > bufofsBottomLimit))
+			{
+				*(iG_buf_center + x) = color;
+			}
+		}
+		
+		// top line
+		for (x = (gap + length); x >= gap; x--)
+		{
+			if (((iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center) <
+					bufofsTopLimit) &&
+				((iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center) >
+					bufofsBottomLimit))
+			{
+				*(iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center) = color;
+			}
+		}
+
+		// bottom line
+		for (x = gap; x <= (gap + length); x++)
+		{
+			if (((iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center) <
+					bufofsTopLimit) &&
+				((iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center) >
+					bufofsBottomLimit))
+			{
+				*(iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center) = color;
+			}
+		}
+}
 }
 // bna function added end
 
