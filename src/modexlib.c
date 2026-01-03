@@ -448,12 +448,12 @@ int iG_playerTilt;
 
 void DrawCenterAim()
 {
-	bool drawDot = true;
+	bool drawDot = true, drawProngs = true, drawTShape = false;
 	bool usePercentHealth = true;
 	int colour;
 	int gap = 4, length = 6;
 
-	int thickness = 3, start = 0;
+	int thickness = 1, start = 0;
 
 	int x;
 
@@ -496,73 +496,80 @@ void DrawCenterAim()
 			}
 		}
 
-		// left line
-		for (x = iG_X_center - (gap + length); x <= iG_X_center - gap; x++)
+		if(drawProngs)
 		{
-			for(int yc = start; yc < thickness; yc++)
+			// left line
+			for (x = iG_X_center - (gap + length); x <= iG_X_center - gap; x++)
 			{
-				// add nothing when current y thickness is zero, to avoid shifting down by screenwidth.
-				int ycoord = yc != 0 ? iGLOBAL_SCREENWIDTH * yc : 0;
-
-				if ((iG_buf_center + x + ycoord < bufofsTopLimit) &&
-					(iG_buf_center + x + ycoord > bufofsBottomLimit))
+				for(int yc = start; yc < thickness; yc++)
 				{
-					*(iG_buf_center + x + ycoord) = colour;
+					// add nothing when current y thickness is zero, to avoid shifting down by screenwidth.
+					int ycoord = yc != 0 ? iGLOBAL_SCREENWIDTH * yc : 0;
+
+					if ((iG_buf_center + x + ycoord < bufofsTopLimit) &&
+						(iG_buf_center + x + ycoord > bufofsBottomLimit))
+					{
+						*(iG_buf_center + x + ycoord) = colour;
+					}
+				}
+			}
+			
+			// right line
+			for (x = iG_X_center + gap; x <= iG_X_center + (gap + length); x++)
+			{
+				for(int yc = start; yc < thickness; yc++)
+				{
+					// add nothing when current y thickness is zero, to avoid shifting down by screenwidth.
+					int ycoord = yc != 0 ? iGLOBAL_SCREENWIDTH * yc : 0;
+
+					if ((iG_buf_center + x + ycoord < bufofsTopLimit) &&
+						(iG_buf_center + x + ycoord > bufofsBottomLimit))
+					{
+						*(iG_buf_center + x + ycoord) = colour;
+					}
+				}
+			}
+			
+			// top line
+			if(!drawTShape)
+			{
+				for (x = (gap + length); x >= gap; x--)
+				{
+					for(int xc = start; xc < thickness; xc++)
+					{
+						// int xcoord = xc != 0 ? iGLOBAL_SCREENWIDTH * xc : 0;
+
+						if (((iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) <
+								bufofsTopLimit) &&
+							((iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) >
+								bufofsBottomLimit))
+						{
+							*(iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) = colour;
+						}
+					}
+				}
+			}
+
+			// bottom line
+			for (x = gap; x <= (gap + length); x++)
+			{
+				for(int xc = start; xc < thickness; xc++)
+				{
+					// int xcoord = xc != 0 ? iG_X_center * xc : iG_X_center;
+
+					if (((iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) <
+							bufofsTopLimit) &&
+						((iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) >
+							bufofsBottomLimit))
+					{
+						*(iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) = colour;
+					}
 				}
 			}
 		}
-		
-		// right line
-		for (x = iG_X_center + gap; x <= iG_X_center + (gap + length); x++)
-		{
-			for(int yc = start; yc < thickness; yc++)
-			{
-				// add nothing when current y thickness is zero, to avoid shifting down by screenwidth.
-				int ycoord = yc != 0 ? iGLOBAL_SCREENWIDTH * yc : 0;
-
-				if ((iG_buf_center + x + ycoord < bufofsTopLimit) &&
-					(iG_buf_center + x + ycoord > bufofsBottomLimit))
-				{
-					*(iG_buf_center + x + ycoord) = colour;
-				}
-			}
-		}
-		
-		// top line
-		for (x = (gap + length); x >= gap; x--)
-		{
-			for(int xc = start; xc < thickness; xc++)
-			{
-				// int xcoord = xc != 0 ? iGLOBAL_SCREENWIDTH * xc : 0;
-
-				if (((iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) <
-						bufofsTopLimit) &&
-					((iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) >
-						bufofsBottomLimit))
-				{
-					*(iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) = colour;
-				}
-			}
-		}
-
-		// bottom line
-		for (x = gap; x <= (gap + length); x++)
-		{
-			for(int xc = start; xc < thickness; xc++)
-			{
-				// int xcoord = xc != 0 ? iG_X_center * xc : iG_X_center;
-
-				if (((iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) <
-						bufofsTopLimit) &&
-					((iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) >
-						bufofsBottomLimit))
-				{
-					*(iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center + xc) = colour;
-				}
-			}
-		}
+	}
 }
-}
+
 // bna function added end
 
 // bna section -------------------------------------------
