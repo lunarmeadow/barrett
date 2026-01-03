@@ -444,17 +444,19 @@ static void StretchMemPicture()
 // bna function added start
 extern bool ingame;
 extern exit_t playstate;
-int iG_playerTilt;
 
 void DrawCenterAim()
 {
 	bool drawDot = true;
+	bool usePercentHealth = true;
+	int colour;
 	int gap = 4, length = 6;
+
 	int x;
 
 	int percenthealth = (locplayerstate->health * 10) /
 						MaxHitpointsForCharacter(locplayerstate);
-	int color = percenthealth < 3	? egacolor[RED]
+	int hpcolour = percenthealth < 3	? egacolor[RED]
 				: percenthealth < 4 ? egacolor[YELLOW]
 									: egacolor[GREEN];
 
@@ -462,12 +464,15 @@ void DrawCenterAim()
 		playstate != ex_died && ingame == true &&
 		iGLOBAL_SCREENWIDTH > 320)
 	{
+		if(usePercentHealth)
+			colour = hpcolour;
+
 		// get center of back buffer as char pointer
 		iG_buf_center = (char*)(bufferofs + ((iG_Y_center) * iGLOBAL_SCREENWIDTH));
 
 		// draw center dot
 		if(drawDot)
-			*(iG_buf_center + iG_X_center) = color;
+			*(iG_buf_center + iG_X_center) = colour;
 
 		// left line
 		for (x = iG_X_center - (gap + length); x <= iG_X_center - gap; x++)
@@ -475,7 +480,7 @@ void DrawCenterAim()
 			if ((iG_buf_center + x < bufofsTopLimit) &&
 				(iG_buf_center + x > bufofsBottomLimit))
 			{
-				*(iG_buf_center + x) = color;
+				*(iG_buf_center + x) = colour;
 			}
 		}
 		
@@ -485,7 +490,7 @@ void DrawCenterAim()
 			if ((iG_buf_center + x < bufofsTopLimit) &&
 				(iG_buf_center + x > bufofsBottomLimit))
 			{
-				*(iG_buf_center + x) = color;
+				*(iG_buf_center + x) = colour;
 			}
 		}
 		
@@ -497,7 +502,7 @@ void DrawCenterAim()
 				((iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center) >
 					bufofsBottomLimit))
 			{
-				*(iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center) = color;
+				*(iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center) = colour;
 			}
 		}
 
@@ -509,7 +514,7 @@ void DrawCenterAim()
 				((iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center) >
 					bufofsBottomLimit))
 			{
-				*(iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center) = color;
+				*(iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center) = colour;
 			}
 		}
 }
