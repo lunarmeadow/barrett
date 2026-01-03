@@ -110,7 +110,7 @@ extern MacroList CommbatMacros[MAXMACROS];
 void WriteBattleConfig(void);
 void ReadScores(void);
 void ReadInt(const char* s1, int* val);
-void Readbool(const char* s1, bool* val);
+void ReadBool(const char* s1, bool* val);
 void ReadConfig(void);
 void WriteParameter(int file, const char* s1, int val);
 void WriteScores(void);

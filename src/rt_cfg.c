@@ -192,11 +192,11 @@ void ReadInt(const char* s1, int* val)
 
 //******************************************************************************
 //
-// Readbool
+// ReadBool
 //
 //******************************************************************************
 
-void Readbool(const char* s1, bool* val)
+void ReadBool(const char* s1, bool* val)
 {
 	int temp;
 
@@ -265,7 +265,7 @@ bool ParseSoundFile(void)
 
 		// Read in stereo reversal
 
-		Readbool("StereoReverse", &stereoreversed);
+		ReadBool("StereoReverse", &stereoreversed);
 	}
 	else
 		retval = false;
@@ -419,46 +419,73 @@ bool ParseConfigFile(void)
 	if (version == ROTTVERSION)
 	{
 		// Read in AutoAim
-		Readbool("AutoAim", &autoAim);
+		ReadBool("AutoAim", &autoAim);
 
 		// Read in AutoAimMissileWeps
-		Readbool("AutoAimMissileWeps", &autoAimMissileWeps);
+		ReadBool("AutoAimMissileWeps", &autoAimMissileWeps);
 
 		// Read in scaleOffset
 		ReadInt("FocalWidthOffset", &FocalWidthOffset);
 
 		// Read in MouseEnabled
-		Readbool("MouseEnabled", &mouseenabled);
+		ReadBool("MouseEnabled", &mouseenabled);
 
 		// Read in UseMouseLook
-		Readbool("UseMouseLook", &usemouselook);
+		ReadBool("UseMouseLook", &usemouselook);
 
 		// Read in UseOPLMusic
-		Readbool("UseOPLMusic", &useoplmusic);
+		ReadBool("UseOPLMusic", &useoplmusic);
 
 		ReadInt("InverseMouse", &inverse_mouse);
 
-		Readbool("AllowMovementWithMouseYAxis",
+		ReadBool("AllowMovementWithMouseYAxis",
 					&allowMovementWithMouseYAxis);
 
 		// Read in CrossHair
-		Readbool("CrossHair", &iG_aimCross);
+		ReadBool("CrossHair", &iG_aimCross);
+
+		// Read in CrossHair Gap
+		ReadInt("CrossHairGap", &xhair_gap);
+
+		// Read in CrossHair Length
+		ReadInt("CrossHairLen", &xhair_length);
+
+		// Read in CrossHair Thickness
+		ReadInt("CrossHairThick", &xhair_thickness);
+
+		// Read in CrossHair Color
+		ReadInt("CrossHairEGA", &xhair_colour);
+
+		// Read in CrossHair Spread
+		ReadBool("CrossHairSpread", &xhair_spread);
+
+		// Read in CrossHair Prongs
+		ReadBool("CrossHairProngs", &xhair_prongs);
+
+		// Read in CrossHair Dot
+		ReadBool("CrossHairDot", &xhair_dot);
+
+		// Read in CrossHair TShape
+		ReadBool("CrossHairTShape", &xhair_tshape);
+
+		// Read in CrossHair HP
+		ReadBool("CrossHairHP", &xhair_usehp);
 
 		// Read in JoystickEnabled
-		Readbool("JoystickEnabled", &joystickenabled);
+		ReadBool("JoystickEnabled", &joystickenabled);
 
 		// Read in JoypadEnabled
-		Readbool("JoypadEnabled", &joypadenabled);
+		ReadBool("JoypadEnabled", &joypadenabled);
 
 		// Read in JoystickPort
 		ReadInt("JoystickPort", &joystickport);
 
 		// Read in fullscreen
-		Readbool("FullScreen", &sdl_fullscreen);
+		ReadBool("FullScreen", &sdl_fullscreen);
 
-		Readbool("BorderWindow", &borderWindow);
+		ReadBool("BorderWindow", &borderWindow);
 
-		Readbool("BorderlessWindow", &borderlessWindow);
+		ReadBool("BorderlessWindow", &borderlessWindow);
 
 		// Read in resolution
 		ReadInt("ScreenWidth", &iGLOBAL_SCREENWIDTH);
@@ -477,13 +504,13 @@ bool ParseConfigFile(void)
 		ReadInt("Threshold", &threshold);
 
 		// Read in Auto Detail
-		Readbool("AutoDetail", &AutoDetailOn);
+		ReadBool("AutoDetail", &AutoDetailOn);
 
 		// Read in Light Dim
 		ReadInt("LightDim", &fulllight);
 
 		// Read in Bobbin' On
-		Readbool("BobbingOn", &BobbinOn);
+		ReadBool("BobbingOn", &BobbinOn);
 
 		// Read in Double Click Speed
 		ReadInt("DoubleClickSpeed", &DoubleClickSpeed);
@@ -498,7 +525,7 @@ bool ParseConfigFile(void)
 		ReadInt("FloorCeiling", &fandc);
 
 		// Read in MessagesEnabled
-		Readbool("Messages", &MessagesEnabled);
+		ReadBool("Messages", &MessagesEnabled);
 
 		// Read in Autorun
 		ReadInt("AutoRun", &gamestate.autorun);
@@ -611,7 +638,7 @@ bool ParseBattleFile(void)
 		retval = false;
 	else
 	{
-		Readbool("ShowKillCount", &BATTLE_ShowKillCount);
+		ReadBool("ShowKillCount", &BATTLE_ShowKillCount);
 
 		ReadInt("GodModeTime", &BattleSpecialsTimes.GodModeTime);
 		ReadInt("DogModeTime", &BattleSpecialsTimes.DogModeTime);
@@ -636,7 +663,7 @@ bool ParseBattleFile(void)
 		ReadInt("MercuryModeRespawnTime",
 				&BattleSpecialsTimes.MercuryModeRespawnTime);
 
-		Readbool("EKG", &battlegibs);
+		ReadBool("EKG", &battlegibs);
 
 		for (index = battle_Normal; index < battle_NumBattleModes; index++)
 		{
@@ -1637,6 +1664,57 @@ void WriteConfig(void)
 	SafeWriteString(file, "; 1 - CrossHair Enabled\n");
 	SafeWriteString(file, "; 0 - CrossHair Disabled\n");
 	WriteParameter(file, "CrossHair        ", iG_aimCross);
+
+	// Write out CrossHair Gap
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; CrossHair Gap\n");
+	WriteParameter(file, "CrossHairGap     ", xhair_gap);
+
+	// Write out CrossHair Length
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; CrossHair Length\n");
+	WriteParameter(file, "CrossHairLen     ", xhair_length);
+
+
+	// Write out CrossHair Thickness
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; CrossHairThickness\n");
+	WriteParameter(file, "CrossHairThick   ", xhair_thickness);
+
+	// Write out CrossHair Color
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 0-15 - CrossHair EGA Colour\n");
+	WriteParameter(file, "CrossHairEGA     ", xhair_colour);
+
+	// Write out CrossHair Spread
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - CrossHair Dynamic Spread Enabled\n");
+	SafeWriteString(file, "; 0 - CrossHair Dynamic Spread Disabled\n");
+	WriteParameter(file, "CrossHairSpread  ", xhair_spread);
+
+	// Write out CrossHair Prongs
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - CrossHair Prongs Enabled\n");
+	SafeWriteString(file, "; 0 - CrossHair Prongs Disabled\n");
+	WriteParameter(file, "CrossHairProngs  ", xhair_prongs);
+
+	// Write out CrossHair Dot
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - CrossHair Dot Enabled\n");
+	SafeWriteString(file, "; 0 - CrossHair Dot Disabled\n");
+	WriteParameter(file, "CrossHairDot     ", xhair_dot);
+
+	// Write out CrossHair TShape
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - T CrossHair Enabled\n");
+	SafeWriteString(file, "; 0 - T CrossHair Disabled\n");
+	WriteParameter(file, "CrossHairTShape  ", xhair_tshape);
+
+	// Write out CrossHair HP
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - HP CrossHair Enabled\n");
+	SafeWriteString(file, "; 0 - HP CrossHair Disabled\n");
+	WriteParameter(file, "CrossHairHP      ", xhair_usehp);
 
 	// Write out JoystickEnabled
 
