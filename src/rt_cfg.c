@@ -101,6 +101,7 @@ bool xhair_tshape = false;
 bool xhair_dot = false;
 bool xhair_spread = false;
 bool xhair_usehp = false;
+bool xhair_outline = false;
 
 bool joystickenabled = 0;
 bool joypadenabled = 0;
@@ -464,6 +465,9 @@ bool ParseConfigFile(void)
 
 		// Read in CrossHair Dot
 		ReadBool("CrossHairDot", &xhair_dot);
+
+		// Read in CrossHair Outline
+		ReadBool("CrossHairOutline", &xhair_outline);
 
 		// Read in CrossHair TShape
 		ReadBool("CrossHairTShape", &xhair_tshape);
@@ -1703,6 +1707,12 @@ void WriteConfig(void)
 	SafeWriteString(file, "; 1 - CrossHair Dot Enabled\n");
 	SafeWriteString(file, "; 0 - CrossHair Dot Disabled\n");
 	WriteParameter(file, "CrossHairDot     ", xhair_dot);
+
+	// Write out CrossHair Dot
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - CrossHair Outline Enabled\n");
+	SafeWriteString(file, "; 0 - CrossHair Outline Disabled\n");
+	WriteParameter(file, "CrossHairOutline ", xhair_outline);
 
 	// Write out CrossHair TShape
 	SafeWriteString(file, "\n;\n");

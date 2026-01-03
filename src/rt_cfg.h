@@ -72,6 +72,7 @@ extern bool xhair_tshape;
 extern bool xhair_dot;
 extern bool xhair_spread;
 extern bool xhair_usehp;
+extern bool xhair_outline;
 
 extern int DefaultDifficulty;
 extern int DefaultPlayerCharacter;

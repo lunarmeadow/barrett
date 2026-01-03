@@ -554,7 +554,7 @@ CP_MenuNames CrosshairOptionsNames[] = {"COLOUR", "PARAMETERS",
 
 // draw prongs, dot, t shape, use health colour, dynamic spread									 
 CP_MenuNames CrosshairParamsNames[] = {"PRONGS", "T-SHAPE PRONGS", "CENTER DOT",
-									 "COLOUR BY HEALTH", "DYNAMIC SPREAD"}; // ashley added		
+									 "OUTLINE", "COLOUR BY HEALTH", "DYNAMIC SPREAD"}; // ashley added		
 
 typedef struct
 {
@@ -606,7 +606,7 @@ CP_iteminfo CrosshairOptionsItems = {
 
 // draw prongs, dot, t shape, use health colour, dynamic spread
 CP_iteminfo CrosshairParamsItems = {
-	20, MENU_Y, 5, 0, 43, CrosshairParamsNames, mn_largefont}; // ashley added
+	20, MENU_Y, 6, 0, 43, CrosshairParamsNames, mn_largefont}; // ashley added
 
 // CP_MenuNames CrosshairParamsNames[] = {"PRONGS", "T-SHAPE PRONGS", "CENTER DOT",
 // 									 "COLOUR BY HEALTH", "DYNAMIC SPREAD"};
@@ -615,6 +615,7 @@ CP_itemtype CrosshairParamsMenu[] = {
 	{1, "", 'P', NULL}, 
 	{1, "", 'T', NULL}, 
 	{1, "", 'D', NULL},
+	{1, "", 'O', NULL},
 	{1, "", 'H', NULL},
 	{1, "", 'S', NULL},}; // ashley added
 
@@ -4865,10 +4866,14 @@ void DrawCrosshairOptionsButtons(void)
 					on = 1;
 				break;
 			case 3:
-				if (xhair_usehp == true)
+				if (xhair_outline == true)
 					on = 1;
 				break;
 			case 4:
+				if (xhair_usehp == true)
+					on = 1;
+				break;
+			case 5:
 				if (xhair_spread == true)
 					on = 1;
 				break;
@@ -4993,10 +4998,14 @@ void CP_CrosshairParameters(void)
 			DrawCrosshairOptionsButtons();
 			break;
 		case 3:
-			xhair_usehp ^= 1;
+			xhair_outline ^= 1;
 			DrawCrosshairOptionsButtons();
 			break;
 		case 4:
+			xhair_usehp ^= 1;
+			DrawCrosshairOptionsButtons();
+			break;
+		case 5:
 			xhair_spread ^= 1;
 			DrawCrosshairOptionsButtons();
 			break;
