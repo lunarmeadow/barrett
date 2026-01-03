@@ -614,9 +614,9 @@ CP_iteminfo CrosshairParamsItems = {
 CP_itemtype CrosshairParamsMenu[] = {
 	{1, "", 'P', NULL}, 
 	{1, "", 'T', NULL}, 
-	{1, "", 'C', NULL},
+	{1, "", 'D', NULL},
 	{1, "", 'H', NULL},
-	{1, "", 'D', NULL},}; // ashley added
+	{1, "", 'S', NULL},}; // ashley added
 
 void CP_ScreenResolution(void);
 
@@ -4865,11 +4865,11 @@ void DrawCrosshairOptionsButtons(void)
 					on = 1;
 				break;
 			case 3:
-				if (xhair_spread == true)
+				if (xhair_usehp == true)
 					on = 1;
 				break;
 			case 4:
-				if (xhair_usehp == true)
+				if (xhair_spread == true)
 					on = 1;
 				break;
 			default:
@@ -4993,11 +4993,11 @@ void CP_CrosshairParameters(void)
 			DrawCrosshairOptionsButtons();
 			break;
 		case 3:
-			xhair_spread ^= 1;
+			xhair_usehp ^= 1;
 			DrawCrosshairOptionsButtons();
 			break;
-		case 5:
-			xhair_usehp ^= 1;
+		case 4:
+			xhair_spread ^= 1;
 			DrawCrosshairOptionsButtons();
 			break;
 		default:
