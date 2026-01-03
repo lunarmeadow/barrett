@@ -63,6 +63,16 @@ extern int blanktime;
 extern char CodeName[9];
 extern char ApogeePath[256];
 
+extern int xhair_colour;
+extern int xhair_gap;
+extern int xhair_length;
+extern int xhair_thickness;
+extern bool xhair_prongs;
+extern bool xhair_tshape;
+extern bool xhair_dot;
+extern bool xhair_spread;
+extern bool xhair_usehp;
+
 extern int DefaultDifficulty;
 extern int DefaultPlayerCharacter;
 extern int DefaultPlayerColor;

@@ -91,6 +91,17 @@ int HudScaleToWriteToCfg = 0;
 int ScreenWidthToWriteToCfg = 0;
 bool writeNewResIntoCfg = false;
 
+// ashley added:
+int xhair_colour = GREEN;
+int xhair_gap = 4;
+int xhair_length = 6;
+int xhair_thickness = 1;
+bool xhair_prongs = true;
+bool xhair_tshape = false;
+bool xhair_dot = false;
+bool xhair_spread = false;
+bool xhair_usehp = false;
+
 bool joystickenabled = 0;
 bool joypadenabled = 0;
 int joystickport = 0;

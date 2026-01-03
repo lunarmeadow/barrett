@@ -549,7 +549,7 @@ CP_MenuNames ExtGameOptionsNames[] = {"LOW MEMORY MODE", "WEAPON RECOLOURS", "DO
 CP_MenuNames VisualOptionsNames[] = {"SCREEN RESOLUTION", "ADJUST FOCAL WIDTH",
 									 "HUD SCALING", "DISPLAY OPTIONS", "CROSSHAIR OPTIONS"};
 
-CP_MenuNames CrosshairOptionsNames[] = {"SHAPE", "COLOUR", "SETTINGS",
+CP_MenuNames CrosshairOptionsNames[] = {"COLOUR", "PARAMETERS",
 									 "GAP", "LENGTH", "THICKNESS"}; // ashley added									 
 
 // draw prongs, dot, t shape, use health colour, dynamic spread									 
@@ -591,7 +591,7 @@ CP_iteminfo VisualOptionsItems = {
 	20, MENU_Y, 5, 0, 43, VisualOptionsNames, mn_largefont};
 
 CP_iteminfo CrosshairOptionsItems = {
-	20, MENU_Y, 6, 0, 43, CrosshairOptionsNames, mn_largefont}; // ashley added
+	20, MENU_Y, 5, 0, 43, CrosshairOptionsNames, mn_largefont}; // ashley added
 
 CP_iteminfo ScreenResolutionItems; // This gets filled in at run time
 
@@ -613,21 +613,27 @@ void CP_ScreenResolution(void);
 void CP_DisplayOptions(void);
 void DoAdjustHudScale(void);
 
+void DoAdjustCrosshairColour(void);
+void DoAdjustCrosshairGap(void);
+void DoAdjustCrosshairThickness(void);
+void DoAdjustCrosshairLength(void);
+void CP_CrosshairParameters(void);
+
 CP_itemtype VisualsOptionsMenu[] = {{1, "", 'S', (menuptr)CP_ScreenResolution},
 									{1, "", 'F', (menuptr)DoAdjustFocalWidth},
 									{1, "", 'H', (menuptr)DoAdjustHudScale},
 									{1, "", 'D', (menuptr)CP_DisplayOptions}};
 
 
-// CP_MenuNames CrosshairOptionsNames[] = {"SHAPE", "COLOUR", "PARAMETERS",
+// CP_MenuNames CrosshairOptionsNames[] = {"COLOUR", "PARAMETERS",
 // 									 "GAP", "LENGTH", "THICKNESS"};								 
 								
-CP_itemtype CrosshairOptionsMenu[] = {{1, "", 'S', (menuptr)CP_CrosshairShape},
-									{1, "", 'C', (menuptr)CP_CrosshairColour},
+CP_itemtype CrosshairOptionsMenu[] = {
+									{1, "", 'C', (menuptr)DoAdjustCrosshairColour},
 									{1, "", 'P', (menuptr)CP_CrosshairParameters},
-									{1, "", 'G', (menuptr)CP_CrosshairGap},
-									{1, "", 'L', (menuptr)CP_CrosshairLength},
-									{1, "", 'T', (menuptr)CP_CrosshairThickness}}; // ashley added
+									{1, "", 'G', (menuptr)DoAdjustCrosshairGap},
+									{1, "", 'L', (menuptr)DoAdjustCrosshairLength},
+									{1, "", 'T', (menuptr)DoAdjustCrosshairThickness}}; // ashley added
 
 CP_itemtype ExtOptionsMenu[] = {
 	{1, "", 'M', NULL}, {1, "", 'I', NULL}, {1, "", 'D', NULL},
@@ -4539,6 +4545,24 @@ void DrawVisualsMenu(void)
 	FlipMenuBuf();
 }
 
+// ashley added
+void DrawCrosshairMenu(void)
+{
+	MenuNum = 1;
+	SetAlternateMenuBuf();
+	ClearMenuBuf();
+	SetMenuTitle("Crosshair Menu");
+
+	MN_GetCursorLocation(&CrosshairOptionsItems, &CrosshairOptionsMenu[0]);
+	DrawMenu(&CrosshairOptionsItems, &CrosshairOptionsMenu[0]);
+	DrawMenuBufItem(
+		CrosshairOptionsItems.x,
+		((CrosshairOptionsItems.curpos * 14) + (CrosshairOptionsItems.y - 2)),
+		W_GetNumForName(LargeCursor) + CursorFrame[CursorNum]);
+	DisplayInfo(0);
+	FlipMenuBuf();
+}
+
 void CP_VisualsMenu(void)
 {
 	int which;
@@ -4555,11 +4579,11 @@ void CP_VisualsMenu(void)
 void CP_CrosshairMenu(void)
 {
 	int which;
-	DrawVisualsMenu();
+	DrawCrosshairMenu();
 
 	do
 	{
-		which = HandleMenu(&VisualOptionsItems, &VisualsOptionsMenu[0], NULL);
+		which = HandleMenu(&CrosshairOptionsItems, &CrosshairOptionsMenu[0], NULL);
 	} while (which >= 0);
 
 	DrawControlMenu();
@@ -4581,6 +4605,42 @@ void DoAdjustHudScale(void)
 			   "Adjust Hud Scaling", "Small", "Large");
 	DrawVisualsMenu();
 }
+
+// ashley added
+
+extern int xhair_colour;
+extern int xhair_gap;
+extern int xhair_length;
+extern int xhair_thickness;
+
+void DoAdjustCrosshairColour(void)
+{
+	SliderMenu(&xhair_colour, 15, 0, 44, 81, 194, 4, "block2", NULL,
+			   "Crosshair Colour", "\0", "\0");
+	DrawCrosshairMenu();
+}
+
+void DoAdjustCrosshairGap(void)
+{
+	SliderMenu(&xhair_gap, 16, 0, 44, 81, 194, 4, "block2", NULL,
+			   "Adjust Crosshair Gap", "Pinhead", "Haystack");
+	DrawCrosshairMenu();
+}
+
+void DoAdjustCrosshairThickness(void)
+{
+	SliderMenu(&FocalWidthOffset, 9, 0, 44, 81, 194, 4, "block2", NULL,
+			   "Adjust Crosshair Thickness", "Flimsy", "Robust");
+	DrawCrosshairMenu();
+}
+
+void DoAdjustCrosshairLength(void)
+{
+	SliderMenu(&FocalWidthOffset, 16, 0, 44, 81, 194, 4, "block2", NULL,
+			   "Adjust Crosshair Length", "", "You're Toast");
+	DrawCrosshairMenu();
+}
+
 
 void DrawScreenResolutionMenu(void)
 {
