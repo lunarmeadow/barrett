@@ -508,7 +508,7 @@ void DrawCenterAim(void)
 		gap += thickness;
 	}
 
-	if(thickness == 0)
+	if(thickness == 1)
 	{
 		start = 0;
 	}

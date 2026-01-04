@@ -4663,7 +4663,7 @@ void DoAdjustCrosshairGap(void)
 
 void DoAdjustCrosshairThickness(void)
 {
-	BoundSliderMenu(&xhair_thickness, 15, 0, 44, 81, 194, 3, "block2", NULL,
+	BoundSliderMenu(&xhair_thickness, 15, 1, 44, 81, 194, 2, "block2", NULL,
 			   "Adjust Crosshair Thickness", "Thickness: ", "px");
 	DrawCrosshairMenu();
 }
