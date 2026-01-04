@@ -463,6 +463,8 @@ extern bool xhair_outline;
 
 extern int shootcone;
 
+int maxcone = 0;
+
 void DrawCenterAim()
 {
 	// avoid continually realoading globals, keep everything local
@@ -477,6 +479,7 @@ void DrawCenterAim()
 	int colour = egacolor[xhair_colour], outlinecolour = egacolor[BLACK], tempc;
 
 	int gap = xhair_gap, length = xhair_length, thickness = xhair_thickness;
+
 	int start = 0;
 	
 	// increase locality of globals, such as placing in register or nearby memory
@@ -526,18 +529,25 @@ void DrawCenterAim()
 			if(ply->buttonheld[bt_attack] && ply->weapon <= wp_mp40 &&
 			  !ply->weapondowntics && !ply->weaponuptics)
 			{
+				// find widest part of spread pattern over trigger pull
 				// x + y shoot offset
-				gap = abs(shootcone);
+				maxcone = max(maxcone, shootcone);
+				gap = abs(maxcone) + thickness;
 			}
 			else if(locplayerstate->weapon > wp_mp40)
 			{
 				// show regular gap for missile and magic weapons
 				gap = xhair_gap;
+
+				// reset maxcone for next burst
+				maxcone = 0;
 			}
 			else
 			{
 				// if using bullet weapon, reset to zero gap
-				gap = 0;
+				gap = thickness;
+
+				maxcone = 0;
 			}
 		}
 
