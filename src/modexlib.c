@@ -479,15 +479,13 @@ void DrawCenterAim()
 	int gap = xhair_gap, length = xhair_length, thickness = xhair_thickness;
 	int start = 0;
 	
-
 	// increase locality of globals, such as placing in register or nearby memory
 	const int xcenter = iG_X_center;
 	const int ycenter = iG_Y_center;
 	const int screenW = iGLOBAL_SCREENWIDTH;
 	const char* backbufferTop = bufofsTopLimit;
 	const char* backbufferBottom = bufofsBottomLimit;
-
-	int x;
+	const playertype* ply = locplayerstate;
 
 	// dynamic health
 	int percenthealth = (locplayerstate->health * 10) /
@@ -507,6 +505,11 @@ void DrawCenterAim()
 		gap += thickness;
 	}
 
+	if(thickness == 0)
+	{
+		start = 0;
+	}
+
 	if (iG_aimCross && !GamePaused && 
 		playstate != ex_died && ingame == true &&
 		screenW > 320)
@@ -519,13 +522,21 @@ void DrawCenterAim()
 
 		if(dynamicSpread)
 		{
-			if(locplayerstate->buttonheld[bt_attack])
+			// only show spread for bullet weapons ready to fire while attacking
+			if(ply->buttonheld[bt_attack] && ply->weapon <= wp_mp40 &&
+			  !ply->weapondowntics && !ply->weaponuptics)
 			{
 				// x + y shoot offset
-				gap += abs(shootcone);
+				gap = abs(shootcone);
+			}
+			else if(locplayerstate->weapon > wp_mp40)
+			{
+				// show regular gap for missile and magic weapons
+				gap = xhair_gap;
 			}
 			else
 			{
+				// if using bullet weapon, reset to zero gap
 				gap = 0;
 			}
 		}
@@ -542,7 +553,7 @@ void DrawCenterAim()
 				tempc = colour;
 
 				// calculate edges
-				if(outline && (y == start || y == thickness - 1 || x == start || x == thickness - 1))
+				if(outline && thickness > 2 && (y == start || y == thickness - 1 || x == start || x == thickness - 1))
 					colour = outlinecolour;
 
 				*(iG_buf_center + xcenter + x + ycoord) = colour;
@@ -555,7 +566,7 @@ void DrawCenterAim()
 		if(drawProngs)
 		{
 			// left line
-			for (x = xcenter - (gap + length); x <= xcenter - gap; x++)
+			for (int x = xcenter - (gap + length); x <= xcenter - gap; x++)
 			{
 				// loop and draw lines vertically offset along thickness
 				for(int yc = start; yc < thickness; yc++)
@@ -566,7 +577,7 @@ void DrawCenterAim()
 					tempc = colour;
 
 					// calculate edges
-					if(outline && (yc == start || yc == thickness - 1 || x == xcenter - (gap + length) || x == xcenter - gap))
+					if(outline && thickness > 2 && (yc == start || yc == thickness - 1 || x == xcenter - (gap + length) || x == xcenter - gap))
 						colour = outlinecolour;
 
 					// calculate screen position
@@ -582,7 +593,7 @@ void DrawCenterAim()
 			}
 			
 			// right line
-			for (x = xcenter + gap; x <= xcenter + (gap + length); x++)
+			for (int x = xcenter + gap; x <= xcenter + (gap + length); x++)
 			{
 				// loop and draw lines vertically offset along thickness
 				for(int yc = start; yc < thickness; yc++)
@@ -593,7 +604,7 @@ void DrawCenterAim()
 					tempc = colour;
 
 					// calculate edges
-					if(outline && (yc == start || yc == thickness - 1 || x == xcenter + gap || x == xcenter + (gap + length)))
+					if(outline && thickness > 2 && (yc == start || yc == thickness - 1 || x == xcenter + gap || x == xcenter + (gap + length)))
 						colour = outlinecolour;
 
 					// calculate screen position
@@ -611,7 +622,7 @@ void DrawCenterAim()
 			// top line
 			if(!drawTShape)
 			{
-				for (x = (gap + length); x >= gap; x--)
+				for (int x = (gap + length); x >= gap; x--)
 				{
 					// loop and draw lines horizontally offset along thickness
 					for(int xc = start; xc < thickness; xc++)
@@ -621,7 +632,7 @@ void DrawCenterAim()
 						tempc = colour;
 
 						// calculate edges
-						if(outline && (xc == start || xc == thickness - 1 || x == gap + length || x == gap))
+						if(outline && thickness > 2 && (xc == start || xc == thickness - 1 || x == gap + length || x == gap))
 							colour = outlinecolour;
 
 						// calculate screen position
@@ -640,7 +651,7 @@ void DrawCenterAim()
 			}
 
 			// bottom line
-			for (x = gap; x <= (gap + length); x++)
+			for (int x = gap; x <= (gap + length); x++)
 			{
 				// loop and draw lines horizontally offset along thickness
 				for(int xc = start; xc < thickness; xc++)
@@ -650,7 +661,7 @@ void DrawCenterAim()
 					tempc = colour;
 
 					// calculate edges
-					if(outline && (xc == start || xc == thickness - 1 || x == gap + length || x == gap))
+					if(outline && thickness > 2 && (xc == start || xc == thickness - 1 || x == gap + length || x == gap))
 						colour = outlinecolour;
 
 					// calculate screen position

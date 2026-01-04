@@ -12598,7 +12598,9 @@ void RayShoot(objtype* shooter, int damage, int accuracy)
 	offset = ((GameRandomNumber("RayShoot", 0) - 128) >> MAXSHOOTSHIFT);
 	offset = FixedMulShift(accuracy, offset, 8);
 
-	shootcone += offset;
+	// get offset for dynamic crosshair, don't allow enemies to trigger this
+	if (shooter->obclass == playerobj)
+		shootcone += offset;
 
 	if (offset > MAXSHOOTOFFSET)
 		offset = MAXSHOOTOFFSET;
@@ -12611,7 +12613,8 @@ void RayShoot(objtype* shooter, int damage, int accuracy)
 	offset = ((GameRandomNumber("RayShoot", 1) - 128) >> MAXSHOOTSHIFT);
 	offset = FixedMulShift(accuracy, offset, 8);
 
-	shootcone += offset;
+	if (shooter->obclass == playerobj)
+		shootcone += offset;
 	
 	if (offset > MAXSHOOTOFFSET)
 		offset = MAXSHOOTOFFSET;
