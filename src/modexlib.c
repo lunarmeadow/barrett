@@ -82,7 +82,7 @@ bool graphicsmode = false;
 char* bufofsTopLimit;
 char* bufofsBottomLimit;
 
-void DrawCenterAim();
+void DrawCenterAim(void);
 
 /*
 ====================
@@ -465,7 +465,7 @@ extern int shootcone;
 
 int maxcone = 0;
 
-void DrawCenterAim()
+void DrawCenterAim(void)
 {
 	// avoid continually realoading globals, keep everything local
 
@@ -531,8 +531,8 @@ void DrawCenterAim()
 			{
 				// find widest part of spread pattern over trigger pull
 				// x + y shoot offset
-				maxcone = max(maxcone, shootcone);
-				gap = abs(maxcone) + thickness;
+				maxcone = max(maxcone, abs(shootcone));
+				gap = maxcone + thickness;
 			}
 			else if(locplayerstate->weapon > wp_mp40)
 			{

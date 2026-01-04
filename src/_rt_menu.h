@@ -310,6 +310,12 @@ bool SliderMenu(int* number, int upperbound, int lowerbound, int erasex,
 				   int erasey, int erasew, int numadjust, char* blockname,
 				   void (*routine)(int w), char* title, char* left,
 				   char* right);
+bool ColourSliderMenu(int* number, int erasex,
+				   int erasey, int erasew, char* blockname,
+				   void (*routine)(int w), char* title, char* label);			
+bool BoundSliderMenu(int* number, int upperbound, int lowerbound, int erasex,
+				   int erasey, int erasew, int numadjust, char* blockname,
+				   void (*routine)(int w), char* title, char* label, char* unit);
 
 void DrawF1Help(void);
 void CP_F1Help(void);
