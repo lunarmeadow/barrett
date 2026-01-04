@@ -2445,6 +2445,7 @@ void InterpolateMaskedWall(visobj_t* plane)
 			if ((i >= 0 && i < viewwidth) && (bot != 0) &&
 				(posts[i].wallheight <= (height >> DHEIGHTFRACTION)))
 			{
+				dc_texheight = posts[i].wallheight << SFRACBITS;
 				dc_invscale = height >> (HEIGHTFRACTION + DHEIGHTFRACTION - 10);
 				dc_iscale = 0xffffffffu / (unsigned)dc_invscale;
 				dc_texturemid =

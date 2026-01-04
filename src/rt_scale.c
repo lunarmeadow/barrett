@@ -53,6 +53,7 @@ int dc_invscale;
 int sprtopoffset;
 int dc_yl;
 int dc_yh;
+int dc_texheight;
 // byte * dc_firstsource;
 byte* dc_source;
 int centeryclipped;
@@ -231,6 +232,82 @@ void ScaleMaskedPost(byte* src, byte* buf)
 		{
 			dc_source = src - offset;
 			R_DrawColumn(buf);
+		}
+		src += length;
+		offset = *(src++);
+	}
+}
+
+void ScaleTransparentWall(byte* src, byte* buf, int level)
+{
+	int offset;
+	int length;
+	int topscreen;
+	int bottomscreen;
+	byte* oldlevel;
+	byte* seelevel;
+
+	seelevel = colormap + (((level + 64) >> 2) << 8);
+	oldlevel = shadingtable;
+	offset = *(src++);
+
+	for (; offset != 255 ;)
+	{
+		length = *(src++);
+		topscreen = sprtopoffset + (dc_invscale * offset);
+		bottomscreen = topscreen + (dc_invscale * length);
+		dc_yl = (topscreen + SFRACUNIT) >> SFRACBITS;
+		dc_yh = ((bottomscreen - 1) >> SFRACBITS);
+		if (dc_yh >= viewheight)
+			dc_yh = viewheight - 1;
+		if (dc_yl < 0)
+			dc_yl = 0;
+		if ((*src) == 254)
+		{
+			shadingtable = seelevel;
+			if (dc_yl <= dc_yh)
+				R_TransColumn(buf);
+			src++;
+			offset = *(src++);
+			shadingtable = oldlevel;
+		}
+		else
+		{
+			if (dc_yl <= dc_yh)
+			{
+				dc_source = src - offset;
+				R_DrawMaskedColumn(buf);
+			}
+			src += length;
+			offset = *(src++);
+		}
+	}
+
+}
+
+void ScaleMaskedWall(byte* src, byte* buf)
+{
+	int offset;
+	int length;
+	int topscreen;
+	int bottomscreen;
+
+	offset = *(src++);
+	for (; offset != 255 ;)
+	{
+		length = *(src++);
+		topscreen = sprtopoffset + (dc_invscale * offset);
+		bottomscreen = topscreen + (dc_invscale * length);
+		dc_yl = (topscreen + SFRACUNIT) >> SFRACBITS;
+		dc_yh = ((bottomscreen - 1) >> SFRACBITS);
+		if (dc_yh >= viewheight)
+			dc_yh = viewheight - 1;
+		if (dc_yl < 0)
+			dc_yl = 0;
+		if (dc_yl <= dc_yh)
+		{
+			dc_source = src - offset;
+			R_DrawMaskedColumn(buf);
 		}
 		src += length;
 		offset = *(src++);
@@ -1118,6 +1195,60 @@ void R_DrawColumn(byte* buf)
 		*dest = colormap[texture[(frac >> SFRACBITS)]];
 		dest += screenW;
 		frac += fracstep;
+	}
+}
+
+void R_DrawMaskedColumn(byte* buf)
+{
+	// This is *NOT* 100% correct - DDOI
+	int count;
+	int32_t frac, fracstep;
+	byte* dest;
+	int heightmask = dc_texheight - 1;
+
+	// force compiler to preload globals in a register
+	const int screenW = iGLOBAL_SCREENWIDTH;
+	const byte* restrict colormap = shadingtable;
+	const byte* restrict texture = dc_source;
+
+	count = dc_yh - dc_yl + 1;
+	if (count < 0)
+		return;
+
+	dest = buf + ylookup[dc_yl];
+
+	fracstep = dc_iscale;
+	frac = dc_texturemid + (dc_yl - centery) * fracstep;
+
+	// shimmer fix adapted to ROTT from boom
+	if(dc_texheight	& heightmask)
+	{
+		heightmask++;
+		heightmask <<= SFRACBITS;
+
+		if (frac < 0)
+			while ((frac += heightmask) < 0);
+		else
+			while (frac >= heightmask)
+				frac -= heightmask;
+
+		while (count--)
+		{
+			*dest = colormap[texture[(frac >> SFRACBITS)]];
+			dest += screenW;
+
+			if ((frac += fracstep) >= heightmask)
+				frac -= heightmask;
+		} 
+	}
+	else 
+	{
+		while (count--)
+		{
+			*dest = colormap[texture[(frac >> SFRACBITS) & heightmask]];
+			dest += screenW;
+			frac += fracstep;
+		}
 	}
 }
 

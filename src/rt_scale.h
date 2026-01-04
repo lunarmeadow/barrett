@@ -34,6 +34,7 @@ extern int centeryclipped;
 extern int sprtopoffset;
 extern int dc_yl;
 extern int dc_yh;
+extern int dc_texheight;
 extern byte* dc_source;
 extern int transparentlevel;
 
@@ -51,7 +52,11 @@ void DrawPositionedScaledSprite(int x, int y, int shapenum, int height,
 								int type);
 void DrawNormalSprite(int x, int y, int shapenum);
 
+void ScaleMaskedWall(byte* src, byte* buf);
+void ScaleTransparentWall(byte* src, byte* buf, int level);
+
 void R_DrawColumn(byte* buf);
+void R_DrawMaskedColumn(byte* buf);
 void R_DrawSolidColumn(int color, byte* buf);
 void R_TransColumn(byte* buf);
 void R_DrawClippedColumn(byte* buf);
