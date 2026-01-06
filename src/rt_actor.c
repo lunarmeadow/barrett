@@ -97,6 +97,9 @@ actor_misc_flags mstruct, *MISCVARS = &mstruct;
 int angletodir[ANGLES];
 objtype* new;
 
+// spread offset from RayShoot
+int shootcone;
+
 void* actorat[MAPSIZE][MAPSIZE];
 exit_t playstate;
 
@@ -12590,8 +12593,14 @@ void RayShoot(objtype* shooter, int damage, int accuracy)
 		(Near(shooter, player, 3)))
 		SetIllumination(2);
 
+	shootcone = 0;
+
 	offset = ((GameRandomNumber("RayShoot", 0) - 128) >> MAXSHOOTSHIFT);
 	offset = FixedMulShift(accuracy, offset, 8);
+
+	// get offset for dynamic crosshair, don't allow enemies to trigger this
+	if (shooter->obclass == playerobj)
+		shootcone += offset;
 
 	if (offset > MAXSHOOTOFFSET)
 		offset = MAXSHOOTOFFSET;
@@ -12604,6 +12613,9 @@ void RayShoot(objtype* shooter, int damage, int accuracy)
 	offset = ((GameRandomNumber("RayShoot", 1) - 128) >> MAXSHOOTSHIFT);
 	offset = FixedMulShift(accuracy, offset, 8);
 
+	if (shooter->obclass == playerobj)
+		shootcone += offset;
+	
 	if (offset > MAXSHOOTOFFSET)
 		offset = MAXSHOOTOFFSET;
 

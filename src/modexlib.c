@@ -30,7 +30,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <sys/stat.h>
 #include "modexlib.h"
 #include "isr.h"
+#include "rt_actor.h"
+#include "rt_cfg.h"
+#include "rt_def.h"
 #include "rt_draw.h"
+#include "rt_playr.h"
 #include "rt_util.h"
 #include "rt_net.h" // for GamePaused
 #include "rt_view.h"
@@ -78,7 +82,7 @@ bool graphicsmode = false;
 char* bufofsTopLimit;
 char* bufofsBottomLimit;
 
-void DrawCenterAim();
+void DrawCenterAim(void);
 
 /*
 ====================
@@ -446,75 +450,246 @@ extern bool ingame;
 extern exit_t playstate;
 int iG_playerTilt;
 
-void DrawCenterAim()
-{
-	int x;
+extern int xhair_colour;
+extern int xhair_gap;
+extern int xhair_length;
+extern int xhair_thickness;
+extern bool xhair_prongs;
+extern bool xhair_tshape;
+extern bool xhair_dot;
+extern bool xhair_spread;
+extern bool xhair_usehp;
+extern bool xhair_outline;
 
+extern int shootcone;
+
+int maxcone = 0;
+
+void DrawCenterAim(void)
+{
+	// avoid continually realoading globals, keep everything local
+
+	// drawing variables
+	bool drawDot = xhair_dot, drawProngs = xhair_prongs, drawTShape = xhair_tshape;
+	bool outline = xhair_outline;
+
+	bool usePercentHealth = xhair_usehp;
+	bool dynamicSpread = xhair_spread;
+
+	int colour = egacolor[xhair_colour], outlinecolour = egacolor[BLACK], tempc;
+
+	int gap = xhair_gap, length = xhair_length, thickness = xhair_thickness;
+
+	int start = 0;
+	
+	// increase locality of globals, such as placing in register or nearby memory
+	const int xcenter = iG_X_center;
+	const int ycenter = iG_Y_center;
+	const int screenW = iGLOBAL_SCREENWIDTH;
+	const char* backbufferTop = bufofsTopLimit;
+	const char* backbufferBottom = bufofsBottomLimit;
+	const playertype* ply = locplayerstate;
+
+	// dynamic health
 	int percenthealth = (locplayerstate->health * 10) /
 						MaxHitpointsForCharacter(locplayerstate);
-	int color = percenthealth < 3	? egacolor[RED]
-				: percenthealth < 4 ? egacolor[YELLOW]
-									: egacolor[GREEN];
 
-	if (iG_aimCross && !GamePaused && playstate != ex_died)
+	int hpcolour = percenthealth < 3	? egacolor[RED]
+				 : percenthealth < 4 	? egacolor[YELLOW]
+										: egacolor[GREEN];
+
+
+	if(thickness > 1)
 	{
-		if ((ingame == true) && (iGLOBAL_SCREENWIDTH > 320))
-		{
-			if ((iG_playerTilt < 0) ||
-				(iG_playerTilt > iGLOBAL_SCREENHEIGHT / 2))
-			{
-				iG_playerTilt = -(2048 - iG_playerTilt);
-			}
-			if (iGLOBAL_SCREENWIDTH == 640)
-			{
-				x = iG_playerTilt;
-				iG_playerTilt = x / 2;
-			}
-			iG_buf_center =
-				(char*)(bufferofs + ((iG_Y_center) *
-									 iGLOBAL_SCREENWIDTH)); //+iG_X_center;
+		// find left edge of thickness (for instance, 3 means -1 to 1 in terms of line offsets)
+		start = round(0 - (float)thickness / 2);
 
-			for (x = iG_X_center - 10; x <= iG_X_center - 4; x++)
+		// compensate for thickness on center dot/small gaps
+		gap += thickness;
+	}
+
+	if(thickness == 1)
+	{
+		start = 0;
+	}
+
+	if (iG_aimCross && !GamePaused && 
+		playstate != ex_died && ingame == true &&
+		screenW > 320)
+	{
+		if(usePercentHealth)
+			colour = hpcolour;
+
+		// get center of back buffer as char pointer
+		iG_buf_center = (char*)(bufferofs + ((ycenter) * screenW));
+
+		if(dynamicSpread)
+		{
+			// only show spread for bullet weapons ready to fire while attacking
+			if(ply->buttonheld[bt_attack] && ply->weapon <= wp_mp40 &&
+			  !ply->weapondowntics && !ply->weaponuptics)
 			{
-				if ((iG_buf_center + x < bufofsTopLimit) &&
-					(iG_buf_center + x > bufofsBottomLimit))
+				// find widest part of spread pattern over trigger pull
+				// x + y shoot offset
+				maxcone = max(maxcone, abs(shootcone));
+				gap = maxcone + thickness;
+			}
+			else if(locplayerstate->weapon > wp_mp40)
+			{
+				// show regular gap for missile and magic weapons
+				gap = xhair_gap;
+
+				// reset maxcone for next burst
+				maxcone = 0;
+			}
+			else
+			{
+				// if using bullet weapon, reset to zero gap
+				gap = thickness;
+
+				maxcone = 0;
+			}
+		}
+
+		// draw center dot
+		if(drawDot)
+		{
+			// draw pixels along center with x/y thickness offsets
+			for(int x = start; x < thickness; x++)
+			for(int y = start; y < thickness; y++)
+			{
+				int ycoord = y != 0 ? screenW * y : 0;
+
+				tempc = colour;
+
+				// calculate edges
+				if(outline && thickness > 2 && (y == start || y == thickness - 1 || x == start || x == thickness - 1))
+					colour = outlinecolour;
+
+				*(iG_buf_center + xcenter + x + ycoord) = colour;
+
+				// swap colour back for non-edge pixels
+				colour = tempc;
+			}
+		}
+
+		if(drawProngs)
+		{
+			// left line
+			for (int x = xcenter - (gap + length); x <= xcenter - gap; x++)
+			{
+				// loop and draw lines vertically offset along thickness
+				for(int yc = start; yc < thickness; yc++)
 				{
-					*(iG_buf_center + x) = color;
+					// add nothing when current y thickness is zero, to avoid shifting down by screenwidth.
+					int ycoord = yc != 0 ? screenW * yc : 0;
+
+					tempc = colour;
+
+					// calculate edges
+					if(outline && thickness > 2 && (yc == start || yc == thickness - 1 || x == xcenter - (gap + length) || x == xcenter - gap))
+						colour = outlinecolour;
+
+					// calculate screen position
+					if ((iG_buf_center + x + ycoord < backbufferTop) &&
+						(iG_buf_center + x + ycoord > backbufferBottom))
+					{
+						*(iG_buf_center + x + ycoord) = colour;
+					}
+
+					// swap colour back for non-edge pixels
+					colour = tempc;
 				}
 			}
-			for (x = iG_X_center + 4; x <= iG_X_center + 10; x++)
+			
+			// right line
+			for (int x = xcenter + gap; x <= xcenter + (gap + length); x++)
 			{
-				if ((iG_buf_center + x < bufofsTopLimit) &&
-					(iG_buf_center + x > bufofsBottomLimit))
+				// loop and draw lines vertically offset along thickness
+				for(int yc = start; yc < thickness; yc++)
 				{
-					*(iG_buf_center + x) = color;
+					// add nothing when current y thickness is zero, to avoid shifting down by screenwidth.
+					int ycoord = yc != 0 ? screenW * yc : 0;
+
+					tempc = colour;
+
+					// calculate edges
+					if(outline && thickness > 2 && (yc == start || yc == thickness - 1 || x == xcenter + gap || x == xcenter + (gap + length)))
+						colour = outlinecolour;
+
+					// calculate screen position
+					if ((iG_buf_center + x + ycoord < backbufferTop) &&
+						(iG_buf_center + x + ycoord > backbufferBottom))
+					{
+						*(iG_buf_center + x + ycoord) = colour;
+					}
+
+					// swap colour back for non-edge pixels
+					colour = tempc;
 				}
 			}
-			for (x = 10; x >= 4; x--)
+			
+			// top line
+			if(!drawTShape)
 			{
-				if (((iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center) <
-					 bufofsTopLimit) &&
-					((iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center) >
-					 bufofsBottomLimit))
+				for (int x = (gap + length); x >= gap; x--)
 				{
-					*(iG_buf_center - (x * iGLOBAL_SCREENWIDTH) + iG_X_center) =
-						color;
+					// loop and draw lines horizontally offset along thickness
+					for(int xc = start; xc < thickness; xc++)
+					{
+						// int xcoord = xc != 0 ? iGLOBAL_SCREENWIDTH * xc : 0;
+
+						tempc = colour;
+
+						// calculate edges
+						if(outline && thickness > 2 && (xc == start || xc == thickness - 1 || x == gap + length || x == gap))
+							colour = outlinecolour;
+
+						// calculate screen position
+						if (((iG_buf_center - (x * screenW) + xcenter + xc) <
+								backbufferTop) &&
+							((iG_buf_center - (x * screenW) + xcenter + xc) >
+								backbufferBottom))
+						{
+							*(iG_buf_center - (x * screenW) + xcenter + xc) = colour;
+						}
+
+						// swap colour back for non-edge pixels
+						colour = tempc;
+					}
 				}
 			}
-			for (x = 4; x <= 10; x++)
+
+			// bottom line
+			for (int x = gap; x <= (gap + length); x++)
 			{
-				if (((iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center) <
-					 bufofsTopLimit) &&
-					((iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center) >
-					 bufofsBottomLimit))
+				// loop and draw lines horizontally offset along thickness
+				for(int xc = start; xc < thickness; xc++)
 				{
-					*(iG_buf_center + (x * iGLOBAL_SCREENWIDTH) + iG_X_center) =
-						color;
+					// int xcoord = xc != 0 ? iG_X_center * xc : iG_X_center;
+
+					tempc = colour;
+
+					// calculate edges
+					if(outline && thickness > 2 && (xc == start || xc == thickness - 1 || x == gap + length || x == gap))
+						colour = outlinecolour;
+
+					// calculate screen position
+					if (((iG_buf_center + (x * screenW) + xcenter + xc) <
+							backbufferTop) &&
+						((iG_buf_center + (x * screenW) + xcenter + xc) >
+							backbufferBottom))
+					{
+						*(iG_buf_center + (x * screenW) + xcenter + xc) = colour;
+					}
+
+					colour = tempc;
 				}
 			}
 		}
 	}
 }
+
 // bna function added end
 
 // bna section -------------------------------------------

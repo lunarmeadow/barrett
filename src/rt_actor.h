@@ -50,6 +50,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define ACTIVE(ob) ((ob == firstactive) || (ob->prevactive) || (ob->nextactive))
 
+extern int shootcone;
+
 enum
 {
 	SHOOT,

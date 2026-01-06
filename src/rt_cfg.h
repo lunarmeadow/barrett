@@ -63,6 +63,17 @@ extern int blanktime;
 extern char CodeName[9];
 extern char ApogeePath[256];
 
+extern int xhair_colour;
+extern int xhair_gap;
+extern int xhair_length;
+extern int xhair_thickness;
+extern bool xhair_prongs;
+extern bool xhair_tshape;
+extern bool xhair_dot;
+extern bool xhair_spread;
+extern bool xhair_usehp;
+extern bool xhair_outline;
+
 extern int DefaultDifficulty;
 extern int DefaultPlayerCharacter;
 extern int DefaultPlayerColor;
@@ -100,7 +111,7 @@ extern MacroList CommbatMacros[MAXMACROS];
 void WriteBattleConfig(void);
 void ReadScores(void);
 void ReadInt(const char* s1, int* val);
-void Readbool(const char* s1, bool* val);
+void ReadBool(const char* s1, bool* val);
 void ReadConfig(void);
 void WriteParameter(int file, const char* s1, int val);
 void WriteScores(void);
