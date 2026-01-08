@@ -347,16 +347,16 @@ void Error(char* error, ...)
 		snprintf(msgbuf + strlen(msgbuf), sizeof(msgbuf) - strlen(msgbuf), "\nPlayer X     = 0x%lX\n", (long int)player->x);
 		snprintf(msgbuf + strlen(msgbuf), sizeof(msgbuf) - strlen(msgbuf), "Player Y     = 0x%lX\n", (long int)player->y);
 		snprintf(msgbuf + strlen(msgbuf), sizeof(msgbuf) - strlen(msgbuf), "Player Angle = 0x%lX\n\n", (long int)player->angle);
+		snprintf(msgbuf + strlen(msgbuf), sizeof(msgbuf) - strlen(msgbuf), "Episode      = %ld\n", (long int)gamestate.episode);
+
+		if (gamestate.episode > 1)
+			level = (gamestate.mapon + 1) - ((gamestate.episode - 1) << 3);
+		else
+			level = gamestate.mapon + 1;
+
+		snprintf(msgbuf + strlen(msgbuf), sizeof(msgbuf) - strlen(msgbuf), "Area         = %ld\n", (long int)level);
 	}
-	snprintf(msgbuf + strlen(msgbuf), sizeof(msgbuf) - strlen(msgbuf), "Episode      = %ld\n", (long int)gamestate.episode);
-
-	if (gamestate.episode > 1)
-		level = (gamestate.mapon + 1) - ((gamestate.episode - 1) << 3);
-	else
-		level = gamestate.mapon + 1;
-
-	snprintf(msgbuf + strlen(msgbuf), sizeof(msgbuf) - strlen(msgbuf), "Area         = %ld\n", (long int)level);
-
+	
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Barrett Error", msgbuf, NULL);
 
 	ShutDown(); // DDOI - moved this so that it doesn't try to access player

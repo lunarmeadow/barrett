@@ -53,7 +53,7 @@ int numWalls = ARRAY_COUNT(betaWalls);
 // a hash table would likely be better here but that's complex.
 // this is sort of structured like the pre-existing wad code but very specific.
 // Access through KPF_GetWallFromCache which uses a linear search in betaWalls to index by name.
-void** wallCache;
+uint8_t** wallCache;
 
 // stores decoded png data, loaded into wall cache
 static void* _decodeBuffer;
@@ -103,9 +103,6 @@ void ShutdownKPF(void)
         }
         free(wallCache);
     }
-
-    if (_decodeBuffer)
-        free(_decodeBuffer);
 }
 
 void KPF_CacheBetaWalls(void)
@@ -161,6 +158,8 @@ void KPF_CacheBetaWalls(void)
         {
             len_png = fileStat.m_uncomp_size;
         }
+
+        _decodeBuffer = malloc(len_png);
     
         // spng decodes from this decoded buffer using set_png_buffer
         status = mz_zip_reader_extract_file_to_mem(&kpfArc, filePath, _decodeBuffer, len_png, 0);
@@ -181,17 +180,19 @@ void KPF_CacheBetaWalls(void)
          // ROTT walls must be 64x64!
         if(len_decode != 64 * 64)
         {
-            Error("KPF_CacheBetaWalls: decoded texture not 64x64!\n");
+            Error("KPF_CacheBetaWalls: decoded texture size %zu not 4096! (64x64)\n", len_decode);
         }
 
         // cache the decoded image from spng's buffer
         wallCache[i] = malloc(len_decode);
-        status = spng_decode_image(ctx, wallCache[i], len_decode, SPNG_FMT_PNG, 0);
+        int err = spng_decode_image(ctx, wallCache[i], len_decode, SPNG_FMT_PNG, 0);
 
-        if(!status)
-        {
-            Error("KPF_CacheBetaWalls: decoding PNG to ROTT texture failed!");
-        }
+        // if(err)
+        // {
+        //     Error("KPF_CacheBetaWalls: decoding %s of size %zu to ROTT texture failed - %s!", filePath, len_decode, spng_strerror(err));
+        // }
+
+        free(_decodeBuffer);
     }
 
     areWallsCached = true;
@@ -208,9 +209,6 @@ static int _KPF_GetWallForName(const char* name)
     return -1;
 }
 
-// outLength should take a pointer to an integer that stores the total length of the malloc'd cache entry
-// cast this to a pointer of the required type. KPF subsystem manages resources on free.
-// returns an allocated block of memory managed by kpf subsystem containing patch data.
 void* KPF_GetWallFromCache(const char* name)
 {
     if(!isMounted)
@@ -242,7 +240,7 @@ void* KPF_GetWallFromCacheNum(int tile)
 
     if(!areWallsCached)
     {
-        Error("KPF_GetLumpFromCacheNum: attempt to index %s but walls not cached\n");
+        Error("KPF_GetLumpFromCacheNum: attempt to index %d but walls not cached\n", tile);
     }
 
     if(tile < 0 || tile >= numWalls)
