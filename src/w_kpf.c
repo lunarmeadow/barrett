@@ -150,6 +150,17 @@ void KPF_CacheBetaWalls(void)
         }
 
         // -- EXTRACT PNG, LOAD IT INTO DECODING BUFFER --
+
+        status = mz_zip_reader_file_stat(&kpfArc, fileIdx, &fileStat);
+        
+        if(!status)
+        {
+            Error("KPF_CacheBetaWalls: file %s has no info!\n", filePath);
+        }
+        else 
+        {
+            len_png = fileStat.m_uncomp_size;
+        }
     
         // spng decodes from this decoded buffer using set_png_buffer
         status = mz_zip_reader_extract_file_to_mem(&kpfArc, filePath, _decodeBuffer, len_png, 0);
@@ -176,6 +187,11 @@ void KPF_CacheBetaWalls(void)
         // cache the decoded image from spng's buffer
         wallCache[i] = malloc(len_decode);
         status = spng_decode_image(ctx, wallCache[i], len_decode, SPNG_FMT_PNG, 0);
+
+        if(!status)
+        {
+            Error("KPF_CacheBetaWalls: decoding PNG to ROTT texture failed!");
+        }
     }
 
     areWallsCached = true;
@@ -200,13 +216,11 @@ void* KPF_GetWallFromCache(const char* name)
     if(!isMounted)
     {
         Error("KPF_GetLumpFromCache: kpf not mounted\n");
-        goto err;
     }
 
     if(!areWallsCached)
     {
         Error("KPF_GetLumpFromCache: attempt to index %s but walls not cached\n", name);
-        goto err;
     }
 
     int lumpNum = _KPF_GetWallForName(name);
@@ -214,13 +228,32 @@ void* KPF_GetWallFromCache(const char* name)
     if(lumpNum == -1)
     {
         Error("KPF_GetLumpFromCache: no lump found for num %d - %s\n", lumpNum, name);
-        goto err;
     }
 
     return wallCache[lumpNum];
+}
 
-err:
-    ShutdownKPF();
-    ShutDown();
-    return NULL;
+void* KPF_GetWallFromCacheNum(int tile)
+{
+    if(!isMounted)
+    {
+        Error("KPF_GetLumpFromCacheNum: kpf not mounted\n");
+    }
+
+    if(!areWallsCached)
+    {
+        Error("KPF_GetLumpFromCacheNum: attempt to index %s but walls not cached\n", name);
+    }
+
+    if(lumpNum == -1)
+    {
+        Error("KPF_GetLumpFromCacheNum: no lump found for num %d - %s\n", lumpNum, name);
+    }
+
+    if(tile < 0 || tile >= numWalls);
+    {
+        Error("KPF_GetWallFromCacheNum: index %d out of range!", tile);
+    }
+
+    return wallCache[tile];
 }

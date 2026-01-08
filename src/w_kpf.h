@@ -30,5 +30,6 @@ void ShutdownKPF(void);
 
 void KPF_CacheBetaWalls(void);
 void* KPF_GetWallFromCache(const char* name);
+void* KPF_GetWallFromCacheNum(int tile);
 
 #endif

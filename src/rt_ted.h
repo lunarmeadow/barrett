@@ -148,6 +148,8 @@ void ScanInfoPlaneAgain(void);
 void PreCacheActor(int actor, int which);
 void PreCache(void);
 
+void InitWall(int lump, int index, int newx, int newy);
+
 void SetupWalls(void);
 void SetupAnimatedWalls(void);
 void SetupSwitches(void);

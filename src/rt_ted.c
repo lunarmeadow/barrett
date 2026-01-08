@@ -1962,17 +1962,24 @@ void CountAreaTiles(void)
 		}
 }
 
-#define InitWall(lump, index, newx, newy)                                      \
-	{                                                                          \
-		PreCacheLump(lump, PU_CACHEWALLS, cache_pic_t);                        \
-		if (W_LumpLength(lump) == 0)                                           \
-			Error("%s being used in shareware at %d %d",                       \
-				  W_GetNameForNum(lump), newx, newy);                          \
-		actorat[newx][newy] = &walls[index];                                   \
-		tempwall = (wall_t*)actorat[newx][newy];                               \
-		tempwall->which = WALL;                                                \
-		tempwall->tile = index;                                                \
+void InitWall(int lump, int index, int newx, int newy)
+{
+	// skip LE walls
+	if(lump < 512 && lump > 0)
+	{
+		PreCacheLump(lump, PU_CACHEWALLS, cache_pic_t);
+		if (W_LumpLength(lump) == 0)
+			Error("%s being used in shareware at %d %d",
+					W_GetNameForNum(lump), newx, newy);
 	}
+	// carve out exception for LE walls
+	if(lump > 512 + 32 || lump < 0)
+		Error("InitWall: invalid tile index!");
+	actorat[newx][newy] = &walls[index];
+	wall_t* tempwall = (wall_t*)actorat[newx][newy];
+	tempwall->which = WALL;
+	tempwall->tile = index;
+}
 
 /*
 ==================
@@ -4248,6 +4255,12 @@ int GetLumpForTile(int tile)
 	else if ((tile >= 80) && (tile <= 89))
 	{
 		return (tile + wallstart - 16);
+	}
+	// LE beta tiles, just return the number and we can dispatch from there.
+	// there are 32 beta walls
+	else if(tile >= 512 && tile < 512 + 32)
+	{
+		return tile;
 	}
 	return -1;
 }
