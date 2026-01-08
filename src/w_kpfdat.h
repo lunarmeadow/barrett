@@ -96,27 +96,6 @@ static const char *betaWalls[] = {
     "WALB71"
 };
 
-static const char *floors[] = {
-    "FLOOR1",
-    "FLOOR10",
-    "FLOOR11",
-    "FLOOR12",
-    "FLOOR14",
-    "FLOOR17",
-    "FLOOR4",
-    "FLOOR5",
-    "FLOOR6"
-};
-
-static const char *ceils[] = {
-    "CEIL12",
-    "CEIL13",
-    "CEIL17",
-    "CEIL2",
-    "CEIL5",
-    "CEIL6"
-};
-
 static const char *bigJojHaha[] = {
     "BIGJDEAD",
     "BIGJDIE1",

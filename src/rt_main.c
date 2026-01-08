@@ -1618,6 +1618,7 @@ void ShutDown(void)
 	//      ShutdownModemGame ();
 	//      }
 
+	ShutdownKPF();
 	ShutdownClientControls();
 	I_ShutdownKeyboard();
 	ShutdownGameCommands();

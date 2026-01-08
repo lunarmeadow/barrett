@@ -21,10 +21,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _KPF_H
 #define _KPF_H
 
+#include "lumpy.h"
+
+constexpr int patchSize = 4096 + sizeof(patch_t);
+
 void InitKPF(const char* path);
 void ShutdownKPF(void);
 
 void KPF_CacheBetaWalls(void);
-void* KPF_GetWallFromCache(const char* name, int* outLength);
+void* KPF_GetWallFromCache(const char* name);
 
 #endif
