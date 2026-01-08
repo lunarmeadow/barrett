@@ -87,13 +87,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 int CP_Acknowledge;
 
-boolean POK = false;
+bool POK = false;
 char pword[13];
 
-boolean ingame = false;
-boolean inmenu = false;
-boolean pickquick = false;
-boolean NewGame = false;
+bool ingame = false;
+bool inmenu = false;
+bool pickquick = false;
+bool NewGame = false;
 
 //
 // Global window coords
@@ -119,7 +119,7 @@ font_t* smallfont;
 font_t* bigfont;
 font_t* tinyfont;
 
-boolean loadedgame = false;
+bool loadedgame = false;
 
 battle_cfg_t BATTLE_Options[battle_NumBattleModes];
 
@@ -142,7 +142,7 @@ char order[21] = {di_west,		 di_east,		 di_north,		 di_south,
 
 #define RETURNVAL 100
 
-static boolean loadsavesound = false;
+static bool loadsavesound = false;
 static int numdone;
 
 static char* endStrings[7] = {
@@ -258,7 +258,7 @@ static int DangerNums[3] = {bo_danger_low, bo_danger_normal, bo_danger_kill};
 static int MenuNum = 0;
 static int handlewhich;
 static int CSTactive = 0;
-static boolean INFXSETUP = false;
+static bool INFXSETUP = false;
 
 //
 // MENU CURSOR SHAPES
@@ -541,13 +541,20 @@ CP_MenuNames OptionsNames[] = {
 	"DETAIL LEVELS",	  "VIOLENCE LEVEL",		"SCREEN SIZE"};
 // bna added
 CP_MenuNames ExtOptionsNames[] = {
-	"MOUSELOOK", "INVERSE MOUSE",		 "ALLOW Y AXIS MOUSE", "CROSS HAIR",
+	"MOUSELOOK", "INVERSE MOUSE",		 "ALLOW Y AXIS MOUSE", "CROSSHAIR",
 	"AUTOAIM MISSILE WEPS", "ENABLE AUTOAIM",	   "USE OPL MUSIC"};
 
 CP_MenuNames ExtGameOptionsNames[] = {"LOW MEMORY MODE", "WEAPON RECOLOURS", "DOOM BOBBING", "NO LOW HP SOUND"}; // erysdren added
 
 CP_MenuNames VisualOptionsNames[] = {"SCREEN RESOLUTION", "ADJUST FOCAL WIDTH",
-									 "HUD SCALING", "DISPLAY OPTIONS"};
+									 "HUD SCALING", "DISPLAY OPTIONS", "CROSSHAIR OPTIONS"};
+
+CP_MenuNames CrosshairOptionsNames[] = {"COLOUR", "PARAMETERS",
+									 "GAP", "LENGTH", "THICKNESS"}; // ashley added									 
+
+// draw prongs, dot, t shape, use health colour, dynamic spread									 
+CP_MenuNames CrosshairParamsNames[] = {"PRONGS", "T-SHAPE PRONGS", "CENTER DOT",
+									 "OUTLINE", "COLOUR BY HEALTH", "DYNAMIC SPREAD"}; // ashley added		
 
 typedef struct
 {
@@ -581,7 +588,7 @@ CP_itemtype DisplayOptionsItems[] = {
 	{1, "", 'F', NULL}, {1, "", 'B', NULL}, {1, "", 'B', NULL}};
 
 CP_iteminfo VisualOptionsItems = {
-	20, MENU_Y, 4, 0, 43, VisualOptionsNames, mn_largefont};
+	20, MENU_Y, 5, 0, 43, VisualOptionsNames, mn_largefont};
 
 CP_iteminfo ScreenResolutionItems; // This gets filled in at run time
 
@@ -594,15 +601,54 @@ CP_iteminfo ExtGameOptionsItems = {
 CP_iteminfo DisplayOptionsMenu = {
 	20, MENU_Y, 3, 0, 43, DisplayOptionsNames, mn_largefont}; // LT added
 
+CP_iteminfo CrosshairOptionsItems = {
+	20, MENU_Y, 5, 0, 43, CrosshairOptionsNames, mn_largefont}; // ashley added
+
+// draw prongs, dot, t shape, use health colour, dynamic spread
+CP_iteminfo CrosshairParamsItems = {
+	20, MENU_Y, 6, 0, 43, CrosshairParamsNames, mn_largefont}; // ashley added
+
+// CP_MenuNames CrosshairParamsNames[] = {"PRONGS", "T-SHAPE PRONGS", "CENTER DOT",
+// 									 "COLOUR BY HEALTH", "DYNAMIC SPREAD"};
+
+CP_itemtype CrosshairParamsMenu[] = {
+	{1, "", 'P', NULL}, 
+	{1, "", 'T', NULL}, 
+	{1, "", 'D', NULL},
+	{1, "", 'O', NULL},
+	{1, "", 'H', NULL},
+	{1, "", 'S', NULL},}; // ashley added
+
 void CP_ScreenResolution(void);
 
 void CP_DisplayOptions(void);
 void DoAdjustHudScale(void);
 
+void DoAdjustCrosshairColour(void);
+void DoAdjustCrosshairGap(void);
+void DoAdjustCrosshairThickness(void);
+void DoAdjustCrosshairLength(void);
+void CP_CrosshairMenu(void);
+void CP_CrosshairParameters(void);
+
+void DrawCrosshairOptionsButtons(void);
+
 CP_itemtype VisualsOptionsMenu[] = {{1, "", 'S', (menuptr)CP_ScreenResolution},
 									{1, "", 'F', (menuptr)DoAdjustFocalWidth},
 									{1, "", 'H', (menuptr)DoAdjustHudScale},
-									{1, "", 'D', (menuptr)CP_DisplayOptions}};
+									{1, "", 'D', (menuptr)CP_DisplayOptions},
+									{1, "", 'C', (menuptr)CP_CrosshairMenu}};
+
+
+// CP_MenuNames CrosshairOptionsNames[] = {"COLOUR", "PARAMETERS",
+// 									 "GAP", "LENGTH", "THICKNESS"};								 
+								
+CP_itemtype CrosshairOptionsMenu[] = {
+									{1, "", 'C', (menuptr)DoAdjustCrosshairColour},
+									{1, "", 'P', (menuptr)CP_CrosshairParameters},
+									{1, "", 'G', (menuptr)DoAdjustCrosshairGap},
+									{1, "", 'L', (menuptr)DoAdjustCrosshairLength},
+									{1, "", 'T', (menuptr)DoAdjustCrosshairThickness}}; // ashley added
 
 CP_itemtype ExtOptionsMenu[] = {
 	{1, "", 'M', NULL}, {1, "", 'I', NULL}, {1, "", 'D', NULL},
@@ -817,7 +863,7 @@ static int CUSTOM_y[7] = {31, 0, 63, 0, 94, 0, 126};
 //
 // Save globals
 //
-static boolean StartGame = false;
+static bool StartGame = false;
 
 static int SaveGamesAvail[NUMSAVEGAMES];
 static char SaveGameNames[NUMSAVEGAMES][32];
@@ -1087,7 +1133,7 @@ void ScanForSavedGames()
 	char filename[256];
 	char str[45];
 	int which;
-	boolean found = false;
+	bool found = false;
 	char* pathsave;
 
 	//
@@ -1323,7 +1369,7 @@ void CleanUpControlPanel(void)
 // CP_CheckQuick ()
 //
 //******************************************************************************
-boolean CP_CheckQuick(byte scancode)
+bool CP_CheckQuick(byte scancode)
 
 {
 	if (demoplayback == true)
@@ -1559,7 +1605,7 @@ int HandleMenu(CP_iteminfo* item_i, CP_itemtype* items, void (*routine)(int w))
 	int newpos;
 	volatile int timer;
 	ControlInfo ci;
-	boolean playsnd = false;
+	bool playsnd = false;
 
 	handlewhich = item_i->curpos;
 	x = item_i->x;
@@ -2216,7 +2262,7 @@ void CP_Quit(int which)
 //
 //******************************************************************************
 
-boolean CP_DisplayMsg(char* s, int number)
+bool CP_DisplayMsg(char* s, int number)
 
 {
 #define Q_W 184
@@ -2238,11 +2284,11 @@ boolean CP_DisplayMsg(char* s, int number)
 #define NO	"q_no\0"
 
 	ControlInfo ci;
-	boolean retval;
-	boolean done;
-	boolean YESON;
-	boolean redraw;
-	boolean blowout;
+	bool retval;
+	bool done;
+	bool YESON;
+	bool redraw;
+	bool blowout;
 	char* temp;
 	char* active;
 	char* inactive;
@@ -2643,7 +2689,7 @@ void CP_NewGame(void)
 void CP_EndGame(void)
 
 {
-	boolean action;
+	bool action;
 
 	SetMenuTitle("End Game");
 	action = CP_DisplayMsg(ENDGAMESTR, 12);
@@ -3232,8 +3278,8 @@ void CP_Keyboard(void)
 void DefineKey(void)
 
 {
-	boolean tick;
-	boolean picked;
+	bool tick;
+	bool picked;
 	int timer;
 	int x;
 	int y;
@@ -3778,7 +3824,7 @@ int CalibrateJoystick(void)
 	word xmax, ymax, xmin, ymin, jb;
 	int checkbits;
 	int status;
-	boolean done;
+	bool done;
 
 	if (joypadenabled)
 	{
@@ -3914,7 +3960,7 @@ int CalibrateJoystick(void)
 void MouseSensitivity(void)
 
 {
-	SliderMenu(&mouseadjustment, 16, 1, 21, 81, 240, 1, "block1", NULL,
+	SliderMenu(&mouseadjustment, 24, 1, 21, 81, 240, 1, "block1", NULL,
 			   "Mouse Sensitivity", "Slow", "Ludicrous");
 }
 
@@ -3971,7 +4017,7 @@ void DrawCtlScreen(void)
 void DrawCtlButtons(void)
 {
 	int i, x, y;
-	static boolean first = true;
+	static bool first = true;
 	int button_on;
 	int button_off;
 
@@ -4224,7 +4270,7 @@ void DisplayInfo(int which)
 //
 //******************************************************************************
 
-void DrawSTMenuBuf(int x, int y, int w, int h, boolean up)
+void DrawSTMenuBuf(int x, int y, int w, int h, bool up)
 {
 	if (!up)
 	{
@@ -4514,6 +4560,43 @@ void DrawVisualsMenu(void)
 	FlipMenuBuf();
 }
 
+// ashley added
+void DrawCrosshairMenu(void)
+{
+	MenuNum = 1;
+	SetAlternateMenuBuf();
+	ClearMenuBuf();
+	SetMenuTitle("Crosshair Menu");
+
+	MN_GetCursorLocation(&CrosshairOptionsItems, &CrosshairOptionsMenu[0]);
+	DrawMenu(&CrosshairOptionsItems, &CrosshairOptionsMenu[0]);
+	DrawMenuBufItem(
+		CrosshairOptionsItems.x,
+		((CrosshairOptionsItems.curpos * 14) + (CrosshairOptionsItems.y - 2)),
+		W_GetNumForName(LargeCursor) + CursorFrame[CursorNum]);
+	DisplayInfo(0);
+	FlipMenuBuf();
+}
+
+
+void DrawCrosshairParamsMenu(void)
+{
+	MenuNum = 1;
+
+	SetAlternateMenuBuf();
+	ClearMenuBuf();
+	SetMenuTitle("Crosshair Parameters");
+
+	MN_GetCursorLocation(&CrosshairParamsItems, &CrosshairParamsMenu[0]);
+	DrawMenu(&CrosshairParamsItems, &CrosshairParamsMenu[0]);
+	DrawCrosshairOptionsButtons();
+
+	DisplayInfo(0);
+
+	FlipMenuBuf();
+}
+
+
 void CP_VisualsMenu(void)
 {
 	int which;
@@ -4525,6 +4608,19 @@ void CP_VisualsMenu(void)
 	} while (which >= 0);
 
 	DrawControlMenu();
+}
+
+void CP_CrosshairMenu(void)
+{
+	int which;
+	DrawCrosshairMenu();
+
+	do
+	{
+		which = HandleMenu(&CrosshairOptionsItems, &CrosshairOptionsMenu[0], NULL);
+	} while (which >= 0);
+
+	DrawVisualsMenu();
 }
 
 extern int FocalWidthOffset;
@@ -4543,6 +4639,42 @@ void DoAdjustHudScale(void)
 			   "Adjust Hud Scaling", "Small", "Large");
 	DrawVisualsMenu();
 }
+
+// ashley added
+
+extern int xhair_colour;
+extern int xhair_gap;
+extern int xhair_length;
+extern int xhair_thickness;
+
+void DoAdjustCrosshairColour(void)
+{
+	ColourSliderMenu(&xhair_colour, 44, 81, 194, "block2", NULL,
+			   "Crosshair Colour", "Colour: ");
+	DrawCrosshairMenu();
+}
+
+void DoAdjustCrosshairGap(void)
+{
+	BoundSliderMenu(&xhair_gap, 16, 0, 44, 81, 194, 1, "block2", NULL,
+			   "Adjust Crosshair Gap", "Gap: ", "px");
+	DrawCrosshairMenu();
+}
+
+void DoAdjustCrosshairThickness(void)
+{
+	BoundSliderMenu(&xhair_thickness, 15, 1, 44, 81, 194, 2, "block2", NULL,
+			   "Adjust Crosshair Thickness", "Thickness: ", "px");
+	DrawCrosshairMenu();
+}
+
+void DoAdjustCrosshairLength(void)
+{
+	BoundSliderMenu(&xhair_length, 32, 0, 44, 81, 194, 1, "block2", NULL,
+			   "Adjust Crosshair Length", "Length: ", "px");
+	DrawCrosshairMenu();
+}
+
 
 void DrawScreenResolutionMenu(void)
 {
@@ -4622,7 +4754,7 @@ void CP_RestartProgramMessage(void)
 extern int ScreenWidthToWriteToCfg;
 extern int ScreenHeightToWriteToCfg;
 extern int HudScaleToWriteToCfg;
-extern boolean writeNewResIntoCfg;
+extern bool writeNewResIntoCfg;
 
 void CP_ScreenResolution(void)
 {
@@ -4645,9 +4777,9 @@ void CP_ScreenResolution(void)
 
 	DrawVisualsMenu();
 }
-extern boolean sdl_fullscreen;
-extern boolean borderWindow;
-extern boolean borderlessWindow;
+extern bool sdl_fullscreen;
+extern bool borderWindow;
+extern bool borderlessWindow;
 
 void DrawDisplayOptionsButtons(void)
 {
@@ -4690,6 +4822,70 @@ void DrawDisplayOptionsButtons(void)
 								button_on);
 			else
 				DrawMenuBufItem(20 + 22, DisplayOptionsMenu.y + i * 14 - 1,
+								button_off);
+		}
+}
+
+extern bool xhair_prongs;
+extern bool xhair_tshape;
+extern bool xhair_dot;
+extern bool xhair_spread;
+extern bool xhair_usehp;
+
+// ashley added
+void DrawCrosshairOptionsButtons(void)
+{
+	int i, on;
+	int button_on;
+	int button_off;
+
+	button_on = W_GetNumForName("snd_on");
+	button_off = W_GetNumForName("snd_off");
+
+	for (i = 0; i < CrosshairParamsItems.amount; i++)
+		if (CrosshairParamsMenu[i].active != CP_Active3)
+		{
+			//
+			// DRAW SELECTED/NOT SELECTED GRAPHIC BUTTONS
+			//
+
+			on = 0;
+
+			switch (i)
+			{
+			case 0:
+				if (xhair_prongs == true)
+					on = 1;
+				break;
+			case 1:
+				if (xhair_tshape == true)
+					on = 1;
+				break;
+			case 2:
+				if (xhair_dot == true)
+					on = 1;
+				break;
+			case 3:
+				if (xhair_outline == true)
+					on = 1;
+				break;
+			case 4:
+				if (xhair_usehp == true)
+					on = 1;
+				break;
+			case 5:
+				if (xhair_spread == true)
+					on = 1;
+				break;
+			default:
+				break;
+			}
+
+			if (on)
+				DrawMenuBufItem(20 + 22, CrosshairParamsItems.y + i * 14 - 1,
+								button_on);
+			else
+				DrawMenuBufItem(20 + 22, CrosshairParamsItems.y + i * 14 - 1,
 								button_off);
 		}
 }
@@ -4777,6 +4973,51 @@ void CP_DisplayOptions(void)
 	DrawVisualsMenu();
 }
 
+// ashley added
+void CP_CrosshairParameters(void)
+{
+	DrawCrosshairParamsMenu();
+
+	int which;
+
+	do
+	{
+		which = HandleMenu(&CrosshairParamsItems, &CrosshairParamsMenu[0], NULL);
+		switch (which)
+		{
+		case 0:
+			xhair_prongs ^= 1;
+			DrawCrosshairOptionsButtons();
+			break;
+		case 1:
+			xhair_tshape ^= 1;
+			DrawCrosshairOptionsButtons();
+			break;
+		case 2:
+			xhair_dot ^= 1;
+			DrawCrosshairOptionsButtons();
+			break;
+		case 3:
+			xhair_outline ^= 1;
+			DrawCrosshairOptionsButtons();
+			break;
+		case 4:
+			xhair_usehp ^= 1;
+			DrawCrosshairOptionsButtons();
+			break;
+		case 5:
+			xhair_spread ^= 1;
+			DrawCrosshairOptionsButtons();
+			break;
+		default:
+			break;
+		}
+
+	} while (which >= 0);
+
+	DrawCrosshairMenu();
+}
+
 //****************************************************************************
 //
 // DrawExtOptionsMenu ()  () bna added
@@ -4831,14 +5072,14 @@ void DrawExtOptionDescription(int w)
 }
 
 extern int inverse_mouse;
-extern boolean usemouselook;
-extern boolean useoplmusic;
-extern boolean iG_aimCross;
-extern boolean autoAimMissileWeps;
-extern boolean autoAim;
-extern boolean allowMovementWithMouseYAxis;
+extern bool usemouselook;
+extern bool useoplmusic;
+extern bool iG_aimCross;
+extern bool autoAimMissileWeps;
+extern bool autoAim;
+extern bool allowMovementWithMouseYAxis;
 
-boolean oplchanged;
+bool oplchanged;
 
 void CP_ExtOptionsMenu(void)
 {
@@ -5501,7 +5742,7 @@ void CP_BattleMenu(void)
 //
 //****************************************************************************
 
-extern boolean dopefish;
+extern bool dopefish;
 void MN_PlayMenuSnd(int which)
 {
 	if (INFXSETUP || (SD_Started == false))
@@ -5530,7 +5771,7 @@ void MN_PlayMenuSnd(int which)
 //
 //******************************************************************************
 
-boolean SliderMenu(int* number, int upperbound, int lowerbound, int erasex,
+bool SliderMenu(int* number, int upperbound, int lowerbound, int erasex,
 				   int erasey, int erasew, int numadjust, char* blockname,
 				   void (*routine)(int w), char* title, char* left, char* right)
 
@@ -5538,8 +5779,8 @@ boolean SliderMenu(int* number, int upperbound, int lowerbound, int erasex,
 	ControlInfo ci;
 	Direction lastdir;
 	patch_t* shape;
-	boolean returnval;
-	boolean moved;
+	bool returnval;
+	bool moved;
 	unsigned long scale;
 	int exit;
 	int range;
@@ -5639,6 +5880,350 @@ boolean SliderMenu(int* number, int upperbound, int lowerbound, int erasex,
 				blkx + ((((*number - lowerbound) * scale) / range) >> 16),
 				erasey, block);
 
+			if (routine)
+			{
+				routine(*number);
+			}
+
+			MN_PlayMenuSnd(SD_MOVECURSORSND);
+		}
+
+		if (ci.button0 || Keyboard[sc_Space] || Keyboard[sc_Enter])
+		{
+			exit = 1;
+		}
+		else if (ci.button1 || Keyboard[sc_Escape])
+		{
+			exit = 2;
+		}
+	} while (!exit);
+
+	if (exit == 2)
+	{
+		MN_PlayMenuSnd(SD_ESCPRESSEDSND);
+		returnval = false;
+	}
+	else
+	{
+		MN_PlayMenuSnd(SD_SELECTSND);
+		returnval = true;
+	}
+
+	WaitKeyUp();
+	return (returnval);
+}
+
+bool BoundSliderMenu(int* number, int upperbound, int lowerbound, int erasex,
+				   int erasey, int erasew, int numadjust, char* blockname,
+				   void (*routine)(int w), char* title, char* label, char* unit)
+
+{
+	ControlInfo ci;
+	Direction lastdir;
+	patch_t* shape;
+	char boundstr[64];
+	bool returnval;
+	bool moved;
+	unsigned long scale;
+	int exit;
+	int range;
+	int timer;
+	int width;
+	int height;
+	int blkx;
+	int eraseh;
+	int block;
+
+	SetAlternateMenuBuf();
+	ClearMenuBuf();
+	SetMenuTitle(title);
+
+	newfont1 = (font_t*)W_CacheLumpName("newfnt1", PU_CACHE, Cvt_font_t, 1);
+	CurrentFont = newfont1;
+	PrintX = 28;
+	PrintY = 62;
+	
+	itoa(*number, boundstr, 10);
+
+	VW_MeasurePropString(label, &width, &height);
+	EraseMenuBufRegion(PrintX, PrintY, width, height);
+	DrawMenuBufPropString(PrintX, PrintY, label);
+
+	VW_MeasurePropString(boundstr, &width, &height);
+	EraseMenuBufRegion(PrintX, PrintY, width, height);
+	DrawMenuBufPropString(PrintX, PrintY, boundstr);
+
+	VW_MeasurePropString(unit, &width, &height);
+	EraseMenuBufRegion(PrintX, PrintY, width << 1, height);
+	DrawMenuBufPropString(PrintX, PrintY, unit);
+
+	block = W_GetNumForName(blockname);
+	shape = (patch_t*)W_CacheLumpNum(block, PU_CACHE, Cvt_patch_t, 1);
+	blkx = erasex - shape->leftoffset;
+	eraseh = shape->height;
+	scale = (erasew + shape->leftoffset - shape->width) << 16;
+	range = upperbound - lowerbound;
+
+	DrawSTMenuBuf(erasex - 1, erasey - 1, erasew + 1, eraseh + 1, false);
+
+	DrawMenuBufItem(blkx + ((((*number - lowerbound) * scale) / range) >> 16),
+					erasey, block);
+
+	DisplayInfo(1);
+	FlipMenuBuf();
+
+	exit = 0;
+	moved = false;
+	timer = GetTicCount();
+	lastdir = dir_None;
+
+	do
+	{
+		RefreshMenuBuf(0);
+
+		ReadAnyControl(&ci);
+		if (((GetTicCount() - timer) > 5) || (ci.dir != lastdir))
+		{
+			timer = GetTicCount();
+
+			switch (ci.dir)
+			{
+			case dir_North:
+			case dir_West:
+				if (*number > lowerbound)
+				{
+					*number = *number - numadjust;
+
+					if (*number < lowerbound)
+					{
+						*number = lowerbound;
+					}
+
+					moved = true;
+				}
+				break;
+
+			case dir_South:
+			case dir_East:
+				if (*number < upperbound)
+				{
+					*number = *number + numadjust;
+
+					if (*number > upperbound)
+					{
+						*number = upperbound;
+					}
+
+					moved = true;
+				}
+				break;
+			default:;
+			}
+
+			lastdir = ci.dir;
+		}
+
+		if (moved)
+		{
+			moved = false;
+
+			EraseMenuBufRegion(erasex, erasey, erasew, eraseh);
+
+			itoa(*number, boundstr, 10);		
+
+			PrintX = 28;
+			PrintY = 62;
+	
+			VW_MeasurePropString(label, &width, &height);
+			EraseMenuBufRegion(PrintX, PrintY, width, height);
+			DrawMenuBufPropString(PrintX, PrintY, label);
+
+			VW_MeasurePropString(boundstr, &width, &height);
+			EraseMenuBufRegion(PrintX, PrintY, width, height);
+			DrawMenuBufPropString(PrintX, PrintY, boundstr);
+
+			VW_MeasurePropString(unit, &width, &height);
+			EraseMenuBufRegion(PrintX, PrintY, width << 1, height);
+			DrawMenuBufPropString(PrintX, PrintY, unit);
+
+			DrawMenuBufItem(
+				blkx + ((((*number - lowerbound) * scale) / range) >> 16),
+				erasey, block);
+
+			if (routine)
+			{
+				routine(*number);
+			}
+
+			MN_PlayMenuSnd(SD_MOVECURSORSND);
+		}
+
+		if (ci.button0 || Keyboard[sc_Space] || Keyboard[sc_Enter])
+		{
+			exit = 1;
+		}
+		else if (ci.button1 || Keyboard[sc_Escape])
+		{
+			exit = 2;
+		}
+	} while (!exit);
+
+	if (exit == 2)
+	{
+		MN_PlayMenuSnd(SD_ESCPRESSEDSND);
+		returnval = false;
+	}
+	else
+	{
+		MN_PlayMenuSnd(SD_SELECTSND);
+		returnval = true;
+	}
+
+	WaitKeyUp();
+	return (returnval);
+}
+
+const char *colourNames[16] = {
+	"BLACK",
+	"BLUE",
+	"GREEN",
+	"CYAN",
+	"RED",
+	"MAGENTA",
+	"BROWN",
+	"LIGHT GREY",
+	"DARK GREY",
+	"LT BLUE",
+	"LT GREEN",
+	"LT CYAN",
+	"LT RED",
+	"LT MAGENTA",
+	"YELLOW",
+	"WHITE"
+};
+
+bool ColourSliderMenu(int* number, int erasex,
+				   int erasey, int erasew, char* blockname,
+				   void (*routine)(int w), char* title, char* label)
+
+{
+	ControlInfo ci;
+	Direction lastdir;
+	patch_t* shape;
+	bool returnval;
+	bool moved;
+	unsigned long scale;
+	int exit;
+	int range;
+	int timer;
+	int width;
+	int height;
+	int strx, stry, strw, strh;
+	int blkx;
+	int eraseh;
+	int block;
+
+	int numadjust = 1;
+	int upperbound = (sizeof(colourNames) / sizeof(colourNames[0])) - 1;
+	int lowerbound = 0;
+
+	SetAlternateMenuBuf();
+	ClearMenuBuf();
+	SetMenuTitle(title);
+
+	newfont1 = (font_t*)W_CacheLumpName("newfnt1", PU_CACHE, Cvt_font_t, 1);
+	CurrentFont = newfont1;
+	PrintX = 28;
+	PrintY = 62;
+	DrawMenuBufPropString(PrintX, PrintY, label);
+
+	VW_MeasurePropString(colourNames[*number], &strw, &strh);
+
+	strx = PrintX + 8;
+	stry = PrintY;
+
+	DrawMenuBufPropString(strx, stry, colourNames[*number]);
+
+	block = W_GetNumForName(blockname);
+	shape = (patch_t*)W_CacheLumpNum(block, PU_CACHE, Cvt_patch_t, 1);
+	blkx = erasex - shape->leftoffset;
+	eraseh = shape->height;
+	scale = (erasew + shape->leftoffset - shape->width) << 16;
+	range = upperbound - lowerbound;
+
+	DrawSTMenuBuf(erasex - 1, erasey - 1, erasew + 1, eraseh + 1, false);
+
+	DrawMenuBufItem(blkx + ((((*number - lowerbound) * scale) / range) >> 16),
+					erasey, block);
+
+	DisplayInfo(1);
+	FlipMenuBuf();
+
+	exit = 0;
+	moved = false;
+	timer = GetTicCount();
+	lastdir = dir_None;
+
+	do
+	{
+		RefreshMenuBuf(0);
+
+		ReadAnyControl(&ci);
+		if (((GetTicCount() - timer) > 5) || (ci.dir != lastdir))
+		{
+			timer = GetTicCount();
+
+			switch (ci.dir)
+			{
+			case dir_North:
+			case dir_West:
+				if (*number > lowerbound)
+				{
+					*number = *number - numadjust;
+
+					if (*number < lowerbound)
+					{
+						*number = lowerbound;
+					}
+
+					moved = true;
+				}
+				break;
+
+			case dir_South:
+			case dir_East:
+				if (*number < upperbound)
+				{
+					*number = *number + numadjust;
+
+					if (*number > upperbound)
+					{
+						*number = upperbound;
+					}
+
+					moved = true;
+				}
+				break;
+			default:;
+			}
+
+			lastdir = ci.dir;
+		}
+
+		if (moved)
+		{
+			moved = false;
+
+			EraseMenuBufRegion(erasex, erasey, erasew, eraseh);
+
+			DrawMenuBufItem(
+				blkx + ((((*number - lowerbound) * scale) / range) >> 16),
+				erasey, block);
+
+			EraseMenuBufRegion(strx, stry, strw, strh);
+			VW_MeasurePropString(colourNames[*number], &strw, &strh);
+			DrawMenuBufPropString(strx, stry, colourNames[*number]);
+			
 			if (routine)
 			{
 				routine(*number);
@@ -5823,7 +6408,7 @@ void CP_ViolenceLevel(void)
 {
 	int which;
 	char p1[13];
-	boolean passok = false;
+	bool passok = false;
 
 	if (ingame)
 	{
@@ -5947,9 +6532,9 @@ void CP_PWMenu(void)
 {
 	char p1[13];
 	char p2[13];
-	boolean EnterNewPassword;
-	boolean AskForNew;
-	boolean RetypePassword;
+	bool EnterNewPassword;
+	bool AskForNew;
+	bool RetypePassword;
 
 	memset(p1, 0, 13);
 	memset(p2, 0, 13);
@@ -6570,8 +7155,8 @@ int ColorMenu(void)
 	int timer;
 	int baseshape;
 	int status;
-	boolean update;
-	boolean done;
+	bool update;
+	bool done;
 
 	colorindex = DefaultPlayerColor;
 	timer = GetTicCount();
@@ -7662,7 +8247,7 @@ void CP_TimeLimitOptions(void)
 	DrawBattleOptions();
 }
 
-void PrintBattleOption(boolean inmenu, int x, int y, char* text)
+void PrintBattleOption(bool inmenu, int x, int y, char* text)
 
 {
 	if (inmenu)
@@ -7679,7 +8264,7 @@ void PrintBattleOption(boolean inmenu, int x, int y, char* text)
 	}
 }
 
-void ShowBattleOption(boolean inmenu, int PosX, int PosY, int column, int Line,
+void ShowBattleOption(bool inmenu, int PosX, int PosY, int column, int Line,
 					  char* text1, char* text2)
 
 {
@@ -7698,7 +8283,7 @@ void ShowBattleOption(boolean inmenu, int PosX, int PosY, int column, int Line,
 	PrintBattleOption(inmenu, x + 60, y, text);
 }
 
-void ShowBattleOptions(boolean inmenu, int PosX, int PosY)
+void ShowBattleOptions(bool inmenu, int PosX, int PosY)
 
 {
 	battle_cfg_t* options;
@@ -7973,10 +8558,10 @@ void DrawMultiPageCustomMenu(char* title, void (*redrawfunc)(void))
 
 int HandleMultiPageCustomMenu(char** names, int amount, int curpos, char* title,
 							  void (*routine)(int w), void (*redrawfunc)(void),
-							  boolean exitonselect)
+							  bool exitonselect)
 
 {
-	boolean redraw;
+	bool redraw;
 	int page;
 	int cursorpos;
 	int maxpos;

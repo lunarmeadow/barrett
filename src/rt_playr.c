@@ -120,9 +120,9 @@ playertype PLAYERSTATE[MAXPLAYERS], *locplayerstate;
 
 gametype gamestate;
 
-boolean godmode = false;
+bool godmode = false;
 
-boolean missilecam = false;
+bool missilecam = false;
 objtype* missobj = NULL;
 // Player control variables
 
@@ -143,13 +143,13 @@ int lastmom = 0;
 int first = 1;
 
 int pausedstartedticcount;
-boolean RefreshPause = true;
+bool RefreshPause = true;
 
-boolean buttonpoll[NUMBUTTONS];
+bool buttonpoll[NUMBUTTONS];
 
 int buttonscan[NUMBUTTONS] = {
-	sc_Space, sc_Alt,		   sc_LShift,	 sc_E,	   sc_I,
-	sc_K,	sc_Enter,	   sc_Delete,	 sc_U,	   sc_M,
+	sc_Space, sc_Alt,		   sc_RShift,	 sc_E,	   sc_I,
+	sc_K,	sc_Enter,	   sc_Delete,	 sc_Q,	   sc_Z,
 	sc_1,		sc_2,		   sc_3,		 sc_4,		   sc_Control,
 	sc_F12,		sc_A,	   sc_D,	 sc_BackSpace, sc_None,
 	sc_W, sc_L, sc_S, sc_J, sc_Tab,
@@ -318,7 +318,7 @@ weaponinfo WEAPONS[MAXWEAPONS] =
 
 void CheckPlayerSpecials(objtype* ob);
 void CheckWeaponStates(objtype* ob);
-boolean CheckSprite(statobj_t*, int*);
+bool CheckSprite(statobj_t*, int*);
 void T_Tag(objtype* ob);
 void T_Player(objtype* ob);
 void T_BatBlast(objtype* ob);
@@ -354,6 +354,8 @@ statetype s_tag = {false, CASSATT_S1, 20, T_Tag, 0, &s_player};
 static int turnheldtime;
 static int turnaround = 0;
 static int turnaroundtime;
+
+static int mouseactivetime = 0;
 
 //
 // Double Click variables
@@ -1072,7 +1074,7 @@ void PlayerMissileAttack(objtype* ob)
 
 //====================================================================
 
-boolean InRange(objtype* p, objtype* victim, int distance)
+bool InRange(objtype* p, objtype* victim, int distance)
 {
 	int dx, dy;
 	int angle;
@@ -1889,7 +1891,7 @@ void PollKeyboardButtons(void)
 // PollMouseButtons
 //
 //******************************************************************************
-extern boolean usemouselook;
+extern bool usemouselook;
 void PollMouseButtons(void)
 {
 	int i;
@@ -1937,10 +1939,10 @@ void PollMouseButtons(void)
 
 					// Is this the first click, or a really late click?
 					if ((DoubleClickCount[i] == 0) ||
-						(GetTicCount() >= DoubleClickTimer[i]))
+						(GetCachedTic() >= DoubleClickTimer[i]))
 					{
 						// Yes, now wait for a second click
-						DoubleClickTimer[i] = GetTicCount() + DoubleClickSpeed;
+						DoubleClickTimer[i] = GetCachedTic() + DoubleClickSpeed;
 
 						//( tics << 5 );
 						DoubleClickCount[i] = 1;
@@ -2036,10 +2038,10 @@ void PollJoystickButtons(void)
 
 					// Is this the first click, or a really late click?
 					if ((JoyDblClickCount[i] == 0) ||
-						(GetTicCount() >= JoyDblClickTimer[i]))
+						(GetCachedTic() >= JoyDblClickTimer[i]))
 					{
 						// Yes, now wait for a second click
-						JoyDblClickTimer[i] = GetTicCount() + DoubleClickSpeed;
+						JoyDblClickTimer[i] = GetCachedTic() + DoubleClickSpeed;
 
 						//( tics << 5 );
 						JoyDblClickCount[i] = 1;
@@ -2160,13 +2162,14 @@ void PollKeyboardMove(void)
 //
 //******************************************************************************
 
-#define MOUSE_SENSITIVITY_SCALE 1024
+// 1024 seems too slow, 1536 seems too fast
+#define MOUSE_SENSITIVITY_SCALE 1280
 
 // For some reason inputs are inverted if this isn't negative, the x-angle space must be inverted somehow
 int mousex_tofracangle = -SFRACUNIT;
 
 extern int inverse_mouse;
-extern boolean allowMovementWithMouseYAxis;
+extern bool allowMovementWithMouseYAxis;
 
 void PollMouseMove(void)
 {
@@ -2251,8 +2254,8 @@ void PollJoystickMove(void)
 //
 //******************************************************************************
 
-boolean aimbuttonpressed = false;
-extern boolean allowMovementWithMouseYAxis;
+bool aimbuttonpressed = false;
+extern bool allowMovementWithMouseYAxis;
 
 void PollMove(void)
 {
@@ -2305,7 +2308,7 @@ void PollMove(void)
 	{
 		if (first)
 		{
-			nettics = GetTicCount() + (VBLCOUNTER * 4);
+			nettics = GetCachedTic() + (VBLCOUNTER * 4);
 			first = 0;
 		}
 
@@ -2333,7 +2336,7 @@ void PollMove(void)
 				leftmom = 0;
 		}
 
-		if ((GetTicCount() > nettics) && (rightmom > (NETMOM * 2)) &&
+		if ((GetCachedTic() > nettics) && (rightmom > (NETMOM * 2)) &&
 			(leftmom > (NETMOM * 2)))
 		{
 			rightmom = 0;
@@ -2566,7 +2569,7 @@ void SaveWeapons(objtype*ob)
 		gamestate.supercount++;                                                \
 	}
 
-boolean GivePowerup(objtype* ob, int flag, int time, int sound)
+bool GivePowerup(objtype* ob, int flag, int time, int sound)
 {
 	playertype* pstate;
 
@@ -2608,7 +2611,7 @@ void GiveLifePoints(objtype* ob, int points)
 		DrawTriads(false);
 }
 
-boolean GiveBulletWeapon(objtype* ob, int bulletweapon, statobj_t* check)
+bool GiveBulletWeapon(objtype* ob, int bulletweapon, statobj_t* check)
 {
 	playertype* pstate;
 
@@ -2632,7 +2635,7 @@ boolean GiveBulletWeapon(objtype* ob, int bulletweapon, statobj_t* check)
 	return true;
 }
 
-boolean DetermineAmmoPickup(playertype* pstate, statobj_t* check)
+bool DetermineAmmoPickup(playertype* pstate, statobj_t* check)
 {
 	if ((GetWeaponForItem(check->itemnumber) == pstate->missileweapon) &&
 		(pstate->ammo < stats[check->itemnumber].ammo))
@@ -2645,7 +2648,7 @@ boolean DetermineAmmoPickup(playertype* pstate, statobj_t* check)
 	}
 }
 
-boolean GivePlayerMissileWeapon(objtype* ob, playertype* pstate,
+bool GivePlayerMissileWeapon(objtype* ob, playertype* pstate,
 								statobj_t* check)
 {
 	if ((ob->flags & FL_DOGMODE) || (ob->flags & FL_GODMODE))
@@ -2800,7 +2803,7 @@ void GetBonus(objtype* ob, statobj_t* check)
 {
 	int heal;
 	playertype* pstate;
-	boolean randompowerup;
+	bool randompowerup;
 
 	M_LINKSTATE(ob, pstate);
 
@@ -3663,7 +3666,7 @@ void SetNormalHorizon(objtype* ob)
 */
 extern int iG_playerTilt;
 
-boolean IsPlayerFalling(objtype* ob)
+bool IsPlayerFalling(objtype* ob)
 {
 	if (!(ob->flags & FL_DOGMODE) && !(ob->flags & FL_GODMODE) &&
 		!(ob->flags & FL_FLEET) && !(ob->flags & FL_RIDING) &&
@@ -3672,7 +3675,7 @@ boolean IsPlayerFalling(objtype* ob)
 	else
 	 	return false;
 }
-boolean HasPlayerJustLanded(objtype* ob)
+bool HasPlayerJustLanded(objtype* ob)
 {
 	playertype* pstate;
 	M_LINKSTATE(ob, pstate);
@@ -3706,29 +3709,16 @@ void PlayerTiltHead(objtype* ob)
 
 	pstate->lastmomz = ob->momentumz;
 
-	if(MY && usemouselook)
+	// when MY is negative, you still have to add it in this case, as adding a negative is subtraction.
+	// this has the downside of inverting mouse input, and also means that vertical input can inadvertently
+	// overflow below or above the floor/ceiling. as such, both operations need to be treated the same,
+	// with a mouse inversion to rectify the problem.
+	if(abs(MY) && usemouselook)
 	{
-		// when MY is negative, you still have to add it in this case, as adding a negative is subtraction.
-		// this has the downside of inverting mouse input, and also means that vertical input can inadvertently
-		// overflow below or above the floor/ceiling. as such, both operations need to be treated the same,
-		// with a mouse inversion to rectify the problem.
+		dyz = MY * -1;
 
-		MY *= -1;
-		if(MY > 0)
-		{
-			if((yzangle + MY) - HORIZONYZOFFSET > YZANGLELIMIT)
-				yzangle = HORIZONYZOFFSET + YZANGLELIMIT;
-			else
-				yzangle += MY;
-		}
-		if(MY < 0)
-		{
-			if((yzangle + MY) - HORIZONYZOFFSET < -YZANGLELIMIT)
-				yzangle = HORIZONYZOFFSET - YZANGLELIMIT;
-			else
-				yzangle += MY;
-		}
-			
+		// return vertical control of camera to playertilthead if 3 seconds have elapsed since last vertical mouse input
+		mouseactivetime = oldpolltime + (VBLCOUNTER * 3);
 	}
 	
 	if (ob->flags & FL_SHROOMS)
@@ -3795,7 +3785,8 @@ void PlayerTiltHead(objtype* ob)
 	}
 
 	if ((yzangle != pstate->horizon) && (dyz == 0) 
-		&& !usemouselook && ((oldpolltime > tiltTimer) 
+		&& (!usemouselook || oldpolltime > mouseactivetime) 
+		&& ((oldpolltime > tiltTimer) 
 		|| (autoAim && pstate->guntarget)))
 	{
 		int speed;
@@ -4650,7 +4641,7 @@ void CheckWeaponStates(objtype* ob)
 
 static int dyingvolume = 255;
 
-extern boolean disablelowhpsnd;
+extern bool disablelowhpsnd;
 
 void CheckSpecialSounds(objtype* ob, playertype* pstate)
 {

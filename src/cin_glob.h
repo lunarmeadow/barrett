@@ -31,7 +31,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 void CinematicDelay(void);
 int GetCinematicTime(void);
-boolean CinematicAbort(void);
+bool CinematicAbort(void);
 void ClearCinematicAbort(void);
 
 #endif

@@ -62,7 +62,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // GLOBAL VARIABLES
 //========================================
 
-extern boolean UseBaseMarker;
+extern bool UseBaseMarker;
 
 teamtype TEAM[MAXPLAYERS];
 int numareatiles[NUMAREAS + 1];
@@ -88,8 +88,8 @@ int mapwidth;
 int mapheight;
 int lastlevelloaded = -1;
 
-boolean insetupgame;
-boolean ISRTL = false;
+bool insetupgame;
+bool ISRTL = false;
 
 unsigned MapSpecials = 0;
 
@@ -101,7 +101,7 @@ char LevelName[80];
 
 static cache_t* cachelist;
 static word cacheindex;
-static boolean CachingStarted = false;
+static bool CachingStarted = false;
 static char* ROTTMAPS;
 char* BATTMAPS;
 
@@ -167,9 +167,11 @@ int GetLumpForTile(int tile);
 #define SGN(x) ((x > 0) ? (1) : ((x == 0) ? (0) : (-1)))
 
 /*--------------------------------------------------------------------------*/
-int CompareTags(s1p, s2p)
-cache_t *s1p, *s2p;
+int CompareTags(void* v1p, void* v2p)
 {
+	cache_t* s1p = (cache_t*) v1p;
+	cache_t* s2p = (cache_t*) v2p;
+
 	// Sort according to lump
 	if (DoPanicMapping() == true)
 		return SGN(s1p->cachelevel - s2p->cachelevel);
@@ -178,8 +180,11 @@ cache_t *s1p, *s2p;
 		return SGN(s1p->lump - s2p->lump);
 }
 
-void SwitchCacheEntries(s1p, s2p) cache_t *s1p, *s2p;
+void SwitchCacheEntries(void* v1p, void* v2p)
 {
+	cache_t* s1p = (cache_t*) v1p;
+	cache_t* s2p = (cache_t*) v2p;
+
 	cache_t temp;
 
 	temp = *s1p;
@@ -886,7 +891,7 @@ void MiscPreCache(void)
 ========================
 */
 
-boolean IsChristmas(void)
+bool IsChristmas(void)
 {
 	struct dosdate_t date;
 
@@ -944,7 +949,7 @@ void CheckHolidays(void)
 =
 ======================
 */
-extern boolean dopefish;
+extern bool dopefish;
 void DrawPreCache(void)
 {
 	if (loadedgame == false)
@@ -1043,7 +1048,7 @@ void DrawPreCache(void)
 ======================
 */
 
-extern boolean doRescaling;
+extern bool doRescaling;
 void PreCache(void)
 {
 	int i;
@@ -1058,7 +1063,7 @@ void PreCache(void)
 	int ticdelay;
 	byte* tempbuf;
 
-	double Gs;
+	float Gs;
 	Gs = (iGLOBAL_SCREENWIDTH * 100 / 320);
 	Gs = Gs / 100;
 
@@ -1091,25 +1096,25 @@ void PreCache(void)
 
 	SortPreCache();
 
-	double ratioNewToOldWidth = ((double)iGLOBAL_SCREENWIDTH) / 320.0;
+	float ratioNewToOldWidth = ((float)iGLOBAL_SCREENWIDTH) / 320.0;
 
-	double ratioNewToOldHeight = ((double)iGLOBAL_SCREENHEIGHT) / 200.0;
+	float ratioNewToOldHeight = ((float)iGLOBAL_SCREENHEIGHT) / 200.0;
 
-	double newPrecacheBarX = ratioNewToOldWidth * 28.0; // PRECACHEBARX = 28
+	float newPrecacheBarX = ratioNewToOldWidth * 28.0; // PRECACHEBARX = 28
 
-	double newPrecacheBarY = ratioNewToOldHeight * 178.0; // PRECACHEBARY = 178
+	float newPrecacheBarY = ratioNewToOldHeight * 178.0; // PRECACHEBARY = 178
 
-	double newPrecacheBar1LedX =
-		ratioNewToOldWidth * (double)9.0; // PRECACHEBAR1LEDX = 9
+	float newPrecacheBar1LedX =
+		ratioNewToOldWidth * (float)9.0; // PRECACHEBAR1LEDX = 9
 
-	double newPrecacheBar1LedY =
-		ratioNewToOldHeight * (double)8.0; // PRECACHEBAR1LEDY = 8
+	float newPrecacheBar1LedY =
+		ratioNewToOldHeight * (float)8.0; // PRECACHEBAR1LEDY = 8
 
-	double newPrecacheBar2LedX =
+	float newPrecacheBar2LedX =
 		newPrecacheBar1LedX; // PRECACHEBAR2LEDX = PRECACHEBAR1LEDX
 
-	double newPrecacheBar2LedY =
-		ratioNewToOldHeight * (double)12.0; // PRECACHEBAR2LEDY = 12
+	float newPrecacheBar2LedY =
+		ratioNewToOldHeight * (float)12.0; // PRECACHEBAR2LEDY = 12
 
 	if (loadedgame == false)
 	{
@@ -1189,7 +1194,7 @@ void PreCache(void)
 				ticdelay--;
 				if (ticdelay == 0)
 				{
-					extern boolean dopefish;
+					extern bool dopefish;
 
 					if (dopefish == true)
 					{
@@ -1210,7 +1215,7 @@ void PreCache(void)
 		{
 			int width, height;
 			char buf[30]; // byte * shape;
-			double WHratio = 16200 / 200;
+			float WHratio = 16200 / 200;
 			WHratio = WHratio / 100;
 			///	iGLOBAL_SCREENWIDTH = 640;
 			//	iGLOBAL_SCREENHEIGHT = 480;
@@ -1533,7 +1538,7 @@ int GetNextMap(int tilex, int tiley)
 {
 	word next;
 	word icon;
-	boolean done;
+	bool done;
 
 	next = MAPSPOT(tilex, tiley, 2);
 	icon = MAPSPOT(tilex, tiley, 1);
@@ -1665,6 +1670,29 @@ void GetMapFileName(char* filename)
 /*
 ======================
 =
+= GetMapFilePath
+=
+======================
+*/
+void GetMapFilePath (char* filename, size_t n)
+{
+	const char *src;
+
+	if (BATTLEMODE && BattleLevels.avail == true)
+		src = BattleLevels.file;
+	else if (GameLevels.avail == true)
+		src = GameLevels.file;
+	else if (BATTLEMODE)
+		src = BATTMAPS;
+	else
+		src = ROTTMAPS;
+
+	strncpy(filename, src, n);
+}
+
+/*
+======================
+=
 = SetBattleMapFileName
 =
 ======================
@@ -1686,11 +1714,11 @@ word GetMapCRC(int num)
 
 {
 	int filehandle;
-	char filename[80];
+	char filename[256];
 	RTLMAP RTLMap;
 	size_t mapsoffset;
 
-	GetMapFileName(&filename[0]);
+	GetMapFilePath(&filename[ 0 ], sizeof(filename));
 	CheckRTLVersion(filename);
 	filehandle = SafeOpenRead(filename);
 	mapsoffset = GetMapArrayOffset(filehandle);
@@ -2079,7 +2107,7 @@ word GetNearestAreaNumber(int tilex, int tiley)
 void SetupWindows(void)
 {
 	int i, j;
-	boolean skythere;
+	bool skythere;
 
 	skythere = SkyExists();
 
@@ -3518,7 +3546,7 @@ void LinkElevatorDiskGroups(void)
 	int maxplatformheight[30] = {-1};
 	int num_distinct_max_heights = 0;
 	int i;
-	boolean newdiskheight;
+	bool newdiskheight;
 
 #define M_ISELEVDISK(actor)                                                    \
 	((actor->obclass == diskobj) && (actor->state == &s_elevdisk))
@@ -3577,8 +3605,8 @@ void LinkElevatorDiskGroups(void)
 =================
 */
 
-void LinkActor(objtype* ob, int tilex, int tiley, void (*action)(long),
-			   void (*swapaction)(long))
+void LinkActor(objtype* ob, int tilex, int tiley, void (*action)(intptr_t),
+			   void (*swapaction)(intptr_t))
 {
 	word touchx, touchy;
 	int clockx, clocky;
@@ -3593,7 +3621,7 @@ void LinkActor(objtype* ob, int tilex, int tiley, void (*action)(long),
 		if ((clockx == tilex) && (clocky == tiley))
 		{
 			clocklinked = 1;
-			ClockLink(EnableObject, DisableObject, (long)ob, k);
+			ClockLink(EnableObject, DisableObject, (intptr_t)ob, k);
 		}
 	}
 
@@ -3619,10 +3647,10 @@ void LinkActor(objtype* ob, int tilex, int tiley, void (*action)(long),
 			}
 
 			if (tswitch && (tswitch->flags & FL_ON))
-				Link_To_Touchplate(touchx, touchy, swapaction, action, (long)ob,
+				Link_To_Touchplate(touchx, touchy, swapaction, action, (intptr_t)ob,
 								   0);
 			else
-				Link_To_Touchplate(touchx, touchy, action, swapaction, (long)ob,
+				Link_To_Touchplate(touchx, touchy, action, swapaction, (intptr_t)ob,
 								   0);
 			if (ob->obclass == gasgrateobj)
 			{
@@ -3652,7 +3680,7 @@ void SetupInanimateActors(void)
 {
 	int i, j, linked;
 	word *map, tile;
-	void (*action)(long), (*swapaction)(long);
+	void (*action)(intptr_t), (*swapaction)(intptr_t);
 
 	map = mapplanes[1];
 
@@ -4028,7 +4056,7 @@ void SetupLights(void)
 							{
 								Link_To_Touchplate(
 									touchx, touchy, ActivateLight,
-									DeactivateLight, (long)(sprites[i][j]), 0);
+									DeactivateLight, (intptr_t)(sprites[i][j]), 0);
 								sprites[i][j]->linked_to =
 									touchindices[touchx][touchy] - 1;
 							}
@@ -4043,7 +4071,7 @@ void SetupLights(void)
 							{
 								Link_To_Touchplate(
 									touchx, touchy, DeactivateLight,
-									ActivateLight, (long)(sprites[i][j]), 0);
+									ActivateLight, (intptr_t)(sprites[i][j]), 0);
 								sprites[i][j]->linked_to =
 									touchindices[touchx][touchy] - 1;
 							}
@@ -4060,7 +4088,7 @@ void SetupLights(void)
 						{
 							Link_To_Touchplate(touchx, touchy, DeactivateLight,
 											   ActivateLight,
-											   (long)(sprites[i][j]), 0);
+											   (intptr_t)(sprites[i][j]), 0);
 							sprites[i][j]->linked_to =
 								touchindices[touchx][touchy] - 1;
 						}
@@ -4125,7 +4153,7 @@ void PrintMapStats(void)
 	MapDebug("\nTotal size of level : %6d\n", total);
 }
 
-boolean IsWeapon(int tile)
+bool IsWeapon(int tile)
 {
 	if ((tile >= 46) && (tile <= 56))
 		return true;
@@ -5330,7 +5358,7 @@ void DoRegisterConversion(void)
 =
 =======================
 */
-boolean DoPanicMapping(void)
+bool DoPanicMapping(void)
 {
 	if ((lowmemory == true) && (modemgame == false) && (demorecord == false) &&
 		(demoplayback == false))

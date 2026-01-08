@@ -57,7 +57,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 int StatusBar = 0;
 int lightninglevel = 0;
-boolean lightning = false;
+bool lightning = false;
 int normalshade;
 int darknesslevel;
 int maxshade;
@@ -109,7 +109,7 @@ static int lightningtime = 0;
 static int lightningdelta = 0;
 static int lightningdistance = 0;
 static int lightningsoundtime = 0;
-static boolean periodic = false;
+static bool periodic = false;
 static int periodictime = 0;
 
 void SetViewDelta(void);
@@ -163,7 +163,7 @@ void SetViewDelta(void)
 	// divide heightnumerator by a posts distance to get the posts height for
 	// the heightbuffer.  The pixel height is height>>HEIGHTFRACTION
 	//
-	heightnumerator = ((int)(((double)focalwidth / 10) * centerx * 4096) * 64);
+	heightnumerator = ((int)(((float)focalwidth / 10) * centerx * 4096) * 64);
 }
 
 /*
@@ -317,7 +317,12 @@ void SetViewSize(int size)
 	centerx = viewwidth >> 1;
 	centery = viewheight >> 1;
 	centeryfrac = (centery << 16);
-	yzangleconverter = (0xaf85 * viewheight) / 300;
+
+	// 0xE82A = tan(30deg) * (65536 / 2*pi)
+	// scale it by ratio of focal width to default
+	// 320 seems to work better than 200, 300, and 360. can't find a better value atm.
+	// this could probably be further refined.
+	yzangleconverter = (int)((0xA000 * ((float)focalwidth / 160)) * ((float)viewheight / 200));
 
 	// Center the view horizontally
 	screenx = (iGLOBAL_SCREENWIDTH - viewwidth) >> 1;
@@ -375,13 +380,13 @@ void DrawCPUJape(void)
 ==========================
 */
 
-void SetupScreen(boolean flip)
+void SetupScreen(bool flip)
 {
 	pic_t* shape;
 
 	SetViewSize(viewsize);
 
-	if (viewsize < 7)
+	if (viewsize <= 7)
 	{
 		shape = (pic_t*)W_CacheLumpName("backtile", PU_CACHE, Cvt_pic_t, 1);
 		// DrawTiledRegion( 0, 16, 320, 200 - 32, 0, 16, shape );
@@ -396,7 +401,7 @@ void SetupScreen(boolean flip)
 	}
 	if (flip == true)
 	{
-		boolean wasStretched = false;
+		bool wasStretched = false;
 
 		if (StretchScreen)
 		{
@@ -433,7 +438,16 @@ void LoadColorMap(void)
 	lump = W_GetNumForName("colormap");
 	length = W_LumpLength(lump) + 255;
 	colormap = SafeMalloc(length);
-	colormap = (byte*)(((long)colormap + 255) & ~0xff);
+
+	// this pattern is pretty suspect, after evaluating what this operation does it appears to align pointers to the nearest 256 boundary.
+	// for instance, (925 & ~0xFF) = 768. the cast itself is pretty strange,
+	// and I worry is shifting colormap outside of its allocated boundary or corrupting the pointer.
+	// Windows builds crash in this function in the W_ReadLump call,
+	// and investigating with -fsanitize=undefined after removing this line shows no unaligned accesses or anything of the sort
+	// in addition to colormap still being perfectly functional.
+
+	// colormap = (byte*)(((long)colormap + 255) & ~0xff);
+
 	W_ReadLump(lump, colormap);
 
 	// Fix fire colors in colormap
@@ -480,7 +494,7 @@ void LoadColorMap(void)
 	lump = W_GetNumForName("specmaps");
 	length = W_LumpLength(lump + 1) + 255;
 	redmap = SafeMalloc(length);
-	redmap = (byte*)(((long)redmap + 255) & ~0xff);
+	// redmap = (byte*)(((long)redmap + 255) & ~0xff);
 	W_ReadLump(lump + 1, redmap);
 	greenmap = redmap + (16 * 256);
 
@@ -493,7 +507,7 @@ void LoadColorMap(void)
 		{
 			length = W_LumpLength(lump + i) + 255;
 			playermaps[i] = SafeMalloc(length);
-			playermaps[i] = (byte*)(((long)playermaps[i] + 255) & ~0xff);
+			// playermaps[i] = (byte*)(((long)playermaps[i] + 255) & ~0xff);
 			W_ReadLump(lump + i, playermaps[i]);
 		}
 	}

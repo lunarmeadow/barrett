@@ -170,11 +170,11 @@ void ScaleTransparentPost(byte* src, byte* buf, int level)
 	byte* oldlevel;
 	byte* seelevel;
 
-
 	seelevel = colormap + (((level + 64) >> 2) << 8);
 	oldlevel = shadingtable;
 	offset = *(src++);
-	for (; offset != 255;)
+
+	for (; offset != 255 ;)
 	{
 		length = *(src++);
 		topscreen = sprtopoffset + (dc_invscale * offset);
@@ -216,7 +216,7 @@ void ScaleMaskedPost(byte* src, byte* buf)
 	int bottomscreen;
 
 	offset = *(src++);
-	for (; offset != 255;)
+	for (; offset != 255 ;)
 	{
 		length = *(src++);
 		topscreen = sprtopoffset + (dc_invscale * offset);
@@ -1095,8 +1095,13 @@ void R_DrawColumn(byte* buf)
 {
 	// This is *NOT* 100% correct - DDOI
 	int count;
-	int frac, fracstep;
+	uint32_t frac, fracstep;
 	byte* dest;
+
+	// force compiler to preload globals in a register
+	const int screenW = iGLOBAL_SCREENWIDTH;
+	const byte* restrict colormap = shadingtable;
+	const byte* restrict texture = dc_source;
 
 	count = dc_yh - dc_yl + 1;
 	if (count < 0)
@@ -1110,8 +1115,8 @@ void R_DrawColumn(byte* buf)
 	while (count--)
 	{
 		//*dest = test++;
-		*dest = shadingtable[dc_source[(frac >> SFRACBITS)]];
-		dest += iGLOBAL_SCREENWIDTH;
+		*dest = colormap[texture[(frac >> SFRACBITS)]];
+		dest += screenW;
 		frac += fracstep;
 	}
 }
@@ -1121,6 +1126,10 @@ void R_TransColumn(byte* buf)
 	int count;
 	byte* dest;
 
+	// force compiler to preload globals in a register
+	const int screenW = iGLOBAL_SCREENWIDTH;
+	const byte* restrict colormap = shadingtable;
+
 	count = dc_yh - dc_yl + 1;
 	if (count < 0)
 		return;
@@ -1129,8 +1138,8 @@ void R_TransColumn(byte* buf)
 
 	while (count--)
 	{
-		*dest = shadingtable[*dest];
-		dest += iGLOBAL_SCREENWIDTH;
+		*dest = colormap[*dest];
+		dest += screenW;
 	}
 }
 
@@ -1138,8 +1147,13 @@ void R_DrawWallColumn(byte* buf)
 {
 	// This is *NOT* 100% correct - DDOI
 	int count;
-	int frac, fracstep;
+	uint32_t frac, fracstep;
 	byte* dest;
+
+	// force compiler to preload globals in a register
+	const int screenW = iGLOBAL_SCREENWIDTH;
+	const byte* restrict colormap = shadingtable;
+	const byte* restrict texture = dc_source;
 
 	count = dc_yh - dc_yl;
 	if (count < 0)
@@ -1155,8 +1169,8 @@ void R_DrawWallColumn(byte* buf)
 	while (count--)
 	{
 		//*dest = 6;
-		*dest = shadingtable[dc_source[(((unsigned)frac) >> 26)]];
-		dest += iGLOBAL_SCREENWIDTH;
+		*dest = colormap[texture[(frac >> 26)]];
+		dest += screenW;
 		frac += fracstep;
 	}
 }
@@ -1165,9 +1179,14 @@ void R_DrawClippedColumn(byte* buf)
 {
 	// This is *NOT* 100% correct - DDOI zxcv
 	int count;
-	int frac, fracstep;
+	uint32_t frac, fracstep;
 	byte* dest;
 	//		byte *b;int y;
+
+	// force compiler to preload globals in a register
+	const int screenW = iGLOBAL_SCREENWIDTH;
+	byte* restrict colormap = shadingtable;
+	const byte* restrict texture = dc_source;
 
 	count = dc_yh - dc_yl + 1;
 	if (count < 0)
@@ -1179,12 +1198,12 @@ void R_DrawClippedColumn(byte* buf)
 	frac = dc_texturemid + (dc_yl - centeryclipped) * fracstep;
 
 	if(blackwpns)
-		shadingtable = blckmap + (1 << 12);
+		colormap = blckmap + (1 << 12);
 
 	while (count--)
 	{
-		*dest = shadingtable[dc_source[(((unsigned)frac) >> SFRACBITS)]];
-		dest += iGLOBAL_SCREENWIDTH;
+		*dest = colormap[texture[(frac >> SFRACBITS)]];
+		dest += screenW;
 		frac += fracstep;
 	}
 }
@@ -1198,11 +1217,14 @@ void R_DrawSolidColumn(int color, byte* buf)
 	if (count < 0)
 		return;
 
+	// force compiler to preload globals in a register
+	const int screenW = iGLOBAL_SCREENWIDTH;
+
 	dest = buf + ylookup[dc_yl];
 
 	while (count--)
 	{
 		*dest = (byte)color;
-		dest += iGLOBAL_SCREENWIDTH;
+		dest += screenW;
 	}
 }

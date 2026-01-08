@@ -89,10 +89,10 @@ enum
 //******************************************************************************
 
 extern char* colorname[];
-extern boolean NewGame;
+extern bool NewGame;
 
 extern CP_itemtype MainMenu[];
-extern boolean pickquick;
+extern bool pickquick;
 
 extern cfont_t* IFont;
 extern font_t* CurrentFont;
@@ -112,7 +112,7 @@ extern int px;
 extern int py;
 extern int bufferheight;
 extern int bufferwidth;
-extern boolean loadedgame;
+extern bool loadedgame;
 extern int FXMode;
 extern int MusicMode;
 
@@ -120,14 +120,14 @@ extern font_t* newfont1;
 extern font_t* smallfont;
 extern font_t* bigfont;
 
-extern boolean AutoDetailOn;
-extern boolean DoubleClickOn;
-extern boolean BobbinOn;
+extern bool AutoDetailOn;
+extern bool DoubleClickOn;
+extern bool BobbinOn;
 extern int Menuflipspeed;
 extern int DetailLevel;
 
-extern boolean ingame;
-extern boolean inmenu;
+extern bool ingame;
+extern bool inmenu;
 extern int scancode;
 
 extern int quicksaveslot;
@@ -159,7 +159,7 @@ typedef enum
 int CP_ColorSelection(void);
 void CP_BattleMode(void);
 void DisplayInfo(int which);
-boolean CP_DisplayMsg(char* s, int number);
+bool CP_DisplayMsg(char* s, int number);
 void Message(char* string);
 void DrawMenu(CP_iteminfo* item_i, CP_itemtype* items);
 void DrawMainMenu(void);
@@ -171,7 +171,7 @@ void ControlPanel(byte scancode);
 menu_items CP_MainMenu(void);
 int getASCII(void);
 void DoMainMenu(void);
-boolean CP_CheckQuick(byte scancode);
+bool CP_CheckQuick(byte scancode);
 void AdjustMenuStruct(void);
 void MenuFixup(void);
 void GetEpisode(int level);
@@ -196,11 +196,11 @@ void BattleTeams(void);
 void CP_BattleMenu(void);
 void CP_BattleModes(void);
 void CP_ModemGameMessage(int player);
-void ShowBattleOptions(boolean inmenu, int PosX, int PosY);
+void ShowBattleOptions(bool inmenu, int PosX, int PosY);
 void SetMenuHeader(char* header);
 int HandleMultiPageCustomMenu(char** names, int amount, int curpos, char* title,
 							  void (*routine)(int w), void (*redrawfunc)(void),
-							  boolean exitonselect);
+							  bool exitonselect);
 int CP_LevelSelectionMenu(void);
 int CP_EnterCodeNameMenu(void);
 void QuickSaveGame(void);

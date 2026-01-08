@@ -287,9 +287,15 @@ void InitialCast(void)
 
 			index = (cnt >= 0);
 			cnt += incr[index];
-			spotvis[grid[0]][grid[1]] = 1;
+
+			// ashley added: fix ASAN detection in GADStorm
+			if(grid[0] < 128 && grid[1] < 128)
+				spotvis[grid[0]][grid[1]] = 1;
+			
 			grid[index] += thedir[index];
 
+			// ashley added: fix ASAN detection in GADStorm
+			if(grid[0] < 128 && grid[1] < 128)
 			if ((tile = tilemap[grid[0]][grid[1]]) != 0)
 			{
 				if (tile & 0x8000)

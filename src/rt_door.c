@@ -85,11 +85,11 @@ int pwallnum;
 
 byte areaconnect[NUMAREAS][NUMAREAS];
 
-boolean areabyplayer[NUMAREAS];
+bool areabyplayer[NUMAREAS];
 
 // Local Variables
 
-static void (*touchactions[NUMTOUCHPLATEACTIONS])(long) = {
+static void (*touchactions[NUMTOUCHPLATEACTIONS])(intptr_t) = {
 	ActivatePushWall, ActivateMoveWall, LinkedOpenDoor, LinkedCloseDoor,
 	EnableObject,	  DisableObject,	ActivateLight,	DeactivateLight};
 
@@ -242,7 +242,7 @@ void KillAnimatedMaskedWall(animmaskedwallobj_t* temp)
 
 void DoAnimatedMaskedWalls(void)
 {
-	boolean done;
+	bool done;
 	animmaskedwallobj_t* temp;
 
 	for (temp = FIRSTANIMMASKEDWALL; temp;)
@@ -273,7 +273,7 @@ void DoAnimatedMaskedWalls(void)
 	}
 }
 
-int GetIndexForAction(void (*action)(long))
+int GetIndexForAction(void (*action)(intptr_t))
 {
 	int i;
 
@@ -400,11 +400,11 @@ void LoadTouchPlates(byte* buffer, int size)
 		temp->complete = dummy.complete;
 
 		if (dummy.whichobj & FL_TACT)
-			temp->whichobj = (long)(objlist[dummy.whichobj & ~FL_TACT]);
+			temp->whichobj = (intptr_t)(objlist[dummy.whichobj & ~FL_TACT]);
 
 		else if (dummy.whichobj & FL_TSTAT)
 			temp->whichobj =
-				(long)(GetStatForIndex(dummy.whichobj & ~FL_TSTAT));
+				(intptr_t)(GetStatForIndex(dummy.whichobj & ~FL_TSTAT));
 		else
 			temp->whichobj = dummy.whichobj;
 		if (dummy.actionindex != -1)
@@ -473,8 +473,8 @@ void RemoveTouchplateAction(touchplatetype* tplate, int index)
 	totalactions--;
 }
 
-void Link_To_Touchplate(word touchlocx, word touchlocy, void (*maction)(long),
-						void (*swapaction)(long), long wobj, int delaytime)
+void Link_To_Touchplate(word touchlocx, word touchlocy, void (*maction)(intptr_t),
+						void (*swapaction)(intptr_t), intptr_t wobj, int delaytime)
 {
 	touchplatetype* temp;
 	int index;
@@ -501,7 +501,7 @@ void Link_To_Touchplate(word touchlocx, word touchlocy, void (*maction)(long),
 	totalactions++;
 }
 
-void ClockLink(void (*saction)(long), void (*eaction)(long), long wobj,
+void ClockLink(void (*saction)(intptr_t), void (*eaction)(intptr_t), intptr_t wobj,
 			   int whichclock)
 {
 	touchplatetype* temp;
@@ -528,8 +528,8 @@ void ClockLink(void (*saction)(long), void (*eaction)(long), long wobj,
 	totalactions++;
 }
 
-void DisplayMessageForAction(touchplatetype* temp, boolean* wallmessage,
-							 boolean* doormessage, boolean* columnmessage)
+void DisplayMessageForAction(touchplatetype* temp, bool* wallmessage,
+							 bool* doormessage, bool* columnmessage)
 {
 
 	if ((temp->action == ActivatePushWall) ||
@@ -592,8 +592,8 @@ void TriggerStuff(void)
 	touchplatetype* temp;
 	int i, touchcomplete, j;
 	int playeron;
-	void (*tempact)(long);
-	boolean wallmessage, doormessage, columnmessage;
+	void (*tempact)(intptr_t);
+	bool wallmessage, doormessage, columnmessage;
 
 	for (i = 0; i < lasttouch; i++)
 	{
@@ -713,7 +713,7 @@ void TriggerStuff(void)
 
 //==================== Tile stuff ====================================
 
-boolean CheckTile(int x, int y)
+bool CheckTile(int x, int y)
 {
 
 	if ((x < 2) || (x > (MAPSIZE - 1)) || (y < 2) || (y > (MAPSIZE - 1)))
@@ -1359,7 +1359,7 @@ void LockLinkedDoor(int door)
 =====================
 */
 
-boolean IsDoorLinked(int door)
+bool IsDoorLinked(int door)
 {
 	doorobj_t* dptr;
 
@@ -1449,7 +1449,7 @@ void OpenDoor(int door)
 =====================
 */
 
-boolean DoorUnBlocked(int door)
+bool DoorUnBlocked(int door)
 {
 	int tilex, tiley;
 	objtype* check;
@@ -1503,7 +1503,7 @@ boolean DoorUnBlocked(int door)
 =====================
 */
 
-boolean DoorReadyToClose(int door)
+bool DoorReadyToClose(int door)
 {
 	doorobj_t* dptr;
 	int dx, dy;
@@ -1603,7 +1603,7 @@ void CloseDoor(int door)
 =====================
 */
 
-void OperateDoor(int keys, int door, boolean localplayer)
+void OperateDoor(int keys, int door, bool localplayer)
 {
 	int lock;
 	doorobj_t* dptr;
@@ -1664,7 +1664,7 @@ void OperateDoor(int keys, int door, boolean localplayer)
 =====================
 */
 
-void LinkedOpenDoor(long door)
+void LinkedOpenDoor(intptr_t door)
 {
 	UtilizeDoor(door, OpenDoor);
 }
@@ -1677,7 +1677,7 @@ void LinkedOpenDoor(long door)
 =====================
 */
 
-void LinkedCloseDoor(long door)
+void LinkedCloseDoor(intptr_t door)
 {
 	if (DoorReadyToClose(door) == true)
 		UtilizeDoor(door, CloseDoor);
@@ -1973,10 +1973,10 @@ void SpawnMaskedWall(int tilex, int tiley, int which, int flags)
 	int area1, area2;
 	int up, dn, lt, rt;
 	int himask;
-	boolean sidepic;
+	bool sidepic;
 	int side, middle, above, bottom;
 	maskedwallobj_t* lastmaskobj;
-	boolean metal;
+	bool metal;
 
 	himask = W_GetNumForName("HMSKSTRT") + 1;
 
@@ -2677,7 +2677,7 @@ void ExecuteElevatorStopActions(elevator_t* eptr, int teleport_location,
 	}
 }
 
-boolean PlayerInElevator(elevator_t* eptr)
+bool PlayerInElevator(elevator_t* eptr)
 {
 	if (eptr->state == ev_mts)
 	{
@@ -3205,7 +3205,7 @@ void SpawnPushWall(int tilex, int tiley, int lock, int texture, int dir,
 =
 =====================
 */
-void OperatePushWall(int pwall, int dir, boolean localplayer)
+void OperatePushWall(int pwall, int dir, bool localplayer)
 {
 	pwallobj_t* pw;
 
@@ -3286,7 +3286,7 @@ void ActivateAllPushWalls(void)
 =====================
 */
 
-void ActivatePushWall(long pwall)
+void ActivatePushWall(intptr_t pwall)
 {
 	pwallobj_t* pw;
 
@@ -3317,7 +3317,7 @@ void ActivatePushWall(long pwall)
 =====================
 */
 
-void ActivateMoveWall(long pwall)
+void ActivateMoveWall(intptr_t pwall)
 {
 	pwallobj_t* pw;
 

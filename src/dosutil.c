@@ -3,11 +3,17 @@
 #include <string.h>
 #include <ctype.h>
 
+// mingw uses a different mkdir function
+#if defined(__MINGW32__)
+    #include <direct.h>
+#endif
+
 #include <sys/stat.h>
+
 #if PLATFORM_UNIX
-#include <sys/types.h>
-#include <errno.h>
-#include <unistd.h>
+	#include <sys/types.h>
+	#include <errno.h>
+	#include <unistd.h>
 #endif
 
 #include <fcntl.h>
@@ -70,12 +76,18 @@ int setup_homedir(void)
 	char fetchCWD[160];
 	getcwd(fetchCWD, sizeof(fetchCWD));
 
-#if PLATFORM_UNIX && !defined(__MINGW32__)
+// ashley: as this uses CWD now, it should work on windows.
+// #if PLATFORM_UNIX && !defined(__MINGW32__)
 	int err;
 
 	/* try to create the root directory */
 	snprintf(ApogeePath, sizeof(ApogeePath), "%s/userdata/", fetchCWD);
-	err = mkdir(ApogeePath, S_IRWXU);
+
+	#if defined(__MINGW32__)
+		err = _mkdir(ApogeePath);
+	#else
+		err = mkdir(ApogeePath, S_IRWXU);
+	#endif
 
 	if (err == -1 && errno != EEXIST)
 	{
@@ -83,9 +95,9 @@ int setup_homedir(void)
 				strerror(errno));
 		return -1;
 	}
-#else
-	sprintf(ApogeePath, "./data/");;
-#endif
+// #else
+// 	sprintf(ApogeePath, "./data/");;
+// #endif
 
 	return 0;
 }

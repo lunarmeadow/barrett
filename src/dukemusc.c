@@ -170,7 +170,7 @@ static int music_loopflag = MUSIC_PlayOnce;
 static char* music_songdata = NULL;
 static Mix_Music* music_musicchunk = NULL;
 
-extern boolean useoplmusic;
+extern bool useoplmusic;
 
 int MUSIC_Init(void)
 {

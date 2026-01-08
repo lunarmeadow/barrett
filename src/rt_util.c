@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "SDL.h"
 
+#include <SDL_messagebox.h>
 #include <stdarg.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -54,9 +55,9 @@ FILE* errout;
 FILE* debugout;
 FILE* mapdebugout;
 
-static boolean SoftErrorStarted = false;
-static boolean DebugStarted = false;
-static boolean MapDebugStarted = false;
+static bool SoftErrorStarted = false;
+static bool DebugStarted = false;
+static bool MapDebugStarted = false;
 
 static unsigned char egargb[48] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0xab, 0x00, 0xab, 0x00, 0x00, 0xab, 0xab,
@@ -183,7 +184,7 @@ int atan2_appx(int dx, int dy)
 // StringsNotEqual
 //
 //******************************************************************************
-boolean StringsNotEqual(char* s1, char* s2, int length)
+bool StringsNotEqual(char* s1, char* s2, int length)
 {
 	int i;
 
@@ -295,7 +296,7 @@ void ClearBuffer(char* buf, int size)
 
 void Error(char* error, ...)
 {
-	char msgbuf[300];
+	char msgbuf[1024];
 	va_list argptr;
 	int size;
 	char* sptr;
@@ -307,10 +308,10 @@ void Error(char* error, ...)
 		abort();
 
 	SetTextMode();
-	memset(msgbuf, 0, 300);
+	memset(msgbuf, 0, sizeof(msgbuf));
 
 	va_start(argptr, error);
-	vsprintf(&msgbuf[0], error, argptr);
+	vsnprintf(msgbuf, sizeof(msgbuf), error, argptr);
 	va_end(argptr);
 
 	scriptbuffer = &msgbuf[0];
@@ -325,36 +326,38 @@ void Error(char* error, ...)
 	px = ERRORCOL;
 	py = ERRORROW;
 
-	GetToken(true);
-	while (!endofscript)
-	{
-		if ((script_p - sptr) >= 60)
-		{
-			px = ERRORCOL;
-			py++;
-			sptr = script_p;
-		}
+	// GetToken(true);
+	// while (!endofscript)
+	// {
+	// 	if ((script_p - sptr) >= 60)
+	// 	{
+	// 		px = ERRORCOL;
+	// 		py++;
+	// 		sptr = script_p;
+	// 	}
 
-		printf("%s ", token);
+	// 	snprintf(msgbuf + strlen(msgbuf), sizeof(msgbuf) - strlen(msgbuf), "%s ", token);
 
-		px++; // SPACE
-		GetToken(true);
-	}
+	// 	px++; // SPACE
+	// 	GetToken(true);
+	// }
 
 	if (player != NULL)
 	{
-		printf("Player X     = %lx\n", (long int)player->x);
-		printf("Player Y     = %lx\n", (long int)player->y);
-		printf("Player Angle = %lx\n\n", (long int)player->angle);
+		snprintf(msgbuf + strlen(msgbuf), sizeof(msgbuf) - strlen(msgbuf), "\nPlayer X     = 0x%lX\n", (long int)player->x);
+		snprintf(msgbuf + strlen(msgbuf), sizeof(msgbuf) - strlen(msgbuf), "Player Y     = 0x%lX\n", (long int)player->y);
+		snprintf(msgbuf + strlen(msgbuf), sizeof(msgbuf) - strlen(msgbuf), "Player Angle = 0x%lX\n\n", (long int)player->angle);
 	}
-	printf("Episode      = %ld\n", (long int)gamestate.episode);
+	snprintf(msgbuf + strlen(msgbuf), sizeof(msgbuf) - strlen(msgbuf), "Episode      = %ld\n", (long int)gamestate.episode);
 
 	if (gamestate.episode > 1)
 		level = (gamestate.mapon + 1) - ((gamestate.episode - 1) << 3);
 	else
 		level = gamestate.mapon + 1;
 
-	printf("Area         = %ld\n", (long int)level);
+	snprintf(msgbuf + strlen(msgbuf), sizeof(msgbuf) - strlen(msgbuf), "Area         = %ld\n", (long int)level);
+
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Barrett Error", msgbuf, NULL);
 
 	ShutDown(); // DDOI - moved this so that it doesn't try to access player
 	// which is freed by this function.
@@ -1348,57 +1351,57 @@ int SideOfLine(int x1, int y1, int x2, int y2, int x3, int y3)
 //
 //******************************************************************************
 
-typedef int (*PFI)();  /* pointer to a function returning int  */
-typedef void (*PFV)(); /* pointer to a function returning int  */
-static PFI Comp;	   /* pointer to comparison routine                */
-static PFV Switch;	   /* pointer to comparison routine                */
-static int Width;	   /* width of an object in bytes                  */
-static char* Base;	   /* pointer to element [-1] of array             */
+typedef int (*PFI)(void *, void*); /* pointer to a function returning int  */
+typedef void (*PFV)(void *, void*); /* pointer to a function returning int  */
+static PFI Comp;                        /* pointer to comparison routine                */
+static PFV Switch;                        /* pointer to comparison routine                */
+static int Width;                       /* width of an object in bytes                  */
+static char *Base;                      /* pointer to element [-1] of array             */
 
-static void newsift_down(L, U) int L, U;
-{
+static void newsift_down(int L, int U)
+{  
 	int c;
 
-	while (1)
+   	while(1)
 	{
-		c = L + L;
-		if (c > U)
-			break;
-		if ((c + Width <= U) && ((*Comp)(Base + c + Width, Base + c) > 0))
-			c += Width;
-		if ((*Comp)(Base + L, Base + c) >= 0)
-			break;
-		(*Switch)(Base + L, Base + c);
-		L = c;
+		c=L+L;
+		if(c>U) break;
+		if( (c+Width <= U) && ((*Comp)(Base+c+Width,Base+c)>0) ) c+= Width;
+		if ((*Comp)(Base+L,Base+c)>=0) break;
+		(*Switch)(Base+L, Base+c);
+		L=c;
 	}
 }
 
-void hsort(char* base, int nel, int width, int (*compare)(), void (*switcher)())
+void hsort(char * base, int nel, int width, int (*compare)(void *, void*), void (*switcher)(void *, void*))
 {
-	static int i, n, stop;
-	/*      Perform a heap sort on an array starting at base.  The array is
-			nel elements large and width is the size of a single element in
-			bytes.  Compare is a pointer to a comparison routine which will
-			be passed pointers to two elements of the array.  It should
-			return a negative number if the left-most argument is less than
-			the rightmost, 0 if the two arguments are equal, a positive
-			number if the left argument is greater than the right.  (That
-			is, it acts like a "subtract" operator.) If compare is 0 then
-			the default comparison routine, argvcmp (which sorts an
-			argv-like array of pointers to strings), is used. */
+	static int i,n,stop;
+	/*  
+		Perform a heap sort on an array starting at base.  The array is
+		nel elements large and width is the size of a single element in
+		bytes.  Compare is a pointer to a comparison routine which will
+		be passed pointers to two elements of the array.  It should
+		return a negative number if the left-most argument is less than
+		the rightmost, 0 if the two arguments are equal, a positive
+		number if the left argument is greater than the right.  (That
+		is, it acts like a "subtract" operator.) If compare is 0 then
+		the default comparison routine, argvcmp (which sorts an
+		argv-like array of pointers to strings), is used.                                       
+	*/
 
-	Width = width;
-	Comp = compare;
-	Switch = switcher;
-	n = nel * Width;
-	Base = base - Width;
-	for (i = (n / Width / 2) * Width; i >= Width; i -= Width)
-		newsift_down(i, n);
-	stop = Width + Width;
-	for (i = n; i >= stop;)
+	Width=width;
+	Comp= compare;
+	Switch= switcher;
+	n=nel*Width;
+	Base=base-Width;
+
+	for (i=(n/Width/2)*Width; i>=Width; i-=Width) newsift_down(i,n);
+		stop=Width+Width;
+
+	for (i=n; i>=stop;)
 	{
-		(*Switch)(base, Base + i);
-		newsift_down(Width, i -= Width);
+		(*Switch)(base, Base+i);
+		newsift_down(Width,i-=Width);
 	}
 }
 
@@ -1421,7 +1424,7 @@ void hsort(char* base, int nel, int width, int (*compare)(), void (*switcher)())
 
 char* UL_GetPath(char* path, char* dir)
 {
-	boolean done = 0;
+	bool done = 0;
 	char* dr = dir;
 	int cnt = 0;
 
@@ -1464,7 +1467,7 @@ char* UL_GetPath(char* path, char* dir)
 //
 //******************************************************************************
 
-boolean UL_ChangeDirectory(char* path)
+bool UL_ChangeDirectory(char* path)
 {
 	if (!path || !*path)
 	{

@@ -30,12 +30,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 static void OPLcallback(void *cbFunc, Uint8 *stream, int len);
 
-static boolean isPlaying = 0;
-static boolean isHooked = false;
+static bool isPlaying = 0;
+static bool isHooked = false;
 
-extern boolean useoplmusic;
+extern bool useoplmusic;
 
-static double volume = 0;
+static float volume = 0;
 
 static struct ADLMIDI_AudioFormat s_audioFormat;
 
@@ -67,7 +67,7 @@ static int OPL_FetchConfig(void* user, const char* section,
     return 1;
 }
 
-static boolean OPL_WriteDefault(const char* path)
+static bool OPL_WriteDefault(const char* path)
 {
     FILE *ini = fopen(path, "w");
     
@@ -82,12 +82,12 @@ static boolean OPL_WriteDefault(const char* path)
     // kvp for bank
     fputs("; - notable banks - \n\n", ini);
 
-    fputs("; 67 = ROTT v1.3 (default)\n", ini);
+    fputs("; 67 = ROTT v1.3\n", ini);
     fputs("; 70 = ROTT v1.0-1.2\n", ini);
-    fputs("; 72 = DMXOPL\n\n", ini);
+    fputs("; 72 = DMXOPL (default)\n\n", ini);
     fputs("; for more: https://github.com/Wohlstand/libADLMIDI/blob/master/banks.ini\n", ini);
 
-    fputs("bank=67\n\n", ini);
+    fputs("bank=72\n\n", ini);
 
     // kvp for chip count
     fputs("; how many opl chips to emulate\n", ini);
@@ -159,9 +159,9 @@ void OPL_Init(void)
     int getChips = cfg.oplChipNum ? cfg.oplChipNum : 2;
     adl_setNumChips(midi_player, getChips);
     
-    // banknum if set - default to ROTT v1.3 bank
+    // banknum if set - default to DMXOPL
     // https://github.com/Wohlstand/libADLMIDI/blob/master/banks.ini
-    int getBank = cfg.bankNum ? cfg.bankNum : 67;
+    int getBank = cfg.bankNum ? cfg.bankNum : 72;
     adl_setBank(midi_player, getBank);
 
     adl_setVolumeRangeModel(midi_player, ADLMIDI_VolumeModel_AUTO);
@@ -236,23 +236,24 @@ void OPL_CheckForStateChange(void)
 	}
 }
 
-int OPL_GetPosition(void)
-{
-    return (int)(adl_positionTell(midi_player) * 1000);
-}
+// ! these seem to be broken, removing for now.
+// int OPL_GetPosition(void)
+// {
+//     return (int)(adl_positionTell(midi_player) * 1000);
+// }
 
-void OPL_SetPosition(int ms)
-{
-    adl_positionSeek(midi_player, (double)ms / 1000);
-}
+// void OPL_SetPosition(int ms)
+// {
+//     adl_positionSeek(midi_player, (float)ms / 1000);
+// }
 
 
-void OPL_SetVolume(double newVol)
+void OPL_SetVolume(float newVol)
 {
     // newvol/127 = normalize to 0.0-1.0
     // y = 10 * (newVol / 127) ^ 2
     // essentially, 0.0-10.0f scaled to square of volumescale
-    double volumescale = newVol / 127;
+    float volumescale = newVol / 127;
     volume = 10 * pow(volumescale, 2);
 }
 
@@ -268,7 +269,7 @@ int OPL_IsHooked(void)
 
 
 
-boolean OPL_Play(char* buffer, int size, int loopflag)
+bool OPL_Play(char* buffer, int size, int loopflag)
 {
     if(adl_openData(midi_player, buffer, size) < 0)
     {
@@ -314,7 +315,7 @@ static void OPLcallback(void *cbFunc, Uint8 *stream, int len)
 
     for(int i = 0; i < samples_count; i++)
     {
-        double clampVal = (double)sampleBuf[i] * volume;
+        float clampVal = (float)sampleBuf[i] * volume;
 
         clampVal = clampVal > INT16_MAX ? INT16_MAX : 
                    clampVal < INT16_MIN ? INT16_MIN 

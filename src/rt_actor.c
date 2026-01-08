@@ -73,7 +73,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			ob->hitpoints = (SHP(gamestate.difficulty, ob) << 1);              \
 	}
 
-boolean ludicrousgibs = false;
+bool ludicrousgibs = false;
 
 short colheight[15];
 
@@ -96,6 +96,9 @@ _2Dpoint SNAKEPATH[512];
 actor_misc_flags mstruct, *MISCVARS = &mstruct;
 int angletodir[ANGLES];
 objtype* new;
+
+// spread offset from RayShoot
+int shootcone;
 
 void* actorat[MAPSIZE][MAPSIZE];
 exit_t playstate;
@@ -165,9 +168,9 @@ basic_actor_sounds BAS[NUMCLASSES + 3] = {
 //========================== Local Variables
 //==================================================
 
-extern boolean dopefish;
+extern bool dopefish;
 
-boolean Masterdisk;
+bool Masterdisk;
 
 static objtype *SNAKEHEAD, *SNAKEEND, *PARTICLE_GENERATOR, *EXPLOSIONS;
 #if (SHAREWARE == 0)
@@ -371,9 +374,9 @@ static int STOPSPEED = 0x200;
 static int PLAYERFRICTION = 0xe000;
 static int ACTORFRICTION = 0xf000;
 static int DIAGADJUST = 0xb504;
-static boolean MissileSound = true;
+static bool MissileSound = true;
 
-boolean FirstExplosionState(statetype* state)
+bool FirstExplosionState(statetype* state)
 {
 	if (DoPanicMapping())
 	{
@@ -887,7 +890,7 @@ void A_Steal(objtype* ob)
 void FindAddresses(void)
 {
 	int i;
-	unsigned long tstate, tfunct;
+	uintptr_t tstate, tfunct;
 
 	MINFUNCTION = -1l;
 	MAXFUNCTION = 0x00000000;
@@ -896,7 +899,7 @@ void FindAddresses(void)
 
 	for (i = 0; i < MAXSTATES; i++)
 	{
-		tstate = (unsigned long)(statetable[i]);
+		tstate = (uintptr_t)(statetable[i]);
 		if (tstate < MINSTATE)
 			MINSTATE = tstate;
 
@@ -904,7 +907,7 @@ void FindAddresses(void)
 			MAXSTATE = tstate;
 		if (statetable[i] != NULL)
 		{
-			tfunct = (unsigned long)(statetable[i]->think);
+			tfunct = (uintptr_t)(statetable[i]->think);
 			if (tfunct < MINFUNCTION)
 				MINFUNCTION = tfunct;
 
@@ -916,10 +919,10 @@ void FindAddresses(void)
 
 void CheckBounds(objtype* ob)
 {
-	unsigned long tstate, tfunct;
+	uintptr_t tstate, tfunct;
 
-	tstate = (unsigned long)(ob->state);
-	tfunct = (unsigned long)(ob->state->think);
+	tstate = (uintptr_t)(ob->state);
+	tfunct = (uintptr_t)(ob->state->think);
 
 	if ((tfunct < MINFUNCTION) || (tfunct > MAXFUNCTION) ||
 		(tstate < MINSTATE) || (tstate > MAXSTATE))
@@ -1568,7 +1571,7 @@ void SpawnPatrol(classtype which, int tilex, int tiley, int dir)
 
 //==========================================================================
 
-void SpawnDisk(int tilex, int tiley, int type, boolean master)
+void SpawnDisk(int tilex, int tiley, int type, bool master)
 {
 	int zoffset;
 
@@ -3103,7 +3106,7 @@ void SpawnSuperFatalityGibs(objtype* ob, objtype* attacker)
 	}
 }
 
-boolean Vicious_Annihilation(objtype* ob, objtype* attacker)
+bool Vicious_Annihilation(objtype* ob, objtype* attacker)
 {
 	if ((ob->flags & FL_HBM) && (gamestate.violence >= vl_high))
 	{
@@ -3509,7 +3512,7 @@ gib_t RandomGutsType(void)
 void SpawnParticles(objtype* ob, int which, int numparticles)
 {
 	int randphi, randtheta, i, nspeed;
-	boolean eyespawned = false;
+	bool eyespawned = false;
 	int gibtype;
 	int randadj;
 
@@ -4599,9 +4602,9 @@ void MissileMovement(objtype* ob)
 		return false;                                                          \
 	}
 
-extern boolean ricochetingRocketsEnabled;
+extern bool ricochetingRocketsEnabled;
 
-boolean MissileTryMove(objtype* ob, int tryx, int tryy, int tryz)
+bool MissileTryMove(objtype* ob, int tryx, int tryy, int tryz)
 {
 	int tilexlow, tileylow, tilexhigh, tileyhigh, x, y, trytilex, trytiley, dx,
 		dy, dzt, dztp1, radius, sprrad, actrad, tcl, ocl, oldsrad, area, zdist,
@@ -4612,7 +4615,7 @@ boolean MissileTryMove(objtype* ob, int tryx, int tryy, int tryz)
 	doorobj_t* tempdoor;
 	int doorn;
 	statobj_t* tempstat;
-	boolean areatried[NUMAREAS] = {0};
+	bool areatried[NUMAREAS] = {0};
 
 	sprrad = 0x4500;
 	actrad = ACTORSIZE + 0x2800;
@@ -5431,7 +5434,7 @@ void SelectDoorDir(objtype* ob)
 	ob->dir = olddir;
 }
 
-boolean EluderCaught(objtype* ob)
+bool EluderCaught(objtype* ob)
 {
 	objtype* temp;
 	int dx, dy, dz;
@@ -5674,9 +5677,9 @@ void T_CollectorWander(objtype* ob)
 		ob->temp1 = 0;
 }
 
-boolean CheckDoor(objtype* ob, doorobj_t* door, int trytilex, int trytiley)
+bool CheckDoor(objtype* ob, doorobj_t* door, int trytilex, int trytiley)
 {
-	boolean doorok = false;
+	bool doorok = false;
 
 	switch (ob->dir)
 	{
@@ -5711,7 +5714,7 @@ boolean CheckDoor(objtype* ob, doorobj_t* door, int trytilex, int trytiley)
 	return false;
 }
 
-boolean WallCheck(int tryx, int tryy)
+bool WallCheck(int tryx, int tryy)
 {
 	int tilexlow, tilexhigh, tileylow, tileyhigh, y, x;
 
@@ -5732,7 +5735,7 @@ boolean WallCheck(int tryx, int tryy)
 	return true;
 }
 
-boolean QuickSpaceCheck(objtype* ob, int tryx, int tryy)
+bool QuickSpaceCheck(objtype* ob, int tryx, int tryy)
 {
 	int xlow, xhigh, ylow, yhigh, x, y, dx, dy;
 	objtype* temp;
@@ -5908,7 +5911,7 @@ movement_status CheckOtherActors(objtype* ob, int tryx, int tryy, int tryz)
 	int areatried[NUMAREAS] = {0};
 	int tilexlow, tilexhigh, tileylow, tileyhigh;
 	int radius, actrad, oldrad;
-	boolean bouncer, pusher, thinkingactor, zstoppable, ACTORSTOP;
+	bool bouncer, pusher, thinkingactor, zstoppable, ACTORSTOP;
 	int dzt, dztp1, checkz;
 	int x, y, dx, dy;
 	int ocl, tcl;
@@ -6110,7 +6113,7 @@ movement_status CheckRegularWalls(objtype* ob, int tryx, int tryy, int tryz)
 {
 	int tilexlow, tilexhigh, tileylow, tileyhigh, x, y, radius;
 	classtype ocl;
-	boolean ISPLAYER = false;
+	bool ISPLAYER = false;
 
 	ocl = ob->obclass;
 	tryz = tryz;
@@ -6219,9 +6222,9 @@ movement_status CheckStaticObjects(objtype* ob, int tryx, int tryy, int tryz)
 	int dx, dy, dzt, dztp1, x, y;
 	statobj_t* tempstat;
 	int sprrad, oldsrad, sprtrad;
-	boolean specialstat = false, widestat = false, zstoppable;
+	bool specialstat = false, widestat = false, zstoppable;
 	int sprxlow, sprxhigh, sprylow, spryhigh;
-	boolean SPRSTOP;
+	bool SPRSTOP;
 	classtype ocl;
 
 	ocl = ob->obclass;
@@ -6409,7 +6412,7 @@ movement_status CheckStaticObjects(objtype* ob, int tryx, int tryy, int tryz)
 movement_status CheckMaskedWalls(objtype* ob, int tryx, int tryy, int tryz)
 {
 	int trytilex, trytiley;
-	boolean MWALLSTOP;
+	bool MWALLSTOP;
 	int ISPLAYER = (ob->obclass == playerobj);
 	classtype ocl = ob->obclass;
 
@@ -6627,7 +6630,7 @@ movement_status CheckDoors(objtype* ob, int tryx, int tryy, int tryz)
 	return OK_TO_CONTINUE;
 }
 
-boolean ActorTryMove(objtype* ob, int tryx, int tryy, int tryz)
+bool ActorTryMove(objtype* ob, int tryx, int tryy, int tryz)
 {
 
 	movement_status (*reduced_movement_check[3])(objtype*, int, int, int) = {
@@ -6645,7 +6648,7 @@ boolean ActorTryMove(objtype* ob, int tryx, int tryy, int tryz)
 	movement_status movement_check_result;
 	int numcheckfunctions;
 	int i;
-	boolean xyblocked;
+	bool xyblocked;
 
 	if ((tryz < -30) && (sky == 0) && (ob->obclass != inertobj))
 	{
@@ -6696,7 +6699,7 @@ void PushWallMove(int num)
 	int dx, dy;
 	int actrad;
 	objtype* temp;
-	boolean pushem;
+	bool pushem;
 	int tryx, tryy, areanumber, trytilex, trytiley;
 
 	pwall = pwallobjlist[num];
@@ -7922,7 +7925,7 @@ void T_HeinrichChase(objtype* ob)
 {
 	int dx, dy, dist, chance, perpangle;
 	// statetype *temp;
-	boolean doorok;
+	bool doorok;
 
 	CheckRunover(ob);
 
@@ -8787,7 +8790,7 @@ void T_NME_HeadShoot(objtype* ob)
 	ActorMovement(ob);
 }
 
-boolean NMEspincheck(objtype* ob)
+bool NMEspincheck(objtype* ob)
 {
 	int dx, dy, dz;
 
@@ -9510,7 +9513,7 @@ void T_DarkmonkLandAndFire(objtype* ob)
 			{
 				objtype* column = (objtype*)(ob->whatever);
 
-				EnableObject((long)column);
+				EnableObject((intptr_t)column);
 				ob->whatever = NULL;
 
 				KillActor(ob);
@@ -9867,7 +9870,7 @@ void A_DmonkAttack(objtype* ob)
 		{
 			objtype* column = (objtype*)(ob->whatever);
 
-			EnableObject((long)column);
+			EnableObject((intptr_t)column);
 			ob->whatever = NULL;
 
 			KillActor(ob);
@@ -10087,7 +10090,7 @@ void DamageStaticObject(statobj_t* tempstat, int damage)
 
 				for (tplate = touchplate[tempstat->linked_to]; tplate;
 					 tplate = tplate->nextaction)
-					if (tplate->whichobj == (long)(tempstat))
+					if (tplate->whichobj == (intptr_t)(tempstat))
 						RemoveTouchplateAction(tplate, tempstat->linked_to);
 			}
 
@@ -10313,7 +10316,7 @@ void ExplodeStatic(statobj_t* tempstat)
 		if ((gamestate.BattleOptions.RespawnItems) &&
 			(tempstat->itemnumber == stat_tntcrate))
 		{
-			tempstat->linked_to = (long)(LASTSTAT);
+			tempstat->linked_to = (intptr_t)(LASTSTAT);
 			tempstat->flags |= FL_RESPAWN;
 		}
 	}
@@ -10327,7 +10330,7 @@ void ExplodeStatic(statobj_t* tempstat)
 	SD_PlaySoundRTP(SD_ITEMBLOWSND, tempstat->x, tempstat->y);
 }
 
-void EnableObject(long object)
+void EnableObject(intptr_t object)
 {
 	objtype* ob;
 	int i, gasicon;
@@ -10386,7 +10389,7 @@ void EnableObject(long object)
 	}
 }
 
-void DisableObject(long object)
+void DisableObject(intptr_t object)
 {
 	objtype* ob;
 
@@ -10447,7 +10450,7 @@ void T_MoveColumn(objtype* ob)
 	}
 }
 
-boolean NextToDoor(objtype* ob)
+bool NextToDoor(objtype* ob)
 {
 	int tilex, tiley, centerx, centery, dx, dy;
 
@@ -10595,7 +10598,7 @@ void T_Chase(objtype* ob)
 	int dx, dy, dz, dist, chance;
 	classtype ocl;
 	statetype* temp;
-	boolean doorok;
+	bool doorok;
 
 	ocl = ob->obclass;
 
@@ -11941,7 +11944,7 @@ void SelectPathDir(objtype* ob)
 ================
 */
 
-boolean CheckSight(objtype* ob, void* atwhat)
+bool CheckSight(objtype* ob, void* atwhat)
 {
 	long deltax, deltay;
 	objtype* what;
@@ -12106,7 +12109,7 @@ void FirstSighting(objtype* ob)
 ===============
 */
 
-boolean SightPlayer(objtype* ob)
+bool SightPlayer(objtype* ob)
 {
 	// if (ob->flags & FL_ATTACKMODE)
 	// Error ("An instance of %s in ATTACKMODE called
@@ -12160,7 +12163,7 @@ boolean SightPlayer(objtype* ob)
 =====================
 */
 
-boolean CheckLine(void* from, void* to, int condition)
+bool CheckLine(void* from, void* to, int condition)
 {
 	objtype *tempactor, *ob, *orig;
 	statobj_t* checksprite;
@@ -12590,8 +12593,14 @@ void RayShoot(objtype* shooter, int damage, int accuracy)
 		(Near(shooter, player, 3)))
 		SetIllumination(2);
 
+	shootcone = 0;
+
 	offset = ((GameRandomNumber("RayShoot", 0) - 128) >> MAXSHOOTSHIFT);
 	offset = FixedMulShift(accuracy, offset, 8);
+
+	// get offset for dynamic crosshair, don't allow enemies to trigger this
+	if (shooter->obclass == playerobj)
+		shootcone += offset;
 
 	if (offset > MAXSHOOTOFFSET)
 		offset = MAXSHOOTOFFSET;
@@ -12604,6 +12613,9 @@ void RayShoot(objtype* shooter, int damage, int accuracy)
 	offset = ((GameRandomNumber("RayShoot", 1) - 128) >> MAXSHOOTSHIFT);
 	offset = FixedMulShift(accuracy, offset, 8);
 
+	if (shooter->obclass == playerobj)
+		shootcone += offset;
+	
 	if (offset > MAXSHOOTOFFSET)
 		offset = MAXSHOOTOFFSET;
 

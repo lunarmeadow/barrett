@@ -78,55 +78,55 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 volatile int oldtime;
 volatile int gametime;
 
-boolean tedlevel;
+bool tedlevel;
 int tedlevelnum;
 int tedx = 0;
 int tedy = 0;
-boolean warp;
+bool warp;
 int warpx = 0;
 int warpy = 0;
 int warpa = 0;
 int NoSound;
 int polltime;
 int oldpolltime;
-boolean fizzlein = false;
+bool fizzlein = false;
 int pheight;
 
-boolean SCREENSHOTS = false;
-boolean MONOPRESENT = false;
-boolean MAPSTATS = false;
-boolean TILESTATS = false;
-boolean HUD = false;
+bool SCREENSHOTS = false;
+bool MONOPRESENT = false;
+bool MAPSTATS = false;
+bool TILESTATS = false;
+bool HUD = false;
 
-boolean dopefish;
+bool dopefish;
 
-boolean newlevel = false;
-boolean infopause;
-boolean quiet = false;
+bool newlevel = false;
+bool infopause;
+bool quiet = false;
 
-boolean DebugOk = false;
+bool DebugOk = false;
 
 #if SAVE_SCREEN
 static char savename[13] = "ROTT0000.LBM";
 static int totalbytes;
 static byte* bptr;
 #endif
-static boolean turbo;
+static bool turbo;
 
 static int NoWait;
 static int startlevel = 0;
 static int demonumber = -1;
 
 char CWD[40]; // curent working directory
-static boolean quitactive = false;
+static bool quitactive = false;
 
 char kpfPath[256];
 
 int timelimit;
 int maxtimelimit;
-boolean timelimitenabled;
-boolean demoexit;
-boolean noecho;
+bool timelimitenabled;
+bool demoexit;
+bool noecho;
 
 void CheckCommandLineParameters(void);
 void PlayTurboGame(void);
@@ -141,10 +141,10 @@ extern int setup_homedir(void);
 // extern char G_argv[30][80];
 int G_weaponscale;
 extern int iDropDemo;
-extern boolean iG_aimCross;
-extern boolean sdl_fullscreen;
-extern boolean borderWindow;
-extern boolean borderlessWindow;
+extern bool iG_aimCross;
+extern bool sdl_fullscreen;
+extern bool borderWindow;
+extern bool borderlessWindow;
 
 extern void ComSetTime(void);
 extern void VH_UpdateScreen(void);
@@ -273,6 +273,8 @@ int main(int argc, char* argv[])
 	}
 
 	SetRottScreenRes(iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT);
+
+	GenerateSkyScalerTable();
 
 	//   if (modemgame==true)
 	//      {
@@ -1065,7 +1067,7 @@ int NumberOfTeams(void)
 	return (count);
 }
 
-extern boolean doRescaling;
+extern bool doRescaling;
 
 void GameLoop(void)
 {
@@ -1116,7 +1118,6 @@ void GameLoop(void)
 			AdjustMenuStruct();
 
 			CalcTics();
-			CalcTics();
 
 			playstate = ex_titles;
 		}
@@ -1135,7 +1136,6 @@ void GameLoop(void)
 
 				for (i = 0; i < 0x300; i++)
 					dimpal[i] = origpal[i] >> 2;
-				CalcTics();
 				CalcTics();
 				IN_ClearKeysDown();
 				while (IN_GetMouseButtons())
@@ -1575,7 +1575,7 @@ void GameLoop(void)
 	}
 }
 
-boolean CheckForQuickLoad(void)
+bool CheckForQuickLoad(void)
 {
 	EnableScreenStretch(); // bna++
 	if (pickquick)
@@ -1791,7 +1791,7 @@ void UpdateGameObjects(void)
 	}
 }
 
-extern boolean doRescaling;
+extern bool doRescaling;
 void PauseLoop(void)
 {
 	StopWind();
@@ -1831,7 +1831,7 @@ void PauseLoop(void)
 		PollControls();
 
 	if ((RefreshPause == true) && (GamePaused == true) &&
-		((GetTicCount() - pausedstartedticcount) >= blanktime))
+		((GetCachedTic() - pausedstartedticcount) >= blanktime))
 	{
 		RefreshPause = false;
 		StartupScreenSaver();
@@ -1841,7 +1841,7 @@ void PauseLoop(void)
 void PlayLoop(void)
 
 {
-	boolean canquit = true;
+	bool canquit = true;
 	int quittime = 0;
 
 	if ((loadedgame == false) && (timelimitenabled == false))
@@ -1945,7 +1945,7 @@ fromloadedgame:
 
 		if ((!BATTLEMODE) && (CP_CheckQuick(LastScan)))
 		{
-			boolean escaped = false;
+			bool escaped = false;
 
 			if (LastScan == sc_Escape)
 			{
@@ -2580,7 +2580,7 @@ void WriteLBMfile(char* filename, byte* data, int width, int height)
 //
 //****************************************************************************
 
-void GetFileName(boolean saveLBM)
+void GetFileName(bool saveLBM)
 {
 	int i;
 
@@ -2612,13 +2612,13 @@ void GetFileName(boolean saveLBM)
 //
 //****************************************************************************
 
-boolean inhmenu;
+bool inhmenu;
 
-void SaveScreen(boolean saveLBM)
+void SaveScreen(bool saveLBM)
 {
 	byte* buffer;
 	byte* screen;
-	boolean oldHUD;
+	bool oldHUD;
 	char filename[128];
 
 	oldHUD = HUD;

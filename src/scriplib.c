@@ -38,8 +38,8 @@ char name[MAXTOKEN * 2];
 char scriptfilename[512];
 char *scriptbuffer, *script_p, *scriptend_p;
 int scriptline;
-boolean endofscript;
-boolean tokenready; // only true if UnGetToken was just called
+bool endofscript;
+bool tokenready; // only true if UnGetToken was just called
 
 /*
 ==============
@@ -93,7 +93,7 @@ void UnGetToken(void)
 ==============
 */
 
-void GetToken(boolean crossline)
+void GetToken(bool crossline)
 {
 	char* token_p;
 
@@ -184,7 +184,7 @@ skipspace:
 ==============
 */
 
-void GetTokenEOL(boolean crossline)
+void GetTokenEOL(bool crossline)
 {
 	char* name_p;
 
@@ -277,7 +277,7 @@ skipspace:
 ==============
 */
 
-boolean TokenAvailable(void)
+bool TokenAvailable(void)
 {
 	char* search_p;
 

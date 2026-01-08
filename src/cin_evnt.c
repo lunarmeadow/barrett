@@ -35,7 +35,7 @@ e_cinefxevent_node_t* lastevent;
 // LOCALS
 
 static int numevents = 0;
-static boolean eventsystemstarted = false;
+static bool eventsystemstarted = false;
 
 /*
 ===============
@@ -383,8 +383,8 @@ void ParseSprite(e_cinefxevent_node_t* event)
 void ParseFlic(e_cinefxevent_node_t* event)
 {
 	char name1[10];
-	boolean loop;
-	boolean usefile;
+	bool loop;
+	bool usefile;
 
 	GetToken(false);
 	strcpy(&(name1[0]), token);

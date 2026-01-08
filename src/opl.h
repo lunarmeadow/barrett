@@ -37,14 +37,14 @@ void OPL_RegisterHook(void);
 void OPL_DeregisterHook(void);
 void OPL_CheckForStateChange(void);
 
-int OPL_GetPosition(void);
-void OPL_SetPosition(int ms);
+// int OPL_GetPosition(void);
+// void OPL_SetPosition(int ms);
 
-void OPL_SetVolume(double newVol);
+void OPL_SetVolume(float newVol);
 int OPL_IsPlaying(void);
 int OPL_IsHooked(void);
 
-boolean OPL_Play(char* buffer, int siz, int loopflag);
+bool OPL_Play(char* buffer, int siz, int loopflag);
 void OPL_Stop(void);
 void OPL_Pause(void);
 

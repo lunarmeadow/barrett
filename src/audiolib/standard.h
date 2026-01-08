@@ -31,7 +31,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef __STANDARD_H
 #define __STANDARD_H
 
-typedef int boolean;
 typedef int errorcode;
 
 #ifndef TRUE

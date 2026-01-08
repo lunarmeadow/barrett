@@ -120,8 +120,8 @@ static int powerupheight;
 static int protectiontime;
 static int protectionheight;
 
-static boolean EndLevelStuff = false;
-static boolean borderset = false;
+static bool EndLevelStuff = false;
+static bool borderset = false;
 static int oldsec = -1;
 
 static pic_t* BkPic;
@@ -141,7 +141,7 @@ extern Queue* sdl_draw_obj_queue;
 extern void VL_MemToScreenClipped(byte* source, int width, int height, int x,
 								  int y);
 void DrawPPic(int xpos, int ypos, int width, int height, byte* src, int num,
-			  boolean up, boolean bufferofsonly);
+			  bool up, bool bufferofsonly);
 extern void MoveScreenUpLeft();
 extern void MoveScreenUpRight();
 extern void MoveScreenDownLeft();
@@ -152,7 +152,7 @@ extern void MoveScreenDownRight();
 //
 //******************************************************************************
 
-void V_ReDrawBkgnd(int x, int y, int width, int height, boolean shade)
+void V_ReDrawBkgnd(int x, int y, int width, int height, bool shade)
 {
 	byte* src;
 	byte* dest;
@@ -357,7 +357,7 @@ extern int hudRescaleFactor;
 // DrawPlayScreen ()
 //
 //******************************************************************************
-void DrawPlayScreen(boolean bufferofsonly)
+void DrawPlayScreen(bool bufferofsonly)
 {
 	pic_t* shape;
 
@@ -561,7 +561,7 @@ void GetShortCodeName(char* dest, char* source, int maxwidth)
 // DrawKills ()
 //
 //******************************************************************************
-void DrawKills(boolean bufferofsonly)
+void DrawKills(bool bufferofsonly)
 {
 	int rank;
 	int xpos;
@@ -945,7 +945,7 @@ void DrawPlayers(void)
 //
 //******************************************************************************
 
-void StatusDrawPic(unsigned x, unsigned y, pic_t* nums, boolean bufferofsonly)
+void StatusDrawPic(unsigned x, unsigned y, pic_t* nums, bool bufferofsonly)
 {
 	DrawMPPic(x, y, nums->width, nums->height, 0, (byte*)&nums->data,
 			  bufferofsonly);
@@ -958,7 +958,7 @@ void StatusDrawPic(unsigned x, unsigned y, pic_t* nums, boolean bufferofsonly)
 //******************************************************************************
 
 void StatusDrawColoredPic(unsigned x, unsigned y, pic_t* nums,
-						  boolean bufferofsonly, int color)
+						  bool bufferofsonly, int color)
 {
 	DrawColoredMPPic(x, y, nums->width, nums->height, 0, (byte*)&nums->data,
 					 bufferofsonly, color);
@@ -972,7 +972,7 @@ void StatusDrawColoredPic(unsigned x, unsigned y, pic_t* nums,
 //
 //******************************************************************************
 
-void DrawGameString(int x, int y, const char* str, boolean bufferofsonly)
+void DrawGameString(int x, int y, const char* str, bool bufferofsonly)
 {
 	byte* tempbuf;
 
@@ -998,7 +998,7 @@ void DrawGameString(int x, int y, const char* str, boolean bufferofsonly)
 //
 //******************************************************************************
 
-void DrawNumber(int x, int y, int width, int which, boolean bufferofsonly)
+void DrawNumber(int x, int y, int width, int which, bool bufferofsonly)
 {
 	unsigned length, c;
 	char* str;
@@ -1132,7 +1132,7 @@ void HealPlayer(int points, objtype* ob)
 //
 //******************************************************************************
 
-void DrawLives(boolean bufferofsonly)
+void DrawLives(bool bufferofsonly)
 
 {
 	if (!SHOW_TOP_STATUS_BAR())
@@ -1167,7 +1167,7 @@ void GiveExtraMan(void)
 //
 //******************************************************************************
 
-void DrawScore(boolean bufferofsonly)
+void DrawScore(bool bufferofsonly)
 
 {
 	if (!SHOW_TOP_STATUS_BAR())
@@ -1332,7 +1332,7 @@ void GiveMissileWeapon(objtype* ob, int which)
 //
 //******************************************************************************
 
-void DrawKeys(boolean bufferofsonly)
+void DrawKeys(bool bufferofsonly)
 {
 	if (!SHOW_TOP_STATUS_BAR())
 	{
@@ -1370,7 +1370,7 @@ void DrawKeys(boolean bufferofsonly)
 //
 //******************************************************************************
 
-void StatusDrawTime(unsigned x, unsigned y, unsigned num, boolean bufferofsonly)
+void StatusDrawTime(unsigned x, unsigned y, unsigned num, bool bufferofsonly)
 
 {
 	DrawMPPic(x, y, timenums[num]->width, timenums[num]->height, 0,
@@ -1385,8 +1385,8 @@ void StatusDrawTime(unsigned x, unsigned y, unsigned num, boolean bufferofsonly)
 //
 //******************************************************************************
 
-void DrawTimeNumber(int x, int y, int number, boolean seconds,
-					boolean bufferofsonly)
+void DrawTimeNumber(int x, int y, int number, bool seconds,
+					bool bufferofsonly)
 {
 	char str[20];
 
@@ -1423,7 +1423,7 @@ void DrawTimeNumber(int x, int y, int number, boolean seconds,
 //
 //******************************************************************************
 
-void DrawTimeXY(int x, int y, int sec, boolean bufferofsonly)
+void DrawTimeXY(int x, int y, int sec, bool bufferofsonly)
 
 {
 	int min;
@@ -1449,7 +1449,7 @@ void DrawTimeXY(int x, int y, int sec, boolean bufferofsonly)
 //
 //******************************************************************************
 
-void DrawTime(boolean bufferofsonly)
+void DrawTime(bool bufferofsonly)
 
 {
 	int sec;
@@ -1496,7 +1496,7 @@ void DrawTime(boolean bufferofsonly)
 //******************************************************************************
 
 void DrawMPPic(int xpos, int ypos, int width, int height, int heightmod,
-			   byte* src, boolean bufferofsonly)
+			   byte* src, bool bufferofsonly)
 {
 	int olddest;
 	int dest;
@@ -1560,7 +1560,7 @@ void DrawMPPic(int xpos, int ypos, int width, int height, int heightmod,
 //******************************************************************************
 
 void DrawColoredMPPic(int xpos, int ypos, int width, int height, int heightmod,
-					  byte* src, boolean bufferofsonly, int color)
+					  byte* src, bool bufferofsonly, int color)
 {
 	int olddest;
 	int dest;
@@ -1690,7 +1690,7 @@ void UpdateTriads(objtype* ob, int num)
 //
 //****************************************************************************
 
-void DrawTriads(boolean bufferofsonly)
+void DrawTriads(bool bufferofsonly)
 
 {
 	if (!SHOW_TOP_STATUS_BAR())
@@ -1711,7 +1711,7 @@ void DrawTriads(boolean bufferofsonly)
 //******************************************************************************
 
 void DrawPPic(int xpos, int ypos, int width, int height, byte* src, int num,
-			  boolean up, boolean bufferofsonly)
+			  bool up, bool bufferofsonly)
 {
 	int olddest;
 	int dest;
@@ -1775,7 +1775,7 @@ void DrawPPic(int xpos, int ypos, int width, int height, byte* src, int num,
 //
 //****************************************************************************
 
-void DrawBarHealth(boolean bufferofsonly)
+void DrawBarHealth(bool bufferofsonly)
 
 {
 	int percenthealth;
@@ -1848,7 +1848,7 @@ void DrawBarHealth(boolean bufferofsonly)
 //
 //****************************************************************************
 
-void DrawBarAmmo(boolean bufferofsonly)
+void DrawBarAmmo(bool bufferofsonly)
 {
 	int ammo_y;
 
@@ -1903,7 +1903,7 @@ void DrawBarAmmo(boolean bufferofsonly)
 //******************************************************************************
 
 void SingleDrawPPic(int xpos, int ypos, int width, int height, byte* src,
-					int num, boolean up)
+					int num, bool up)
 {
 	byte* olddest;
 	byte* dest;
@@ -2722,7 +2722,7 @@ void DrawHighScores(void)
 //
 //******************************************************************************
 
-void CheckHighScore(long score, word other, boolean INMENU)
+void CheckHighScore(long score, word other, bool INMENU)
 {
 	word i, j;
 	int n;
@@ -2980,8 +2980,8 @@ void DrawEOLHeader(int playstate)
 	VW_UpdateScreen();
 }
 
-boolean EndBonusFirst;
-boolean EndBonusSkip;
+bool EndBonusFirst;
+bool EndBonusSkip;
 int EndBonusNumBonuses;
 int EndBonusVoice;
 int EndBonusStartY;
@@ -3087,7 +3087,7 @@ void LevelCompleted(exit_t playstate)
 
 {
 	objtype* obj;
-	boolean dobonus;
+	bool dobonus;
 	int i;
 	int kr;
 	int sr;
@@ -3764,7 +3764,7 @@ void ShowEndScore(int localplayer)
 	int killcount;
 	int suicidecount;
 	char tempstr[15];
-	boolean dofullstats;
+	bool dofullstats;
 	int NumPlayers;
 
 	// show at the most 11 players
@@ -4023,7 +4023,7 @@ int FindAngleToWindow(int tx, int ty)
 =
 ==================
 */
-boolean ZoomDeathOkay(void)
+bool ZoomDeathOkay(void)
 {
 	int x, y;
 	int radius;
@@ -4069,13 +4069,13 @@ boolean ZoomDeathOkay(void)
 #define DEATHROTATE 6
 
 // void RotateScreen(int startAngle, int endAngle, int startScale, int endScale,
-// int time, int option, boolean fadeOut);
+// int time, int option, bool fadeOut);
 
 // void RotateScreenScaleFloat(float startAngle, float endAngle, float
-// startScale, float endScale, int time, boolean fadeOut, boolean
+// startScale, float endScale, int time, bool fadeOut, bool
 // drawPlayScreen);
 
-extern boolean dopefish;
+extern bool dopefish;
 void Died(void)
 {
 	long dx, dy;
@@ -4102,7 +4102,7 @@ void Died(void)
 	{
 		int x, y, z, radius, heightoffset;
 		int endangle, startangle, killangle;
-		boolean deadflagset;
+		bool deadflagset;
 		objtype* dummy;
 
 		x = player->x;
@@ -4446,12 +4446,12 @@ static byte whichstr = 0;
 
 void DoLoadGameAction(void)
 {
-	if ((SaveTime + 1) < GetTicCount())
+	if ((SaveTime + 1) < GetCachedTic())
 	{
 		byte* temp = bufferofs;
 
 		bufferofs = displayofs;
-		SaveTime = GetTicCount();
+		SaveTime = GetCachedTic();
 
 		CurrentFont = tinyfont;
 
@@ -4562,7 +4562,7 @@ void SaveTag(int handle, char* tag, int size)
 //
 //******************************************************************************
 
-boolean SaveTheGame(int num, gamestorage_t* game)
+bool SaveTheGame(int num, gamestorage_t* game)
 {
 	char loadname[MAX_PATH] = "rottgam0.rot";
 	char filename[MAX_PATH];
@@ -4754,7 +4754,7 @@ boolean SaveTheGame(int num, gamestorage_t* game)
 	// Misc
 
 	// ticcount
-	myticcount = GetTicCount();
+	myticcount = GetCachedTic();
 	size = sizeof(myticcount);
 	SafeWrite(savehandle, &myticcount, size);
 
@@ -4843,9 +4843,9 @@ int LoadBuffer(byte** dest, byte** src)
 //
 //******************************************************************************
 
-extern boolean doRescaling;
+extern bool doRescaling;
 
-boolean LoadTheGame(int num, gamestorage_t* game)
+bool LoadTheGame(int num, gamestorage_t* game)
 {
 	char loadname[45] = "rottgam0.rot";
 	char filename[128];
@@ -5188,7 +5188,6 @@ boolean LoadTheGame(int num, gamestorage_t* game)
 	for (i = 0; i < 100; i++)
 		UpdateLightLevel(player->areanumber);
 
-	CalcTics();
 	CalcTics();
 
 	pickquick = true;

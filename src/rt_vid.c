@@ -51,7 +51,7 @@ unsigned uwidthtable[UPDATEHIGH];
 unsigned blockstarts[UPDATEWIDE * UPDATEHIGH];
 byte update[UPDATESIZE];
 byte palette1[256][3], palette2[256][3];
-boolean screenfaded;
+bool screenfaded;
 
 //******************************************************************************
 //
@@ -172,6 +172,9 @@ void DrawTiledRegion(int x, int y, int width, int height, int offx, int offy,
 	int HeightIndex;
 	int WidthIndex;
 
+	// don't reload register constantly
+	const int screenW = iGLOBAL_SCREENWIDTH;
+
 	start = (byte*)(bufferofs + x + ylookup[y]);
 
 	source = &tile->data;
@@ -207,7 +210,7 @@ void DrawTiledRegion(int x, int y, int width, int height, int offx, int offy,
 				*dest = sourceoff[sourcex];
 
 				// ashley added: fix asan detection (clamp dest to not overflow on X-axis)
-				if(dest + 4 < origdest + iGLOBAL_SCREENWIDTH)
+				if(dest + 4 < origdest + screenW)
 					dest += 4;
 
 				sourcex++;
@@ -216,7 +219,7 @@ void DrawTiledRegion(int x, int y, int width, int height, int offx, int offy,
 					sourcex = 0;
 				}
 			}
-			origdest += iGLOBAL_SCREENWIDTH;
+			origdest += screenW;
 
 			sourceoff += sourcewidth;
 			sourcey++;
@@ -382,7 +385,7 @@ void VWB_Vlin(int y1, int y2, int x, int color)
 //
 //******************************************************************************
 
-void VL_THlin(unsigned x, unsigned y, unsigned width, boolean up)
+void VL_THlin(unsigned x, unsigned y, unsigned width, bool up)
 {
 	byte* dest = (byte*)(bufferofs + ylookup[y] + x);
 
@@ -411,7 +414,7 @@ void VL_THlin(unsigned x, unsigned y, unsigned width, boolean up)
 //
 //******************************************************************************
 
-void VL_TVlin(unsigned x, unsigned y, unsigned height, boolean up)
+void VL_TVlin(unsigned x, unsigned y, unsigned height, bool up)
 {
 	byte* dest = (byte*)(bufferofs + ylookup[y] + x);
 
@@ -440,7 +443,7 @@ void VL_TVlin(unsigned x, unsigned y, unsigned height, boolean up)
 //
 //******************************************************************************
 
-void VWB_THlin(int x1, int x2, int y, boolean up)
+void VWB_THlin(int x1, int x2, int y, bool up)
 {
 	if (VW_MarkUpdateBlock(x1, y, x2, y))
 		VW_THlin(x1, x2, y, up);
@@ -452,7 +455,7 @@ void VWB_THlin(int x1, int x2, int y, boolean up)
 //
 //******************************************************************************
 
-void VWB_TVlin(int y1, int y2, int x, boolean up)
+void VWB_TVlin(int y1, int y2, int x, bool up)
 {
 	if (VW_MarkUpdateBlock(x, y1, x, y2))
 		VW_TVlin(y1, y2, x, up);
@@ -787,7 +790,7 @@ void SwitchPalette(byte* newpal, int steps)
 //
 //****************************************************************************
 
-void VL_DecompressLBM(lbm_t* lbminfo, boolean flip)
+void VL_DecompressLBM(lbm_t* lbminfo, bool flip)
 {
 	int count;
 	byte b, rept;

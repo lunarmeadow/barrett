@@ -25,6 +25,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ============================================================================
 */
+#include <SDL_timer.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "rt_def.h"
@@ -44,9 +45,24 @@ volatile int Keystate[MAXKEYBOARDSCAN];
 volatile int Keyhead;
 volatile int Keytail;
 
-volatile boolean PausePressed = false;
-volatile boolean PanicPressed = false;
+volatile bool PausePressed = false;
+volatile bool PanicPressed = false;
 int KeyboardStarted = false;
+
+// global tic cache to reduce expensive SDL timer calls during game loop.
+// be cautious to only READ and not WRITE this, only WRITE from CalcTics().
+// use GetTicCount() in loops where CalcTics isn't called.
+static int ticCount;
+
+// the internal implementation of SDL_GetPerformanceFrequency still uses some expensive clock calls, so cache it as well.
+// I initially believed this was variable as it is often based on things like CPU clocks etc.
+// However, it appears this is a constant after initialization. No need to refresh, at least on most platforms.
+Uint64 frequencyCache;
+
+// update frequency cache every ~0.457 seconds
+// this is the numerator over VBLCOUNTER, and thus this represents 16/35
+// this needs to be 2^n-1 to use the fast modulo trick.
+const int FREQ_POLLING_INTERVAL = 15;
 
 const int ASCIINames[] = // Unshifted ASCII for scan codes
 	{
@@ -93,9 +109,30 @@ const int ShiftNames[] = // Shifted ASCII for scan codes
 static int ticoffset; /* offset for SDL_GetTicks() */
 static int ticbase;	  /* game-supplied base */
 
+// - getter for ticCount -
+//
+// global tic cache to reduce expensive SDL timer calls during game loop.
+// be cautious to only READ and not WRITE this, only WRITE from CalcTics().
+// use GetTicCount() in loops where CalcTics isn't called.
+// Be cautious using the cached tic for time operations/waiting as it may be out-of-sync with real tic.
+int GetCachedTic(void)
+{
+	return ticCount;
+}
+
+// - setter for ticCount -
+//
+// global tic cache to reduce expensive SDL timer calls during game loop.
+// be cautious to only READ and not WRITE this, only WRITE from CalcTics().
+// use GetTicCount() in loops where CalcTics isn't called.
+void SetCachedTic(int newTics)
+{
+	ticCount = newTics;
+}
+
 int GetTicCount(void)
 {
-	return ((SDL_GetTicks() - ticoffset) * VBLCOUNTER) / 1000 + ticbase;
+	return (SDL_GetPerformanceCounter() * VBLCOUNTER) / frequencyCache;
 }
 
 /*
@@ -125,8 +162,8 @@ void I_Delay(int delay)
 
 	delay = (VBLCOUNTER * delay) / 10;
 	IN_ClearKeysDown();
-	time = GetTicCount();
-	while (!LastScan && !IN_GetMouseButtons() && GetTicCount() < time + delay)
+	time = GetCachedTic();
+	while (!LastScan && !IN_GetMouseButtons() && GetCachedTic() < time + delay)
 	{
 		IN_UpdateKeyboard();
 	}
@@ -142,6 +179,7 @@ void I_Delay(int delay)
 
 void I_StartupTimer(void)
 {
+	frequencyCache = SDL_GetPerformanceFrequency();
 }
 
 void I_ShutdownTimer(void)

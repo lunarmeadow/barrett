@@ -55,35 +55,29 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 static int soundstart;
 static int soundtype;
 int SD_Started = false;
-static boolean PositionStored = false;
+static bool PositionStored = false;
 static int NumBadSounds = 0;
 static int remotestart;
-static boolean SoundsRemapped = false;
+static bool SoundsRemapped = false;
 
-extern boolean useoplmusic;
+extern bool useoplmusic;
 
 int MUSIC_GetPosition(void)
 {
-	if(useoplmusic && OPL_IsHooked())
-	{
-		return OPL_GetPosition();
-	}
-	else 
+	if(!useoplmusic || !OPL_IsHooked())
 	{
 		songtic pos;
 
 		MUSIC_GetSongPosition(&pos);
 		return pos.milliseconds;
 	}
+
+	return 0;
 }
 
 void MUSIC_SetPosition(int time)
 {
-	if(useoplmusic && OPL_IsHooked())
-	{
-		OPL_SetPosition(time);
-	}
-	else 
+	if(!useoplmusic || !OPL_IsHooked())
 	{
 		MUSIC_SetSongTime((unsigned long)time);
 	}
@@ -166,7 +160,7 @@ int SD_SetupFXCard(int* numvoices, int* numbits, int* numchannels)
 //
 //***************************************************************************
 
-int SD_Startup(boolean bombonerror)
+int SD_Startup(bool bombonerror)
 {
 	int status;
 	int voices;
@@ -244,7 +238,7 @@ int SD_Startup(boolean bombonerror)
 //
 //***************************************************************************
 
-boolean SD_SoundOkay(int sndnum)
+bool SD_SoundOkay(int sndnum)
 {
 	if (SD_Started == false)
 		return false;
@@ -847,7 +841,7 @@ void MU_JukeBoxMenu(void)
 // MusicStarted - see if the music is started
 //
 //***************************************************************************
-boolean MusicStarted(void)
+bool MusicStarted(void)
 {
 	return MU_Started;
 }
@@ -858,7 +852,7 @@ boolean MusicStarted(void)
 //
 //***************************************************************************
 
-int MU_Startup(boolean bombonerror)
+int MU_Startup(bool bombonerror)
 {
 	int status;
 
@@ -1274,7 +1268,7 @@ void MU_LoadMusic(byte* buf, int size)
 	byte* ptr;
 	int i;
 	int songnumber;
-	boolean differentsong = false;
+	bool differentsong = false;
 	int vsize;
 
 	//

@@ -309,7 +309,7 @@ int GetFloorCeilingLump(int num)
 ===================
 */
 
-boolean SkyExists(void)
+bool SkyExists(void)
 {
 	if (MAPSPOT(1, 0, 0) >= 234)
 	{
@@ -608,15 +608,19 @@ void DrawRow(int count, byte* dest, byte* src)
 	xfrac = mr_xfrac;
 	yfrac = mr_yfrac;
 
+	const byte* restrict colormap = shadingtable;
+	const int xstep = mr_xstep;
+	const int ystep = mr_ystep;
+
 	while (count--)
 	{
 		/* extract the x/y coordinates */
 		/* was: 0b00000001111111 and 0b11111110000000 */
 		coord = ((yfrac >> 24) & 0x7F) | ((xfrac >> 17) & 0x3F80);
 
-		*dest++ = shadingtable[src[coord]];
+		*dest++ = colormap[src[coord]];
 
-		xfrac += mr_xstep;
-		yfrac += mr_ystep;
+		xfrac += xstep;
+		yfrac += ystep;
 	}
 }
