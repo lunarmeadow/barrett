@@ -1632,7 +1632,7 @@ void DrawWallPost(wallcast_t* post, byte* buf)
 	if (post->lump && post->lump < 512)
 		src = W_CacheLumpNum(post->lump, PU_CACHE, CvtNull, 1);
 	else if(post->lump && (post->lump >= 512 || post->lump < 512 + 32))
-		src = KPF_GetWallFromCacheNum(post->lump);
+		src = KPF_GetWallFromCacheNum(post->lump - 512);
 	if (post->alttile != 0)
 	{
 		if (post->alttile == -1)

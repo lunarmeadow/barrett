@@ -242,15 +242,10 @@ void* KPF_GetWallFromCacheNum(int tile)
 
     if(!areWallsCached)
     {
-        Error("KPF_GetLumpFromCacheNum: attempt to index %s but walls not cached\n", name);
+        Error("KPF_GetLumpFromCacheNum: attempt to index %s but walls not cached\n");
     }
 
-    if(lumpNum == -1)
-    {
-        Error("KPF_GetLumpFromCacheNum: no lump found for num %d - %s\n", lumpNum, name);
-    }
-
-    if(tile < 0 || tile >= numWalls);
+    if(tile < 0 || tile >= numWalls)
     {
         Error("KPF_GetWallFromCacheNum: index %d out of range!", tile);
     }
