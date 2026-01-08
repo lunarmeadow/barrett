@@ -164,6 +164,7 @@ void KPF_CacheBetaWalls(void)
             len_png = fileStat.m_uncomp_size;
         }
     
+        // spng decodes from this decoded buffer using set_png_buffer
         status = mz_zip_reader_extract_file_to_mem(&kpfArc, filePath, _decodeBuffer, len_png, 0);
 
         if(!status)
@@ -174,7 +175,7 @@ void KPF_CacheBetaWalls(void)
         // -- GOOD TO DECODE! --
         // references https://github.com/fabiangreffrath/woof and https://github.com/fabiangreffrath/taradino/tree/kpf
 
-        // give spng 
+        // give spng the buffer containing data, pass it along and decode into wall cache
         spng_set_png_buffer(ctx, _decodeBuffer, len_png);
 		spng_decoded_image_size(ctx, SPNG_FMT_PNG, &len_decode);
 		spng_set_image_limits(ctx, 64, 64);
