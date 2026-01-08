@@ -137,8 +137,7 @@ void KPF_CacheBetaWalls(void)
 
         // -- LOCATE AND VALIDATE FILE --
 
-        int fileIdx = mz_zip_reader_locate_file(&kpfArc, filePath, NULL, 
-                0);
+        int fileIdx = mz_zip_reader_locate_file(&kpfArc, filePath, NULL, 0);
 
         if(fileIdx < 0)
         {
@@ -151,18 +150,6 @@ void KPF_CacheBetaWalls(void)
         }
 
         // -- EXTRACT PNG, LOAD IT INTO DECODING BUFFER --
-
-        status = mz_zip_reader_file_stat(&kpfArc, fileIdx, &fileStat);
-        
-        if(!status)
-        {
-            Error("KPF_CacheBetaWalls: file %s has no info!\n", filePath);
-        }
-        else 
-        {
-            // get decoding info
-            len_png = fileStat.m_uncomp_size;
-        }
     
         // spng decodes from this decoded buffer using set_png_buffer
         status = mz_zip_reader_extract_file_to_mem(&kpfArc, filePath, _decodeBuffer, len_png, 0);
