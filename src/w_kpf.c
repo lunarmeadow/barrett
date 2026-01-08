@@ -109,7 +109,6 @@ void KPF_CacheBetaWalls(void)
 {
     mz_zip_archive_file_stat fileStat;
     char filePath[256];
-    spng_ctx *ctx = spng_ctx_new(0);
 
     size_t len_png = 0;
     size_t len_decode;
@@ -121,43 +120,36 @@ void KPF_CacheBetaWalls(void)
 
     if(areWallsCached)
         return;
-
-	if (!ctx)
-	{
-		Error("KPF_CacheBetaWalls: failed to create PNG context for LE wall decoding!\n");
-		return;
-	}
     
     for(int i = 0; i < numWalls; i++)
     {
+        spng_ctx *ctx = spng_ctx_new(0);
+        struct spng_ihdr ihdr = {0};
+
         snprintf(filePath, 256, "wad/wall/%s.png", betaWalls[i]);
+
+        if (!ctx)
+            Error("KPF_CacheBetaWalls: failed to create PNG context for LE wall decoding!\n");
 
         // -- LOCATE AND VALIDATE FILE --
 
         int fileIdx = mz_zip_reader_locate_file(&kpfArc, filePath, NULL, 0);
 
         if(fileIdx < 0)
-        {
             Error("KPF_CacheBetaWalls: failed to locate patch lump %s\n", filePath);
-        }
 
         if(mz_zip_reader_is_file_a_directory(&kpfArc, fileIdx))
-        {
             Error("KPF_CacheBetaWalls: attempted read %s is directory!\n", filePath);
-        }
 
         // -- EXTRACT PNG, LOAD IT INTO DECODING BUFFER --
 
         status = mz_zip_reader_file_stat(&kpfArc, fileIdx, &fileStat);
         
+        // get size to alloc decoding buffers
         if(!status)
-        {
             Error("KPF_CacheBetaWalls: file %s has no info!\n", filePath);
-        }
         else 
-        {
             len_png = fileStat.m_uncomp_size;
-        }
 
         _decodeBuffer = malloc(len_png);
     
@@ -165,9 +157,7 @@ void KPF_CacheBetaWalls(void)
         status = mz_zip_reader_extract_file_to_mem(&kpfArc, filePath, _decodeBuffer, len_png, 0);
 
         if(!status)
-        {
             Error("KPF_CacheBetaWalls: file %s failed to decompress!\n", filePath);
-        }
 
         // -- GOOD TO DECODE! --
         // references https://github.com/fabiangreffrath/woof and https://github.com/fabiangreffrath/taradino/tree/kpf
@@ -177,26 +167,25 @@ void KPF_CacheBetaWalls(void)
 		spng_decoded_image_size(ctx, SPNG_FMT_PNG, &len_decode);
 		spng_set_image_limits(ctx, 64, 64);
 
-         // ROTT walls must be 64x64!
-        if(len_decode != 64 * 64)
-        {
-            Error("KPF_CacheBetaWalls: decoded texture size %zu not 4096! (64x64)\n", len_decode);
-        }
+        spng_get_ihdr(ctx, &ihdr);
+
+         // ROTT walls must be 64x64, 8-bit indexed images!
+        if(ihdr.bit_depth != 8 || ihdr.width != 64 || ihdr.height != 64 || len_decode != 4096)
+            Error("KPF_CacheBetaWalls: invalid texture format for %s\nbit-depth = %d\nwidth = %d, height = %d, decoded length = %zu!", 
+            filePath, ihdr.bit_depth, ihdr.width, ihdr.height, len_decode);
 
         // cache the decoded image from spng's buffer
         wallCache[i] = malloc(len_decode);
         int err = spng_decode_image(ctx, wallCache[i], len_decode, SPNG_FMT_PNG, 0);
 
-        // if(err)
-        // {
-        //     Error("KPF_CacheBetaWalls: decoding %s of size %zu to ROTT texture failed - %s!", filePath, len_decode, spng_strerror(err));
-        // }
+        if(err)
+            Error("KPF_CacheBetaWalls: decoding %s of size %zu to ROTT texture failed - %s!", filePath, len_decode, spng_strerror(err));
 
         free(_decodeBuffer);
+        spng_ctx_free(ctx);
     }
 
     areWallsCached = true;
-    spng_ctx_free(ctx);
 }
 
 static int _KPF_GetWallForName(const char* name)
