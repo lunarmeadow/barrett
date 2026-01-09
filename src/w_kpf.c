@@ -42,21 +42,37 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 static mz_zip_archive kpfArc;
 
 // ensure we don't do anything stupid
-static bool isMounted;
-static bool areWallsCached = false;
+static bool _isMounted;
+static bool _areWallsCached = false;
 
-// numWalls is a compile-time constant
+// -- FILE TABLE --
+
 int numWalls = ARRAY_COUNT(betaWalls);
+int numSounds = ARRAY_COUNT(altSounds);
 
-// wallCache is a table of pointers to memory blocks containing decoded patches. 
-// each index correponds to the entry in betaWalls[i], and same with wallSize
-// a hash table would likely be better here but that's complex.
-// this is sort of structured like the pre-existing wad code but very specific.
-// Access through KPF_GetWallFromCache which uses a linear search in betaWalls to index by name.
-uint8_t** wallCache;
+// wall entry range
+
+constexpr int WALL_START = 0;
+constexpr int WALL_END = WALL_START + numWalls;
+
+// alternate sound range
+
+constexpr int ALTSND_START = WALL_END + 1;
+constexpr int ALTSND_END = ALTSND_START + numSounds;
+
+// todo: stuff like widescreen graphics, hud etc.
+
+// tally lengths of all sub-tables to get a number of entries
+constexpr int NUM_ENTRIES = (WALL_END - WALL_START) + (ALTSND_END - ALTSND_START);
+
+// KPF entry table
+static uint8_t** fileCache;
+uint8_t** entrySize;
 
 // stores decoded png data, loaded into wall cache
 static void* _decodeBuffer;
+
+// -- KPF MANAGER --
 
 void InitKPF(const char* path)
 {
@@ -77,13 +93,13 @@ void InitKPF(const char* path)
     if(!status)
     {
         printf("InitKPF: couldn't initialize KPF file %s with miniz error %s!\n", path, mz_zip_get_error_string(err));
-        isMounted = false;
+        _isMounted = false;
         return;
     }
 
     // we loaded alright
     printf("Added %s\n", path);
-    isMounted = true;
+    _isMounted = true;
 }
 
 void ShutdownKPF(void)
@@ -92,18 +108,25 @@ void ShutdownKPF(void)
     mz_zip_reader_end(&kpfArc);
 
     // free table base pointer and all indices if wall cache is loaded
-    if (wallCache)
+    if (fileCache)
     {
         for (int i = 0; i < numWalls; i++)
         {
             // check if data is actually allocated, free if not.
             // this should avoid freeing on
-            if (wallCache[i])
-                free(wallCache[i]);
+            if (fileCache[i])
+                free(fileCache[i]);
         }
-        free(wallCache);
+        free(fileCache);
     }
 }
+
+bool IsKPFMounted(void)
+{
+    return _isMounted;
+}
+
+// -- PRECACHER SUBSYSTEM --
 
 void KPF_CacheBetaWalls(void)
 {
@@ -115,10 +138,10 @@ void KPF_CacheBetaWalls(void)
 
     mz_bool status = MZ_FALSE;
 
-    if(!isMounted)
+    if(!_isMounted)
         return;
 
-    if(areWallsCached)
+    if(_areWallsCached)
         return;
     
     for(int i = 0; i < numWalls; i++)
@@ -169,7 +192,7 @@ void KPF_CacheBetaWalls(void)
 
         spng_get_ihdr(ctx, &ihdr);
 
-         // ROTT walls must be 64x64, 8-bit indexed images!
+         // ROTT walls must be 64x64, 8-bit indexed images! NOTE! Some LE textures are greyscale, and should be palette-matched.
         if(ihdr.bit_depth != 8 || ihdr.width != 64 || ihdr.height != 64 || len_decode != 4096)
             Error("KPF_CacheBetaWalls: invalid texture format for %s\nbit-depth = %d\nwidth = %d, height = %d, decoded length = %zu!", 
             filePath, ihdr.bit_depth, ihdr.width, ihdr.height, len_decode);
@@ -185,56 +208,65 @@ void KPF_CacheBetaWalls(void)
         spng_ctx_free(ctx);
     }
 
-    areWallsCached = true;
+    _areWallsCached = true;
 }
 
-static int _KPF_GetWallForName(const char* name)
+// -- GENERIC KPF FILE INDEXING OPERATIONS --
+
+void* KPF_GetEntryForNum(int entry)
 {
+    if(entry < 0 || entry > NUM_ENTRIES)
+    {
+        Error("KPF entry %d out of bounds!", entry);
+    }
+}
+
+// -- BETA WALL INDEXERS --
+
+void* KPF_GetWallForName(const char* name)
+{
+    int entryNum;
+
+    if(!_isMounted)
+    {
+        Error("KPF_GetWallForName: kpf not mounted\n");
+    }
+
+    if(!_areWallsCached)
+    {
+        Error("KPF_GetWallForName: attempt to index %s but walls not cached\n", name);
+    }
+
     // index in cache should match index in betaWalls, so this should just work.
-    for(int i = 0; i < numWalls; i++)
+    for(int i = WALL_START; i < numWalls; i++)
         if(strcmp(betaWalls[i], name) == 0)
-            return i;
+            entryNum = i;
+        else
+            entryNum = -1;
 
-    return -1;
+    if(entryNum == -1)
+    {
+        Error("KPF_GetWallForName: no lump found for num %d - %s\n", entryNum, name);
+    }
+
+    return wallCache[entryNum];
 }
 
-void* KPF_GetWallFromCache(const char* name)
+void* KPF_GetWallForNum(int tile)
 {
-    if(!isMounted)
+    if(!_isMounted)
     {
-        Error("KPF_GetLumpFromCache: kpf not mounted\n");
+        Error("KPF_GetWallForNum: kpf not mounted\n");
     }
 
-    if(!areWallsCached)
+    if(!_areWallsCached)
     {
-        Error("KPF_GetLumpFromCache: attempt to index %s but walls not cached\n", name);
+        Error("KPF_GetWallForNum: attempt to index %d but walls not cached\n", tile);
     }
 
-    int lumpNum = _KPF_GetWallForName(name);
-    
-    if(lumpNum == -1)
+    if(tile < WALL_START || tile > WALL_END)
     {
-        Error("KPF_GetLumpFromCache: no lump found for num %d - %s\n", lumpNum, name);
-    }
-
-    return wallCache[lumpNum];
-}
-
-void* KPF_GetWallFromCacheNum(int tile)
-{
-    if(!isMounted)
-    {
-        Error("KPF_GetLumpFromCacheNum: kpf not mounted\n");
-    }
-
-    if(!areWallsCached)
-    {
-        Error("KPF_GetLumpFromCacheNum: attempt to index %d but walls not cached\n", tile);
-    }
-
-    if(tile < 0 || tile >= numWalls)
-    {
-        Error("KPF_GetWallFromCacheNum: index %d out of range!", tile);
+        Error("KPF_GetWallForNum: index %d out of range!", tile);
     }
 
     return wallCache[tile];

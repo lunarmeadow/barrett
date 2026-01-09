@@ -96,6 +96,28 @@ static const char *betaWalls[] = {
     "WALB71"
 };
 
+static const char *altSounds[] = {
+    "P_A2PIST_vb",
+    "P_AMP40_vb",
+    "P_APISTL_vb",
+    "P_BATBLA_vb",
+    "P_BATHIT_vb",
+    "P_BAZOOK_vb",
+    "P_DOGBIT_vb",
+    "P_DRUNK_vb",
+    "P_DW_OW_vb",
+    "P_FIREBM_vb",
+    "P_FWFIRE_vb",
+    "P_GRAVFI_vb",
+    "P_HEATSK_vb",
+    "P_IP_OW_vb",
+    "P_LAND_vb",
+    "P_LN_OW_vb",
+    "P_SPLITS_vb",
+    "P_TB_OW_vb",
+    "P_TC_OW_vb"
+};
+
 static const char *bigJojHaha[] = {
     "BIGJDEAD",
     "BIGJDIE1",
