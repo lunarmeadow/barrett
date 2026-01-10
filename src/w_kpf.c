@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,27 +49,27 @@ static bool _areSoundsCached = false;
 
 // -- FILE TABLE --
 
-int numWalls = ARRAY_COUNT(betaWalls);
-int numSounds = ARRAY_COUNT(altSounds);
+constexpr int numWalls = ARRAY_COUNT(betaWalls);
+constexpr int numSounds = ARRAY_COUNT(altSounds);
 
 // wall entry range
 
 constexpr int WALL_START = 0;
-constexpr int WALL_END = WALL_START + numWalls;
+constexpr int WALL_END = WALL_START + numWalls - 1;
 
 // alternate sound range
 
 constexpr int ALTSND_START = WALL_END + 1;
-constexpr int ALTSND_END = ALTSND_START + numSounds;
+constexpr int ALTSND_END = ALTSND_START + numSounds - 1;
 
 // todo: stuff like widescreen graphics, hud etc.
 
-// tally lengths of all sub-tables to get a number of entries
-constexpr int NUM_ENTRIES = (WALL_END - WALL_START) + (ALTSND_END - ALTSND_START);
+// just use the endpoint of last section
+constexpr int NUM_ENTRIES = ALTSND_END;
 
 // KPF entry table
 static uint8_t** fileCache;
-uint8_t** entrySize;
+size_t* entrySize;
 
 // stores decoded png data, loaded into wall cache
 static void* _decodeBuffer;
@@ -82,7 +83,7 @@ bool KPF_Init(const char* path)
 
     // initialize base pointers for cache table
     fileCache = calloc(NUM_ENTRIES, sizeof(uint8_t*));
-    entrySize = calloc(NUM_ENTRIES, sizeof(uint8_t*));
+    entrySize = calloc(NUM_ENTRIES, sizeof(size_t*));
 
     // allocate table of pointers for decoding stage of PNG loader
     _decodeBuffer = malloc(sizeof(void*));
@@ -124,13 +125,6 @@ void KPF_Shutdown(void)
 
     if (entrySize)
     {
-        for (int i = 0; i < NUM_ENTRIES; i++)
-        {
-            // check if data is actually allocated, free if not.
-            // this should avoid freeing on
-            if (entrySize[i])
-                free(entrySize[i]);
-        }
         free(entrySize);
     }
 
@@ -166,7 +160,7 @@ void KPF_CacheBetaWalls(void)
         spng_ctx *ctx = spng_ctx_new(0);
         struct spng_ihdr ihdr = {0};
 
-        snprintf(filePath, 256, "wad/wall/%s.png", betaWalls[i]);
+        snprintf(filePath, 256, "wad/wall/%s.png", betaWalls[i - WALL_START]);
 
         if (!ctx)
             Error("KPF_CacheBetaWalls: failed to create PNG context for LE wall decoding!\n");
@@ -214,7 +208,7 @@ void KPF_CacheBetaWalls(void)
             Error("KPF_CacheBetaWalls: invalid texture format for %s\nbit-depth = %d\nwidth = %d, height = %d, decoded length = %zu!", 
             filePath, ihdr.bit_depth, ihdr.width, ihdr.height, len_decode);
 
-        printf("Warning! Beta wall entry %s isn't using indexed colour!\n", betaWalls[i])
+        printf("Warning! Beta wall entry %s isn't using indexed colour!\n", betaWalls[i]);
 
         // cache the decoded image from spng's buffer
         fileCache[i] = malloc(len_decode);
@@ -244,7 +238,7 @@ void KPF_CacheAltSounds(void)
 
     for(int i = ALTSND_START; i < ALTSND_END; i++)
     {
-        snprintf(filePath, 256, "tactile/alt/%s.wav", altSounds[i]);
+        snprintf(filePath, 256, "tactile/alt/%s.wav", altSounds[i - ALTSND_START]);
 
         // -- LOCATE AND VALIDATE FILE --
 
@@ -301,9 +295,11 @@ void* KPF_GetEntryForNum(int entry)
     {
         Error("KPF entry %d out of bounds!", entry);
     }
+
+    return fileCache[entry];
 }
 
-int KPF_GetLengthForNum(int entry)
+size_t KPF_GetLengthForNum(int entry)
 {
     if(entry < 0 || entry > NUM_ENTRIES)
     {
@@ -341,7 +337,7 @@ void* KPF_GetWallForName(const char* name)
         Error("KPF_GetWallForName: no lump found for num %d - %s\n", entryNum, name);
     }
 
-    return wallCache[entryNum];
+    return fileCache[entryNum];
 }
 
 void* KPF_GetWallForNum(int tile)
@@ -361,5 +357,5 @@ void* KPF_GetWallForNum(int tile)
         Error("KPF_GetWallForNum: index %d out of range!", tile);
     }
 
-    return wallCache[tile];
+    return fileCache[tile];
 }

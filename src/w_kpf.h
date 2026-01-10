@@ -22,9 +22,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define _KPF_H
 
 #include "lumpy.h"
+#include <stddef.h>
 
 // subsystem manager
-bool KPF_Init(const char* path)
+bool KPF_Init(const char* path);
 void KPF_Shutdown(void);
 bool KPF_IsMounted(void);
 bool KPF_IsCached(void);
@@ -34,11 +35,11 @@ bool KPF_IsCached(void);
 // void KPF_CacheAltSounds(void);
 
 // use this to cache KPF data
-void KPF_MountAllResources(void);
+bool KPF_MountAllResources(void);
 
 // generic file indexing
 void* KPF_GetEntryForNum(int entry);
-int KPF_GetLengthForNum(int entry);
+size_t KPF_GetLengthForNum(int entry);
 
 //    ^-- wall indexing
 void* KPF_GetWallForName(const char* name);
