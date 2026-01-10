@@ -262,12 +262,18 @@ int main(int argc, char* argv[])
 		// check if string is populated
 		if(kpfPath[0] != '\0')
 		{
-			InitKPF(kpfPath);
-			KPF_CacheBetaWalls();
+			bool status;
+			if(KPF_Init(kpfPath))
+				status = KPF_MountAllResources();
+
+			if(!status)
+				Error("main: Failure in mounting KPF!");
 		}
-		else {
+		else 
+		{
 			printf("main: no LE KPF found");
 		}
+
 		BuildTables();
 		GetMenuInfo();
 	}
@@ -1618,7 +1624,7 @@ void ShutDown(void)
 	//      ShutdownModemGame ();
 	//      }
 
-	ShutdownKPF();
+	KPF_Shutdown();
 	ShutdownClientControls();
 	I_ShutdownKeyboard();
 	ShutdownGameCommands();

@@ -42,8 +42,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 static mz_zip_archive kpfArc;
 
 // ensure we don't do anything stupid
-static bool _isMounted;
+static bool _isMounted = false;
 static bool _areWallsCached = false;
+static bool _areSoundsCached = false;
 
 // -- FILE TABLE --
 
@@ -74,15 +75,16 @@ static void* _decodeBuffer;
 
 // -- KPF MANAGER --
 
-void InitKPF(const char* path)
+bool KPF_Init(const char* path)
 {
     mz_bool status = MZ_FALSE;
     mz_zip_error err;
 
-    // initialize base pointers for wall cache tables
-    wallCache = calloc(numWalls, patchSize);
+    // initialize base pointers for cache table
+    fileCache = calloc(NUM_ENTRIES, sizeof(uint8_t*));
+    entrySize = calloc(NUM_ENTRIES, sizeof(uint8_t*));
 
-    // allocate table of pointers for decoding stage
+    // allocate table of pointers for decoding stage of PNG loader
     _decodeBuffer = malloc(sizeof(void*));
 
     // initialize kpf shit
@@ -94,23 +96,23 @@ void InitKPF(const char* path)
     {
         printf("InitKPF: couldn't initialize KPF file %s with miniz error %s!\n", path, mz_zip_get_error_string(err));
         _isMounted = false;
-        return;
+        return false;
     }
 
     // we loaded alright
     printf("Added %s\n", path);
     _isMounted = true;
+    return true;
 }
 
-void ShutdownKPF(void)
+void KPF_Shutdown(void)
 {
     // close and free miniz resources
     mz_zip_reader_end(&kpfArc);
 
-    // free table base pointer and all indices if wall cache is loaded
     if (fileCache)
     {
-        for (int i = 0; i < numWalls; i++)
+        for (int i = 0; i < NUM_ENTRIES; i++)
         {
             // check if data is actually allocated, free if not.
             // this should avoid freeing on
@@ -119,11 +121,32 @@ void ShutdownKPF(void)
         }
         free(fileCache);
     }
+
+    if (entrySize)
+    {
+        for (int i = 0; i < NUM_ENTRIES; i++)
+        {
+            // check if data is actually allocated, free if not.
+            // this should avoid freeing on
+            if (entrySize[i])
+                free(entrySize[i]);
+        }
+        free(entrySize);
+    }
+
+    // reset state variables
+    _isMounted = false;
+    _areSoundsCached = _areWallsCached = false;
 }
 
-bool IsKPFMounted(void)
+bool KPF_IsMounted(void)
 {
     return _isMounted;
+}
+
+bool KPF_IsCached(void)
+{
+    return _areSoundsCached && _areWallsCached;
 }
 
 // -- PRECACHER SUBSYSTEM --
@@ -137,14 +160,8 @@ void KPF_CacheBetaWalls(void)
     size_t len_decode;
 
     mz_bool status = MZ_FALSE;
-
-    if(!_isMounted)
-        return;
-
-    if(_areWallsCached)
-        return;
     
-    for(int i = 0; i < numWalls; i++)
+    for(int i = WALL_START; i < WALL_END; i++)
     {
         spng_ctx *ctx = spng_ctx_new(0);
         struct spng_ihdr ihdr = {0};
@@ -197,18 +214,83 @@ void KPF_CacheBetaWalls(void)
             Error("KPF_CacheBetaWalls: invalid texture format for %s\nbit-depth = %d\nwidth = %d, height = %d, decoded length = %zu!", 
             filePath, ihdr.bit_depth, ihdr.width, ihdr.height, len_decode);
 
+        printf("Warning! Beta wall entry %s isn't using indexed colour!\n", betaWalls[i])
+
         // cache the decoded image from spng's buffer
-        wallCache[i] = malloc(len_decode);
-        int err = spng_decode_image(ctx, wallCache[i], len_decode, SPNG_FMT_PNG, 0);
+        fileCache[i] = malloc(len_decode);
+        entrySize[i] = len_decode;
+        int err = spng_decode_image(ctx, fileCache[i], len_decode, SPNG_FMT_PNG, 0);
 
         if(err)
             Error("KPF_CacheBetaWalls: decoding %s of size %zu to ROTT texture failed - %s!", filePath, len_decode, spng_strerror(err));
+
+        // todo: rotate and recolor non-indexed images
 
         free(_decodeBuffer);
         spng_ctx_free(ctx);
     }
 
     _areWallsCached = true;
+}
+
+void KPF_CacheAltSounds(void)
+{
+    mz_zip_archive_file_stat fileStat;
+    char filePath[256];
+
+    size_t len_wav = 0;
+
+    mz_bool status = MZ_FALSE;
+
+    for(int i = ALTSND_START; i < ALTSND_END; i++)
+    {
+        snprintf(filePath, 256, "tactile/alt/%s.wav", altSounds[i]);
+
+        // -- LOCATE AND VALIDATE FILE --
+
+        int fileIdx = mz_zip_reader_locate_file(&kpfArc, filePath, NULL, 0);
+
+        if(fileIdx < 0)
+            Error("KPF_CacheAltSounds: failed to locate audio lump %s\n", filePath);
+
+        if(mz_zip_reader_is_file_a_directory(&kpfArc, fileIdx))
+            Error("KPF_CacheAltSounds: attempted read %s is directory!\n", filePath);
+
+        // -- GET FILE INFO TO ALLOC BUFFERS --
+
+        status = mz_zip_reader_file_stat(&kpfArc, fileIdx, &fileStat);
+        
+        // get size to alloc decoding buffers
+        if(!status)
+            Error("KPF_CacheAltSound: file %s has no info!\n", filePath);
+        else 
+            len_wav = fileStat.m_uncomp_size;
+
+        // -- STORE IT BACK IN FILE CACHE --
+
+        // allocate space in table for the audio entry
+        fileCache[i] = malloc(len_wav);
+        entrySize[i] = len_wav;
+
+        // store to new memory block
+        status = mz_zip_reader_extract_file_to_mem(&kpfArc, filePath, fileCache[i], len_wav, 0);
+
+        if(!status)
+            Error("KPF_CacheBetaWalls: file %s failed to decompress!\n", filePath);
+    }
+}
+
+bool KPF_MountAllResources(void)
+{
+    // skip if
+    if(!KPF_IsMounted())
+        return false;
+
+    // create and store all precachers here
+    KPF_CacheBetaWalls();
+    KPF_CacheAltSounds();
+
+    return true;
 }
 
 // -- GENERIC KPF FILE INDEXING OPERATIONS --
@@ -219,6 +301,16 @@ void* KPF_GetEntryForNum(int entry)
     {
         Error("KPF entry %d out of bounds!", entry);
     }
+}
+
+int KPF_GetLengthForNum(int entry)
+{
+    if(entry < 0 || entry > NUM_ENTRIES)
+    {
+        Error("KPF entry %d out of bounds!", entry);
+    }
+
+    return entrySize[entry];
 }
 
 // -- BETA WALL INDEXERS --
@@ -238,7 +330,7 @@ void* KPF_GetWallForName(const char* name)
     }
 
     // index in cache should match index in betaWalls, so this should just work.
-    for(int i = WALL_START; i < numWalls; i++)
+    for(int i = WALL_START; i < WALL_END; i++)
         if(strcmp(betaWalls[i], name) == 0)
             entryNum = i;
         else

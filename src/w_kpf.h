@@ -23,13 +23,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "lumpy.h"
 
-constexpr int patchSize = 4096 + sizeof(patch_t);
+// subsystem manager
+bool KPF_Init(const char* path)
+void KPF_Shutdown(void);
+bool KPF_IsMounted(void);
+bool KPF_IsCached(void);
 
-void InitKPF(const char* path);
-void ShutdownKPF(void);
+// caching subsystem
+// void KPF_CacheBetaWalls(void);
+// void KPF_CacheAltSounds(void);
 
-void KPF_CacheBetaWalls(void);
-void* KPF_GetWallFromCache(const char* name);
-void* KPF_GetWallFromCacheNum(int tile);
+// use this to cache KPF data
+void KPF_MountAllResources(void);
+
+// generic file indexing
+void* KPF_GetEntryForNum(int entry);
+int KPF_GetLengthForNum(int entry);
+
+//    ^-- wall indexing
+void* KPF_GetWallForName(const char* name);
+void* KPF_GetWallForNum(int tile);
 
 #endif
