@@ -32,6 +32,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "rt_util.h"
 #include "rt_rand.h"
 #include "rt_fixed.h"
+#include <SDL_mixer.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -269,6 +270,7 @@ int SD_PlayIt(int sndnum, int angle, int distance, int pitch)
 {
 	int voice;
 	byte* snd;
+	int len;
 
 	if (!(sounds[sndnum].flags & SD_WRITE))
 	{
@@ -290,10 +292,10 @@ int SD_PlayIt(int sndnum, int angle, int distance, int pitch)
 
 	sounds[sndnum].count++;
 
-	if(!ludicrousaudio || !sounds[sndnum].flags & SD_HASALT)
-		snd = W_CacheLumpNum(SoundNumber(sndnum), PU_STATIC, CvtNull, 1);
-	else if(ludicrousaudio && sounds[sndnum].flags & SD_HASALT)
-	 	snd = KPF_GetAudioForEnum(sndnum);
+	if(ludicrousaudio && (sounds[sndnum].flags & SD_HASALT))
+		snd = KPF_GetAudioForEnum(sndnum, &len);
+	else 
+	 	snd = W_CacheLumpNum(SoundNumber(sndnum), PU_STATIC, CvtNull, 1);
 
 	if (*snd == 'C')
 	{
@@ -302,8 +304,23 @@ int SD_PlayIt(int sndnum, int angle, int distance, int pitch)
 	}
 	else
 	{
-		voice = FX_PlayWAV3D((char*)snd, pitch, angle, distance,
-							 sounds[sndnum].priority, (unsigned long)sndnum);
+		// voice = FX_PlayWAV3D((char*)snd, pitch, angle, distance,
+		// 					 sounds[sndnum].priority, (unsigned long)sndnum);
+		
+		SDL_RWops* rw = SDL_RWFromMem(snd, len);
+
+		if(rw == nullptr)
+			Error("SD_PlayIt: can't load audio into mem!");
+
+		Mix_Chunk *sfx = Mix_LoadWAV_RW(rw, 1);
+
+		int channel = Mix_PlayChannel(-1, sfx, 0);
+
+		if (channel == -1) {
+			Error("SD_PlayIt: can't alloc a channel!");
+		}
+
+		voice = FX_Ok;			
 	}
 
 	if (voice < FX_Ok)

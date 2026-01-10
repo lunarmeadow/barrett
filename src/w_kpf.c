@@ -313,7 +313,7 @@ size_t KPF_GetLengthForNum(int entry)
 
 // -- AUDIO INDEXER --
 
-void* KPF_GetAudioForEnum(int sndnum)
+void* KPF_GetAudioForEnum(int sndnum, int* len)
 {
     for(int i = 0; i < (int)ARRAY_COUNT(altSoundMapping); i++)
     {

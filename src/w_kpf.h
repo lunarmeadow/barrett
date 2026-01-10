@@ -42,7 +42,7 @@ void* KPF_GetEntryForNum(int entry);
 size_t KPF_GetLengthForNum(int entry);
 
 // ^-- audio indexing
-void* KPF_GetAudioForEnum(int sndnum);
+void* KPF_GetAudioForEnum(int sndnum, int* len);
 
 // ^-- wall indexing
 void* KPF_GetWallForName(const char* name);
