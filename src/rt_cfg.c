@@ -78,6 +78,7 @@ bool useoplmusic = 0;
 bool blackwpns = 0;
 bool doombobbing = 0;
 bool disablelowhpsnd = 1;
+bool ludicrousaudio = 0;
 int inverse_mouse = 1; // set  to -1 to invert mouse
 bool sdl_fullscreen = 1;
 bool borderWindow = 0;
@@ -474,6 +475,8 @@ bool ParseConfigFile(void)
 
 		// Read in CrossHair HP
 		ReadBool("CrossHairHP", &xhair_usehp);
+
+		ReadBool("LudicrousAudio", &ludicrousaudio);
 
 		// Read in JoystickEnabled
 		ReadBool("JoystickEnabled", &joystickenabled);
@@ -1725,6 +1728,12 @@ void WriteConfig(void)
 	SafeWriteString(file, "; 1 - HP CrossHair Enabled\n");
 	SafeWriteString(file, "; 0 - HP CrossHair Disabled\n");
 	WriteParameter(file, "CrossHairHP      ", xhair_usehp);
+
+	// Write out Ludicrous audio
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - Ludicrous Audio enabled\n");
+	SafeWriteString(file, "; 0 - Ludicrous Audio disabled\n");
+	WriteParameter(file, "LudicrousAudio   ", ludicrousaudio);
 
 	// Write out JoystickEnabled
 

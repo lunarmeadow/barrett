@@ -44,7 +44,7 @@ extern bool autoAim;
 extern bool blackwpns;
 extern bool doombobbing;
 extern bool disablelowhpsnd;
-
+extern bool ludicrousaudio;
 extern int joystickport;
 extern int mouseadjustment;
 extern int threshold;

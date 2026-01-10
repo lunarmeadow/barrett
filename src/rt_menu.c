@@ -46,6 +46,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "rt_build.h"
 #include "rt_in.h"
 #include "isr.h"
+#include "w_kpf.h"
 #include "z_zone.h"
 #include "w_wad.h"
 #include "rt_util.h"
@@ -544,7 +545,7 @@ CP_MenuNames ExtOptionsNames[] = {
 	"MOUSELOOK", "INVERSE MOUSE",		 "ALLOW Y AXIS MOUSE", "CROSSHAIR",
 	"AUTOAIM MISSILE WEPS", "ENABLE AUTOAIM",	   "USE OPL MUSIC"};
 
-CP_MenuNames ExtGameOptionsNames[] = {"LOW MEMORY MODE", "WEAPON RECOLOURS", "DOOM BOBBING", "NO LOW HP SOUND"}; // erysdren added
+CP_MenuNames ExtGameOptionsNames[] = {"LOW MEMORY MODE", "WEAPON RECOLOURS", "DOOM BOBBING", "NO LOW HP SOUND", "LUDICROUS AUDIO"}; // erysdren added
 
 CP_MenuNames VisualOptionsNames[] = {"SCREEN RESOLUTION", "ADJUST FOCAL WIDTH",
 									 "HUD SCALING", "DISPLAY OPTIONS", "CROSSHAIR OPTIONS"};
@@ -596,7 +597,7 @@ CP_iteminfo ExtOptionsItems = {20, MENU_Y,			7,			 0,
 							   43, ExtOptionsNames, mn_largefont};
 
 CP_iteminfo ExtGameOptionsItems = {
-	20, MENU_Y, 4, 0, 43, ExtGameOptionsNames, mn_largefont}; // LT added
+	20, MENU_Y, 5, 0, 43, ExtGameOptionsNames, mn_largefont}; // LT added
 
 CP_iteminfo DisplayOptionsMenu = {
 	20, MENU_Y, 3, 0, 43, DisplayOptionsNames, mn_largefont}; // LT added
@@ -661,6 +662,7 @@ CP_itemtype ExtGameMenu[] = {
 	{1, "", 'B', NULL},
 	{1, "", 'D', NULL},
 	{1, "", 'H', NULL},
+	{1, "", 'A', NULL},
 };
 
 // bna added end
@@ -5198,7 +5200,8 @@ static char* ExtGameOptionsDesc[sizeof(ExtGameOptionsItems)] = {
 	"If enabled, emulate DOS ROTT's \"low memory\" mode.",
 	"Removes the blue tinting from weapon sprites. (EXPERIMENTAL)",
 	"Implements DOOM's 2D weapon and view bobbing algorithm.",
-	"Disable the incessant orchestral hits on low health."
+	"Disable the incessant orchestral hits on low health.",
+	"Use the alternate audio from Ludicrous Edition."
 };
 
 void DrawExtGameOptionsButtons(void)
@@ -5241,6 +5244,12 @@ void DrawExtGameOptionsButtons(void)
 				break;
 			case 3:
 				if (disablelowhpsnd == 1)
+				{
+					on = 1;
+				}
+				break;
+			case 4:
+				if (ludicrousaudio == 1)
 				{
 					on = 1;
 				}
@@ -5333,6 +5342,10 @@ void CP_ExtGameOptionsMenu(void)
 			break;
 		case 3:
 			disablelowhpsnd ^= 1;
+			DrawExtGameOptionsButtons();
+			break;
+		case 4:
+			ludicrousaudio ^= 1;
 			DrawExtGameOptionsButtons();
 			break;
 		}

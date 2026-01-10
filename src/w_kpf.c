@@ -272,6 +272,8 @@ void KPF_CacheAltSounds(void)
         if(!status)
             Error("KPF_CacheBetaWalls: file %s failed to decompress!\n", filePath);
     }
+
+    _areSoundsCached = true;
 }
 
 bool KPF_MountAllResources(void)
