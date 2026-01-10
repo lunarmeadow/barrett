@@ -103,19 +103,27 @@ static const char *altSounds[] = {
     "P_BATBLA_vb",
     "P_BATHIT_vb",
     "P_BAZOOK_vb",
-    "P_DOGBIT_vb",
     "P_DRUNK_vb",
-    "P_DW_OW_vb",
     "P_FIREBM_vb",
     "P_FWFIRE_vb",
     "P_GRAVFI_vb",
     "P_HEATSK_vb",
-    "P_IP_OW_vb",
-    "P_LAND_vb",
-    "P_LN_OW_vb",
-    "P_SPLITS_vb",
-    "P_TB_OW_vb",
-    "P_TC_OW_vb"
+    "P_SPLITS_vb"
+};
+
+int altSoundMapping[] = {
+    49, // SD_ATKTWOPISTOLSND
+    50, // SD_ATKMP40SND
+    48, // SD_ATKPISTOLSND
+    73, // SD_EXCALIBLASTSND
+    71, // SD_EXCALIHITSND
+    54, // SD_BAZOOKAFIRESND
+    57, // SD_DRUNKFIRESND
+    55, // SD_FIREBOMBFIRESND
+    58, // SD_FLAMEWALLFIRESND
+    63, // SD_GRAVFIRESND
+    56, // SD_HEATSEEKFIRESND
+    60 // SD_SPLITFIRESND
 };
 
 static const char *bigJojHaha[] = {

@@ -311,6 +311,21 @@ size_t KPF_GetLengthForNum(int entry)
     return entrySize[entry];
 }
 
+// -- AUDIO INDEXER --
+
+void* KPF_GetAudioForEnum(int sndnum)
+{
+    for(int i = 0; i < (int)ARRAY_COUNT(altSoundMapping); i++)
+    {
+        if(altSoundMapping[i] == sndnum)
+        {
+            return fileCache[i + ALTSND_START];
+        }
+    }
+
+    Error("KPF_GetAudioForEnum: no audio mapping found for sndnum %d!\n", sndnum);
+}
+
 // -- BETA WALL INDEXERS --
 
 void* KPF_GetWallForName(const char* name)

@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "_rt_soun.h"
 #include "fx_man.h"
 #include "music.h"
+#include "w_kpf.h"
 #include "z_zone.h"
 #include "w_wad.h"
 #include "rt_main.h"
@@ -280,6 +281,8 @@ int SD_PlayIt(int sndnum, int angle, int distance, int pitch)
 		}
 	}
 
+	
+
 	if (!FX_VoiceAvailable(sounds[sndnum].priority))
 	{
 		return (0);
@@ -287,7 +290,10 @@ int SD_PlayIt(int sndnum, int angle, int distance, int pitch)
 
 	sounds[sndnum].count++;
 
-	snd = W_CacheLumpNum(SoundNumber(sndnum), PU_STATIC, CvtNull, 1);
+	if(!ludicrousaudio || !sounds[sndnum].flags & SD_HASALT)
+		snd = W_CacheLumpNum(SoundNumber(sndnum), PU_STATIC, CvtNull, 1);
+	else if(ludicrousaudio && sounds[sndnum].flags & SD_HASALT)
+	 	snd = KPF_GetAudioForEnum(sndnum);
 
 	if (*snd == 'C')
 	{
@@ -420,6 +426,8 @@ int SD_PlayPositionedSound(int sndnum, int px, int py, int x, int y)
 // SD_PlaySoundRTP - Play a positioned sample relative to the player
 //
 //***************************************************************************
+
+extern bool ludicrousaudio;
 
 int SD_PlaySoundRTP(int sndnum, int x, int y)
 {

@@ -41,7 +41,10 @@ bool KPF_MountAllResources(void);
 void* KPF_GetEntryForNum(int entry);
 size_t KPF_GetLengthForNum(int entry);
 
-//    ^-- wall indexing
+// ^-- audio indexing
+void* KPF_GetAudioForEnum(int sndnum);
+
+// ^-- wall indexing
 void* KPF_GetWallForName(const char* name);
 void* KPF_GetWallForNum(int tile);
 
