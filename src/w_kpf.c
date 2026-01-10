@@ -52,6 +52,8 @@ static bool _areSoundsCached = false;
 constexpr int numWalls = ARRAY_COUNT(betaWalls);
 constexpr int numSounds = ARRAY_COUNT(altSounds);
 
+// NOTE: ALL START AND END MARKERS REPRESENT ACTUAL ARRAY INDEXES!
+
 // wall entry range
 
 constexpr int WALL_START = 0;
@@ -64,8 +66,9 @@ constexpr int ALTSND_END = ALTSND_START + numSounds - 1;
 
 // todo: stuff like widescreen graphics, hud etc.
 
-// just use the endpoint of last section
-constexpr int NUM_ENTRIES = ALTSND_END;
+// just use the endpoint of last section = 1
+// not an array index, add 1 to get actual count of array
+constexpr int NUM_ENTRIES = ALTSND_END + 1;
 
 // KPF entry table
 static uint8_t** fileCache;
@@ -155,7 +158,7 @@ void KPF_CacheBetaWalls(void)
 
     mz_bool status = MZ_FALSE;
     
-    for(int i = WALL_START; i < WALL_END; i++)
+    for(int i = WALL_START; i <= WALL_END; i++)
     {
         spng_ctx *ctx = spng_ctx_new(0);
         struct spng_ihdr ihdr = {0};
@@ -208,7 +211,8 @@ void KPF_CacheBetaWalls(void)
             Error("KPF_CacheBetaWalls: invalid texture format for %s\nbit-depth = %d\nwidth = %d, height = %d, decoded length = %zu!", 
             filePath, ihdr.bit_depth, ihdr.width, ihdr.height, len_decode);
 
-        printf("Warning! Beta wall entry %s isn't using indexed colour!\n", betaWalls[i]);
+        if(ihdr.color_type != SPNG_COLOR_TYPE_INDEXED)
+            printf("Warning! Beta wall entry %s isn't using indexed colour!\n", betaWalls[i]);
 
         // cache the decoded image from spng's buffer
         fileCache[i] = malloc(len_decode);
@@ -236,7 +240,7 @@ void KPF_CacheAltSounds(void)
 
     mz_bool status = MZ_FALSE;
 
-    for(int i = ALTSND_START; i < ALTSND_END; i++)
+    for(int i = ALTSND_START; i <= ALTSND_END; i++)
     {
         snprintf(filePath, 256, "tactile/alt/%s.wav", altSounds[i - ALTSND_START]);
 
@@ -278,6 +282,8 @@ void KPF_CacheAltSounds(void)
 
 bool KPF_MountAllResources(void)
 {
+    uint32_t bytesAlloced = 0;
+
     // skip if
     if(!KPF_IsMounted())
         return false;
@@ -285,6 +291,13 @@ bool KPF_MountAllResources(void)
     // create and store all precachers here
     KPF_CacheBetaWalls();
     KPF_CacheAltSounds();
+
+    for(int i = 0; i < NUM_ENTRIES; i++)
+    {
+        bytesAlloced += entrySize[i];
+    }
+
+    printf("KPF_MountAllResources: alloc'd %u bytes.", bytesAlloced);
 
     return true;
 }
@@ -315,11 +328,11 @@ size_t KPF_GetLengthForNum(int entry)
 
 void* KPF_GetAudioForEnum(int sndnum, int* len)
 {
-    for(int i = 0; i < (int)ARRAY_COUNT(altSoundMapping); i++)
+    for(int i = ALTSND_START; i <= ALTSND_END; i++)
     {
-        if(altSoundMapping[i] == sndnum)
+        if(altSoundMapping[i - ALTSND_START] == sndnum)
         {
-            return fileCache[i + ALTSND_START];
+            return fileCache[i];
         }
     }
 
@@ -343,7 +356,7 @@ void* KPF_GetWallForName(const char* name)
     }
 
     // index in cache should match index in betaWalls, so this should just work.
-    for(int i = WALL_START; i < WALL_END; i++)
+    for(int i = WALL_START; i <= WALL_END; i++)
         if(strcmp(betaWalls[i], name) == 0)
             entryNum = i;
         else

@@ -111,6 +111,8 @@ static const char *altSounds[] = {
     "P_SPLITS_vb"
 };
 
+// each index corresponds 1:1 with altSounds table.
+// i do not feel like implementing a proper dictionary for this, so, oh well, it sucks...
 int altSoundMapping[] = {
     49, // SD_ATKTWOPISTOLSND
     50, // SD_ATKMP40SND
