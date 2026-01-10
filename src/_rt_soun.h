@@ -38,6 +38,9 @@ typedef struct
 #define SD_PITCHSHIFTOFF 0x08
 #define SD_PLAYONCE		 0x10
 
+// ashley added: flag if there's an alternate sound available from LE
+#define SD_HASALT		 0x20
+
 enum
 {
 	sd_prio0 = 17,
