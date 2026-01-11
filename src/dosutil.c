@@ -31,6 +31,16 @@
 int _argc;
 char** _argv;
 
+size_t file_size(FILE *handle)
+{
+	size_t sz = 0;
+	long oldpos = ftell(handle);
+	fseek(handle, 0, SEEK_END);
+	sz = ftell(handle);
+	fseek(handle, oldpos, SEEK_SET);
+	return sz;
+}
+
 #if PLATFORM_UNIX
 long filelength(int handle)
 {

@@ -136,6 +136,8 @@ long filelength(int handle);
 #error please define for your platform.
 #endif
 
+size_t file_size(FILE *handle);
+
 #define UNUSED(x) ((void)(x))
 
 //***************************************************************************
