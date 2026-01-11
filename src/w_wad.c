@@ -73,7 +73,8 @@ void W_AddFile(char* _filename)
 	wadinfo_t header;
 	lumpinfo_t* lump_p;
 	unsigned i;
-	int handle, length;
+	FILE *handle;
+	int length;
 	int startlump;
 
 	char filename[MAX_PATH];
@@ -97,7 +98,7 @@ void W_AddFile(char* _filename)
 	// read the entire file in
 	//      FIXME: shared opens
 
-	if ((handle = open(filename, O_RDONLY | O_BINARY)) == -1)
+	if ((handle = fopen(filename, "rb")) == NULL)
 		return;
 
 	startlump = numlumps;
@@ -110,7 +111,7 @@ void W_AddFile(char* _filename)
 			printf("    Adding single file %s.\n", filename);
 		fileinfo_ptr = &singleinfo;
 		singleinfo.filepos = 0;
-		singleinfo.size = LONG(filelength(handle));
+		singleinfo.size = file_size(handle);
 		ExtractFileBase(filename, singleinfo.name);
 		numlumps++;
 	}
@@ -119,20 +120,20 @@ void W_AddFile(char* _filename)
 		// WAD file
 		if (!quiet)
 			printf("    Adding %s.\n", filename);
-		read(handle, &header, sizeof(header));
+		fread(&header, sizeof(header), 1, handle);
 
 		if (strncmp(header.identification, "IWAD", 4) &&
 			strncmp(header.identification, "PWAD", 4))
 			Error("Input file %s doesn't have WAD magic!\n", filename);
 
-		header.numlumps = IntelLong(LONG(header.numlumps));
-		header.infotableofs = IntelLong(LONG(header.infotableofs));
+		header.numlumps = IntelLong(header.numlumps);
+		header.infotableofs = IntelLong(header.infotableofs);
 		length = header.numlumps * sizeof(filelump_t);
 		fileinfo_ptr = fileinfo = malloc(length);
 		if (!fileinfo)
 			Error("Wad file could not allocate header");
-		lseek(handle, header.infotableofs, SEEK_SET);
-		read(handle, fileinfo, length);
+		fseek(handle, header.infotableofs, SEEK_SET);
+		fread(fileinfo, length, 1, handle);
 
 		numlumps += header.numlumps;
 	}
@@ -149,11 +150,11 @@ void W_AddFile(char* _filename)
 
 	for (i = startlump; i < (unsigned int)numlumps; i++, lump_p++, fileinfo_ptr++)
 	{
-		fileinfo_ptr->filepos = IntelLong(LONG(fileinfo_ptr->filepos));
-		fileinfo_ptr->size = IntelLong(LONG(fileinfo_ptr->size));
+		fileinfo_ptr->filepos = IntelLong(fileinfo_ptr->filepos);
+		fileinfo_ptr->size = IntelLong(fileinfo_ptr->size);
 		lump_p->handle = handle;
-		lump_p->position = LONG(fileinfo_ptr->filepos);
-		lump_p->size = LONG(fileinfo_ptr->size);
+		lump_p->position = fileinfo_ptr->filepos;
+		lump_p->size = fileinfo_ptr->size;
 		strncpy(lump_p->name, fileinfo_ptr->name, 8);
 	}
 
@@ -357,8 +358,8 @@ void W_ReadLump(int lump, void* dest)
 		Error("W_ReadLump: %i < 0", lump);
 	l = lumpinfo + lump;
 
-	lseek(l->handle, l->position, SEEK_SET);
-	c = read(l->handle, dest, l->size);
+	fseek(l->handle, l->position, SEEK_SET);
+	c = fread(dest, l->size, 1, l->handle);
 	if (c < l->size)
 		Error("W_ReadLump: only read %i of %i on lump %i", c, l->size, lump);
 }
@@ -384,8 +385,8 @@ void W_WriteLump(int lump, void* src)
 		Error("W_WriteLump: %i < 0", lump);
 	l = lumpinfo + lump;
 
-	lseek(l->handle, l->position, SEEK_SET);
-	c = write(l->handle, src, l->size);
+	fseek(l->handle, l->position, SEEK_SET);
+	c = fwrite(src, l->size, 1, l->handle);
 	if (c < l->size)
 		Error("W_WriteLump: only wrote %i of %i on lump %i", c, l->size, lump);
 }

@@ -29,7 +29,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 typedef struct
 {
 	char name[8];
-	int handle, position, size;
+	FILE *handle;
+	int position, size;
 	int byteswapped;
 } lumpinfo_t;
 
