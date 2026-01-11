@@ -120,7 +120,7 @@ void W_AddFile(char* _filename)
 		// WAD file
 		if (!quiet)
 			printf("    Adding %s.\n", filename);
-		fread(&header, sizeof(header), 1, handle);
+		fread(&header, 1, sizeof(header), handle);
 
 		if (strncmp(header.identification, "IWAD", 4) &&
 			strncmp(header.identification, "PWAD", 4))
@@ -133,7 +133,7 @@ void W_AddFile(char* _filename)
 		if (!fileinfo)
 			Error("Wad file could not allocate header");
 		fseek(handle, header.infotableofs, SEEK_SET);
-		fread(fileinfo, length, 1, handle);
+		fread(fileinfo, 1, length, handle);
 
 		numlumps += header.numlumps;
 	}
@@ -359,7 +359,7 @@ void W_ReadLump(int lump, void* dest)
 	l = lumpinfo + lump;
 
 	fseek(l->handle, l->position, SEEK_SET);
-	c = fread(dest, l->size, 1, l->handle);
+	c = fread(dest, 1, l->size, l->handle);
 	if (c < l->size)
 		Error("W_ReadLump: only read %i of %i on lump %i", c, l->size, lump);
 }
