@@ -46,6 +46,8 @@ void** lumpcache;
 //=============
 
 static lumpinfo_t* lumpinfo; // location of each lump on disk
+static FILE **wadfiles = NULL;
+static size_t num_wadfiles = 0;
 
 /*
 ============================================================================
@@ -160,6 +162,10 @@ void W_AddFile(char* _filename)
 
 	if (fileinfo)
 		free(fileinfo);
+
+	wadfiles = realloc(wadfiles, sizeof(FILE *) * (num_wadfiles + 1));
+	wadfiles[num_wadfiles] = handle;
+	num_wadfiles++;
 }
 
 /*
@@ -434,4 +440,24 @@ void* W_CacheLumpNum(int lump, int tag, converter_t converter, int numrec)
 void* W_CacheLumpName(char* name, int tag, converter_t converter, int numrec)
 {
 	return W_CacheLumpNum(W_GetNumForName(name), tag, converter, numrec);
+}
+
+/*
+====================
+=
+= W_Shutdown
+=
+====================
+*/
+
+void W_Shutdown(void)
+{
+	if (wadfiles)
+	{
+		for (size_t i = 0; i < num_wadfiles; i++)
+			fclose(wadfiles[i]);
+		free(wadfiles);
+		wadfiles = NULL;
+		num_wadfiles = 0;
+	}
 }

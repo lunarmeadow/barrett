@@ -1635,6 +1635,7 @@ void ShutDown(void)
 	IN_Shutdown();
 	ShutdownSoftError();
 	Z_ShutDown();
+	W_Shutdown();
 	//   _settextcursor (0x0607);
 }
 
@@ -1656,6 +1657,8 @@ void QuitGame(void)
 	SetTextMode();
 
 	ClearScanCodes();
+
+	W_Shutdown();
 
 	exit(0);
 }
