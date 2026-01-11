@@ -88,9 +88,6 @@ bool KPF_Init(const char* path)
     fileCache = calloc(NUM_ENTRIES, sizeof(uint8_t*));
     entrySize = calloc(NUM_ENTRIES, sizeof(size_t*));
 
-    // allocate table of pointers for decoding stage of PNG loader
-    _decodeBuffer = malloc(sizeof(void*));
-
     // initialize kpf shit
     if(mz_zip_validate_file_archive(path, 0, &err))
         status = mz_zip_reader_init_file(&kpfArc, path, 0);
