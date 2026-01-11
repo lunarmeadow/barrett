@@ -91,7 +91,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #endif
 
 #define PI		3.141592657
-#define LONG(a) ((int)a)
 #define M_PI	3.14159
 
 #ifndef O_BINARY
