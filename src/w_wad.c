@@ -153,7 +153,7 @@ void W_AddFile(char* _filename)
 	//
 	// Fill in lumpcache
 	//
-	lumpcache = realloc(lumpcache, num_lumps * sizeof(lumpInfo_t));
+	Z_Realloc((void **)&lumpcache, num_lumps * sizeof(lumpInfo_t));
 	lump_p = &lumpcache[startlump];
 
 	for (i = startlump; i < (unsigned int)num_lumps; i++, lump_p++, fileinfo_ptr++)
@@ -202,6 +202,9 @@ void W_InitMultipleFiles(char** filenames)
 	//
 	// open all the files, load headers, and count lumps
 	//
+
+	// init with a SafeMalloc (since Z_Realloc cant handle NULL)
+	lumpcache = SafeMalloc(sizeof(lumpInfo_t));
 
 	for (; *filenames; filenames++)
 		W_AddFile(*filenames);
