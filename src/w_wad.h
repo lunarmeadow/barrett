@@ -47,7 +47,4 @@ void* W_CacheLumpName(char* name, int tag, converter_t converter, int numrecs);
 
 void W_Shutdown(void);
 
-extern int numlumps;
-extern void** lumpcache;
-
 #endif

@@ -38,12 +38,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // GLOBALS
 //=============
 
-int numlumps;
-void** lumpcache;
-
 //=============
 // STATICS
 //=============
+
+static int numlumps;
+static void** lumpcache;
 
 static lumpinfo_t* lumpinfo; // location of each lump on disk
 static FILE **wadfiles = NULL;
