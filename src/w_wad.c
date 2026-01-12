@@ -42,12 +42,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // STATICS
 //=============
 
-static int numlumps = 0;
-static void** lumpcache = NULL;
-
-static lumpinfo_t* lumpinfo = NULL; // location of each lump on disk
-static FILE **wadfiles = NULL;
-static size_t num_wadfiles = 0;
+static lumpInfo_t *lumpcache = NULL; // location of each lump on disk
+static int num_lumps = 0;
+static wadInfo_t *wadcache = NULL;
+static int num_wads = 0;
 
 /*
 ============================================================================
@@ -71,13 +69,14 @@ static size_t num_wadfiles = 0;
 
 void W_AddFile(char* _filename)
 {
-	dwadlump_t *fileinfo = NULL, *fileinfo_ptr = NULL, singleinfo;
-	dwadheader_t header;
-	lumpinfo_t* lump_p;
+	wadLump_t *fileinfo = NULL, *fileinfo_ptr = NULL, singleinfo;
+	wadHeader_t header;
+	lumpInfo_t* lump_p;
 	unsigned i;
 	FILE *handle;
 	int length;
 	int startlump;
+	wadType_t type = WAD_TYPE_NONE;
 
 	char filename[MAX_PATH];
 	char buf[MAX_PATH + 100]; // bna++
@@ -103,7 +102,7 @@ void W_AddFile(char* _filename)
 	if ((handle = fopen(filename, "rb")) == NULL)
 		return;
 
-	startlump = numlumps;
+	startlump = num_lumps;
 
 	if ((strcmpi(filename + strlen(filename) - 3, "wad")) &&
 		(strcmpi(filename + strlen(filename) - 3, "rts")))
@@ -115,7 +114,13 @@ void W_AddFile(char* _filename)
 		singleinfo.filepos = 0;
 		singleinfo.size = file_size(handle);
 		ExtractFileBase(filename, singleinfo.name);
-		numlumps++;
+		num_lumps++;
+		type = WAD_TYPE_LUMP;
+	}
+	else if (!strcmpi(filename + strlen(filename) - 3, "kpf"))
+	{
+		// KPF file
+		type = WAD_TYPE_KPF;
 	}
 	else
 	{
@@ -128,44 +133,49 @@ void W_AddFile(char* _filename)
 			strncmp(header.identification, "PWAD", 4))
 			Error("Input file %s doesn't have WAD magic!\n", filename);
 
-		header.numlumps = IntelLong(header.numlumps);
-		header.infotableofs = IntelLong(header.infotableofs);
-		length = header.numlumps * sizeof(dwadlump_t);
+		if (!strncmp(header.identification, "IWAD", 4))
+			type = WAD_TYPE_IWAD;
+		if (!strncmp(header.identification, "PWAD", 4))
+			type = WAD_TYPE_PWAD;
+
+		header.num_lumps = IntelLong(header.num_lumps);
+		header.ofs_lumps = IntelLong(header.ofs_lumps);
+		length = header.num_lumps * sizeof(wadLump_t);
 		fileinfo_ptr = fileinfo = malloc(length);
 		if (!fileinfo)
 			Error("Wad file could not allocate header");
-		fseek(handle, header.infotableofs, SEEK_SET);
+		fseek(handle, header.ofs_lumps, SEEK_SET);
 		fread(fileinfo, 1, length, handle);
 
-		numlumps += header.numlumps;
+		num_lumps += header.num_lumps;
 	}
 
 	//
-	// Fill in lumpinfo
+	// Fill in lumpcache
 	//
-	Z_Realloc((void**)&lumpinfo, numlumps * sizeof(lumpinfo_t));
-	//        lumpinfo = realloc (lumpinfo, numlumps*sizeof(lumpinfo_t));
-	//        if (!lumpinfo)
-	//           Error("W_AddFile: Could not realloc %ld
-	//           bytes",numlumps*sizeof(lumpinfo_t));
-	lump_p = &lumpinfo[startlump];
+	lumpcache = realloc(lumpcache, num_lumps * sizeof(lumpInfo_t));
+	lump_p = &lumpcache[startlump];
 
-	for (i = startlump; i < (unsigned int)numlumps; i++, lump_p++, fileinfo_ptr++)
+	for (i = startlump; i < (unsigned int)num_lumps; i++, lump_p++, fileinfo_ptr++)
 	{
 		fileinfo_ptr->filepos = IntelLong(fileinfo_ptr->filepos);
 		fileinfo_ptr->size = IntelLong(fileinfo_ptr->size);
-		lump_p->handle = handle;
+		lump_p->handle = num_wads;
 		lump_p->position = fileinfo_ptr->filepos;
 		lump_p->size = fileinfo_ptr->size;
+		lump_p->data = NULL;
+		lump_p->byteswapped = false;
 		strncpy(lump_p->name, fileinfo_ptr->name, 8);
 	}
 
 	if (fileinfo)
 		free(fileinfo);
 
-	wadfiles = realloc(wadfiles, sizeof(FILE *) * (num_wadfiles + 1));
-	wadfiles[num_wadfiles] = handle;
-	num_wadfiles++;
+	wadcache = realloc(wadcache, sizeof(wadInfo_t) * (num_wads + 1));
+	strncpy(wadcache[num_wads].path, filename, sizeof(filename));
+	wadcache[num_wads].handle = handle;
+	wadcache[num_wads].type = type;
+	num_wads++;
 }
 
 /*
@@ -192,24 +202,15 @@ void W_InitMultipleFiles(char** filenames)
 	//
 	// open all the files, load headers, and count lumps
 	//
-	numlumps = 0;
-	lumpinfo = SafeMalloc(5); // will be realloced as lumps are added
 
 	for (; *filenames; filenames++)
 		W_AddFile(*filenames);
 
-	if (!numlumps)
+	if (!num_lumps)
 		Error("W_InitFiles: no files found");
 
-	//
-	// set up caching
-	//
-	lumpcache = calloc(numlumps, sizeof(*lumpcache));
-	if (!lumpcache)
-		Error("W_InitFiles: lumpcache malloc failed size=%d\n", numlumps << 2);
-
 	if (!quiet)
-		printf("W_Wad: Wad Manager Started NUMLUMPS=%ld\n", (long int)numlumps);
+		printf("W_Wad: Wad Manager Started NUMLUMPS=%ld\n", (long int)num_lumps);
 }
 
 /*
@@ -241,7 +242,7 @@ void W_InitFile(char* filename)
 
 int W_NumLumps(void)
 {
-	return numlumps;
+	return num_lumps;
 }
 
 /*
@@ -258,8 +259,8 @@ int W_CheckNumForName(char* name)
 {
 	char name8[9];
 	int v1, v2;
-	lumpinfo_t* lump_p;
-	lumpinfo_t* endlump;
+	lumpInfo_t* lump_p;
+	lumpInfo_t* endlump;
 
 	// make the name into two integers for easy compares
 
@@ -272,13 +273,13 @@ int W_CheckNumForName(char* name)
 
 	// scan backwards so patch lump files take precedence
 
-	lump_p = lumpinfo;
-	endlump = lumpinfo + numlumps;
+	lump_p = lumpcache;
+	endlump = lumpcache + num_lumps;
 
 	while (lump_p != endlump)
 	{
 		if (*(int*)lump_p->name == v1 && *(int*)&lump_p->name[4] == v2)
-			return lump_p - lumpinfo;
+			return lump_p - lumpcache;
 		lump_p++;
 	}
 
@@ -319,9 +320,9 @@ int W_GetNumForName(char* name)
 
 int W_LumpLength(int lump)
 {
-	if (lump >= numlumps)
-		Error("W_LumpLength: %i >= numlumps", lump);
-	return lumpinfo[lump].size;
+	if (lump >= num_lumps)
+		Error("W_LumpLength: %i >= num_lumps", lump);
+	return lumpcache[lump].size;
 }
 
 /*
@@ -332,12 +333,12 @@ int W_LumpLength(int lump)
 ====================
 */
 
-char* W_GetNameForNum(int i)
+const char* W_GetNameForNum(int i)
 {
 
-	if (i >= numlumps)
-		Error("W_GetNameForNum: %i >= numlumps", i);
-	return &(lumpinfo[i].name[0]);
+	if (i >= num_lumps)
+		Error("W_GetNameForNum: %i >= num_lumps", i);
+	return &(lumpcache[i].name[0]);
 }
 
 /*
@@ -354,18 +355,18 @@ byte* lumpdest;
 void W_ReadLump(int lump, void* dest)
 {
 	int c;
-	lumpinfo_t* l;
+	lumpInfo_t* l;
 
 	readinglump = lump;
 	lumpdest = dest;
-	if (lump >= numlumps)
-		Error("W_ReadLump: %i >= numlumps", lump);
+	if (lump >= num_lumps)
+		Error("W_ReadLump: %i >= num_lumps", lump);
 	if (lump < 0)
 		Error("W_ReadLump: %i < 0", lump);
-	l = lumpinfo + lump;
+	l = lumpcache + lump;
 
-	fseek(l->handle, l->position, SEEK_SET);
-	c = fread(dest, 1, l->size, l->handle);
+	fseek(wadcache[l->handle].handle, l->position, SEEK_SET);
+	c = fread(dest, 1, l->size, wadcache[l->handle].handle);
 	if (c < l->size)
 		Error("W_ReadLump: only read %i of %i on lump %i", c, l->size, lump);
 }
@@ -383,16 +384,16 @@ void W_ReadLump(int lump, void* dest)
 void W_WriteLump(int lump, void* src)
 {
 	int c;
-	lumpinfo_t* l;
+	lumpInfo_t* l;
 
-	if (lump >= numlumps)
-		Error("W_WriteLump: %i >= numlumps", lump);
+	if (lump >= num_lumps)
+		Error("W_WriteLump: %i >= num_lumps", lump);
 	if (lump < 0)
 		Error("W_WriteLump: %i < 0", lump);
-	l = lumpinfo + lump;
+	l = lumpcache + lump;
 
-	fseek(l->handle, l->position, SEEK_SET);
-	c = fwrite(src, l->size, 1, l->handle);
+	fseek(wadcache[l->handle].handle, l->position, SEEK_SET);
+	c = fwrite(src, l->size, 1, wadcache[l->handle].handle);
 	if (c < l->size)
 		Error("W_WriteLump: only wrote %i of %i on lump %i", c, l->size, lump);
 }
@@ -406,27 +407,27 @@ void W_WriteLump(int lump, void* src)
 */
 void* W_CacheLumpNum(int lump, int tag, converter_t converter, int numrec)
 {
-	if (lump >= (int)numlumps)
-		Error("W_CacheLumpNum: %i >= numlumps", lump);
+	if (lump >= (int)num_lumps)
+		Error("W_CacheLumpNum: %i >= num_lumps", lump);
 
 	else if (lump < 0)
 		Error("W_CacheLumpNum: %i < 0  Taglevel: %i", lump, tag);
 
-	if (!lumpcache[lump])
+	if (!lumpcache[lump].data)
 	{
 		// read the lump in
-		Z_Malloc(W_LumpLength(lump), tag, &lumpcache[lump]);
-		W_ReadLump(lump, lumpcache[lump]);
-		Debug("Invoking endian converter on %p, %i records\n", lumpcache[lump],
-			  numrec);
-		converter(lumpcache[lump], numrec);
+		Z_Malloc(W_LumpLength(lump), tag, &lumpcache[lump].data);
+		W_ReadLump(lump, lumpcache[lump].data);
+		Debug("Invoking endian converter on %p, %i records\n", lumpcache[lump].data, numrec);
+		converter(lumpcache[lump].data, numrec);
+		lumpcache[lump].byteswapped = true;
 	}
 	else
 	{
-		Z_ChangeTag(lumpcache[lump], tag);
+		Z_ChangeTag(lumpcache[lump].data, tag);
 	}
 
-	return lumpcache[lump];
+	return lumpcache[lump].data;
 }
 
 /*
@@ -452,12 +453,12 @@ void* W_CacheLumpName(char* name, int tag, converter_t converter, int numrec)
 
 void W_Shutdown(void)
 {
-	if (wadfiles)
+	if (wadcache)
 	{
-		for (size_t i = 0; i < num_wadfiles; i++)
-			fclose(wadfiles[i]);
-		free(wadfiles);
-		wadfiles = NULL;
-		num_wadfiles = 0;
+		for (int i = 0; i < num_wads; i++)
+			fclose(wadcache[i].handle);
+		free(wadcache);
+		wadcache = NULL;
+		num_wads = 0;
 	}
 }

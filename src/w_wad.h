@@ -33,7 +33,7 @@ void W_InitFile(char* filename);			// Init a single wad file
 
 int W_CheckNumForName(char* name); // Check to see if the named lump exists
 int W_GetNumForName(char* name);   // Get the number for the named lump
-char* W_GetNameForNum(int i);	   // Get the name for a number
+const char* W_GetNameForNum(int i);	   // Get the name for a number
 
 int W_NumLumps(void);		// Get the current number of lumps managed
 int W_LumpLength(int lump); // Get the length of the numbered lump

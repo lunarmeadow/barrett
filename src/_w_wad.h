@@ -26,28 +26,43 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //   TYPES
 //===============
 
-// wad lump in memory
-typedef struct
-{
-	char name[8];
+typedef enum : int {
+	WAD_TYPE_NONE, // invalid type
+	WAD_TYPE_LUMP, // single lump file
+	WAD_TYPE_IWAD, // main wad
+	WAD_TYPE_PWAD, // patch wad
+	WAD_TYPE_KPF // kex pack file
+} wadType_t;
+
+// mounted wad handle info
+typedef struct wadInfo {
+	char path[MAX_PATH];
 	FILE *handle;
-	int position, size;
-} lumpinfo_t;
+	wadType_t type;
+} wadInfo_t;
+
+// cached lump
+typedef struct lumpInfo {
+	char name[8]; // lump name (may not be null terminated)
+	int handle; // source wadInfo_t index
+	int position; // absolute position in source file in bytes
+	int size; // total size in source file in bytes
+	void *data; // cached data
+	bool byteswapped; // true if has been byteswapped
+} lumpInfo_t;
 
 // wad header on disk
-typedef struct
-{
+typedef struct wadHeader {
 	char identification[4]; // should be IWAD
-	int numlumps;
-	int infotableofs;
-} dwadheader_t;
+	int32_t num_lumps;
+	int32_t ofs_lumps;
+} wadHeader_t;
 
 // wad lump on disk
-typedef struct
-{
-	int filepos;
-	int size;
+typedef struct wadLump {
+	int32_t filepos;
+	int32_t size;
 	char name[8];
-} dwadlump_t;
+} wadLump_t;
 
 #endif
