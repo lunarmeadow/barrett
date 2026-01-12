@@ -42,10 +42,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // STATICS
 //=============
 
-static int numlumps;
-static void** lumpcache;
+static int numlumps = 0;
+static void** lumpcache = NULL;
 
-static lumpinfo_t* lumpinfo; // location of each lump on disk
+static lumpinfo_t* lumpinfo = NULL; // location of each lump on disk
 static FILE **wadfiles = NULL;
 static size_t num_wadfiles = 0;
 
