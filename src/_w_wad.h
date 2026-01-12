@@ -26,26 +26,28 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //   TYPES
 //===============
 
+// wad lump in memory
 typedef struct
 {
 	char name[8];
 	FILE *handle;
 	int position, size;
-	int byteswapped;
 } lumpinfo_t;
 
+// wad header on disk
 typedef struct
 {
 	char identification[4]; // should be IWAD
 	int numlumps;
 	int infotableofs;
-} wadinfo_t;
+} dwadheader_t;
 
+// wad lump on disk
 typedef struct
 {
 	int filepos;
 	int size;
 	char name[8];
-} filelump_t;
+} dwadlump_t;
 
 #endif

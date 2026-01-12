@@ -71,8 +71,8 @@ static size_t num_wadfiles = 0;
 
 void W_AddFile(char* _filename)
 {
-	filelump_t *fileinfo = NULL, *fileinfo_ptr = NULL, singleinfo;
-	wadinfo_t header;
+	dwadlump_t *fileinfo = NULL, *fileinfo_ptr = NULL, singleinfo;
+	dwadheader_t header;
 	lumpinfo_t* lump_p;
 	unsigned i;
 	FILE *handle;
@@ -130,7 +130,7 @@ void W_AddFile(char* _filename)
 
 		header.numlumps = IntelLong(header.numlumps);
 		header.infotableofs = IntelLong(header.infotableofs);
-		length = header.numlumps * sizeof(filelump_t);
+		length = header.numlumps * sizeof(dwadlump_t);
 		fileinfo_ptr = fileinfo = malloc(length);
 		if (!fileinfo)
 			Error("Wad file could not allocate header");
