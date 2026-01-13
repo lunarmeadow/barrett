@@ -408,6 +408,8 @@ void W_WriteLump(int lump, void* src)
 =
 ====================
 */
+
+// ludicrous todo: add special case for caching LE beta walls from KPF.
 void* W_CacheLumpNum(int lump, int tag, converter_t converter, int numrec)
 {
 	if (lump >= (int)num_lumps)

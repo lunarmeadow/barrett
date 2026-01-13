@@ -1964,17 +1964,10 @@ void CountAreaTiles(void)
 
 void InitWall(int lump, int index, int newx, int newy)
 {
-	// skip LE walls
-	if(lump < 512 && lump > 0)
-	{
-		PreCacheLump(lump, PU_CACHEWALLS, cache_pic_t);
-		if (W_LumpLength(lump) == 0)
-			Error("%s being used in shareware at %d %d",
-					W_GetNameForNum(lump), newx, newy);
-	}
-	// carve out exception for LE walls
-	if(lump > 512 + 32 || lump < 0)
-		Error("InitWall: invalid tile index!");
+	PreCacheLump(lump, PU_CACHEWALLS, cache_pic_t);
+	if (W_LumpLength(lump) == 0)
+		Error("%s being used in shareware at %d %d",
+				W_GetNameForNum(lump), newx, newy);
 	actorat[newx][newy] = &walls[index];
 	wall_t* tempwall = (wall_t*)actorat[newx][newy];
 	tempwall->which = WALL;
@@ -2019,6 +2012,8 @@ void SetupWalls(void)
 			}
 			tile = *map++;
 
+			// ludicrous todo: don't clear beta wall tiles when LE content is mounted 
+			// (tile such that 512 < tile < 512 + numwalls) && LE mounted something like that
 			if ((tile > 89) || ((tile > 32) && (tile < 36)) || (tile == 44) ||
 				(tile == 45) || (tile == 0))
 			{
@@ -2149,6 +2144,7 @@ void SetupWindows(void)
 ==================
 */
 
+// ludicrous todo: figure out where beta walls may fit into here.
 int GetWallIndex(int texture)
 {
 	int wallstart;
@@ -4223,11 +4219,15 @@ int GetLumpForTile(int tile)
 {
 	int wallstart;
 	int exitstart;
+	// int bwallstart
 
 	wallstart = W_GetNumForName("WALLSTRT");
 	exitstart = W_GetNumForName("EXITSTRT");
 	elevatorstart = W_GetNumForName("ELEVSTRT");
 
+	// todo: add virtual WALBSTRT lump, then fetch tile from that
+	// bwallstart = W_GetNumForName("WALBSTRT");
+	
 	if ((tile >= 1) && (tile <= 32))
 	{
 		return (tile + wallstart);
@@ -4256,12 +4256,13 @@ int GetLumpForTile(int tile)
 	{
 		return (tile + wallstart - 16);
 	}
-	// LE beta tiles, just return the number and we can dispatch from there.
-	// there are 32 beta walls
-	else if(tile >= 512 && tile < 512 + 32)
-	{
-		return tile;
-	}
+	// should cap this to number of beta walls as well, probably just use an end marker in wad
+	// also, this should check if LE content is mounted. otherwise you're gonna have a bad time
+	// if((tile >= 512))
+	// {
+	// 	return (tile - 512) + bwallstart
+	// }
+
 	return -1;
 }
 

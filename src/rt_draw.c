@@ -1629,6 +1629,11 @@ void DrawWallPost(wallcast_t* post, byte* buf)
 	byte* src;
 	byte* src2;
 
+	// ludicrous todo: ensure this properly accepts beta wall textures from KPF
+	//
+	// erysdren note:
+	// when each WALB is called to be precached by the level data, 
+	// thats when you load it from the zip, convert from PNG to raw pixel buffer, then save the result
 	if (post->lump)
 		src = W_CacheLumpNum(post->lump, PU_CACHE, CvtNull, 1);
 	if (post->alttile != 0)
