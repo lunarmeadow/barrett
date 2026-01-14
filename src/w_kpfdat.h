@@ -113,7 +113,7 @@ static const char *altSounds[] = {
 
 // each index corresponds 1:1 with altSounds table.
 // i do not feel like implementing a proper dictionary for this, so, oh well, it sucks...
-int altSoundMapping[] = {
+static int altSoundMapping[] = {
     49, // SD_ATKTWOPISTOLSND
     50, // SD_ATKMP40SND
     48, // SD_ATKPISTOLSND
