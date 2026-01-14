@@ -33,6 +33,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "rt_crc.h"
 #include "rt_main.h"
+#include "w_kpfdat.h"
 
 //=============
 // GLOBALS
@@ -117,10 +118,28 @@ void W_AddFile(char* _filename)
 		num_lumps++;
 		type = WAD_TYPE_LUMP;
 	}
-	else if (!strcmpi(filename + strlen(filename) - 3, "kpf"))
+	else if (!strcmpi(filename + strlen(filename) - 10, "RottEX.kpf"))
 	{
 		// KPF file
+		if (!quiet)
+			printf("    Adding %s.\n", filename);
 		type = WAD_TYPE_KPF;
+
+		// manually add WALBs
+		fileinfo_ptr = fileinfo = malloc((ARRAY_COUNT(betaWalls) + 1) * sizeof(wadLump_t));
+
+		memset(fileinfo[0].name, '\0', sizeof(fileinfo[0].name));
+		strncpy(fileinfo[0].name, "WALBSTRT", sizeof(fileinfo[0].name));
+		fileinfo[0].filepos = 0;
+		fileinfo[0].size = 0;
+
+		for (int i = 1; i <= ARRAY_COUNT(betaWalls); i++)
+		{
+			memset(fileinfo[i].name, '\0', sizeof(fileinfo[i].name));
+			strncpy(fileinfo[i].name, betaWalls[i - 1], sizeof(fileinfo[i].name));
+			fileinfo[i].filepos = 0;
+			fileinfo[i].size = 0;
+		}
 	}
 	else
 	{
