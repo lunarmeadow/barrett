@@ -2148,9 +2148,11 @@ void SetupWindows(void)
 int GetWallIndex(int texture)
 {
 	int wallstart;
+	int walbstart;
 	int exitstart;
 
 	wallstart = W_GetNumForName("WALLSTRT");
+	walbstart = W_CheckNumForName("WALBSTRT");
 	exitstart = W_GetNumForName("EXITSTRT");
 	elevatorstart = W_GetNumForName("ELEVSTRT");
 
@@ -2198,6 +2200,8 @@ int GetWallIndex(int texture)
 	//      return (texture - specialstart + 41);
 	else if (texture > exitstart)
 		return (texture - exitstart + 43);
+	else if (walbstart != -1 && texture > walbstart)
+		return (texture - walbstart + 512);
 	else
 	{
 		if (texture > wallstart + 63)
@@ -4218,15 +4222,13 @@ char* WeaponName(int tile)
 int GetLumpForTile(int tile)
 {
 	int wallstart;
+	int walbstart;
 	int exitstart;
-	// int bwallstart
 
 	wallstart = W_GetNumForName("WALLSTRT");
+	walbstart = W_CheckNumForName("WALBSTRT");
 	exitstart = W_GetNumForName("EXITSTRT");
 	elevatorstart = W_GetNumForName("ELEVSTRT");
-
-	// todo: add virtual WALBSTRT lump, then fetch tile from that
-	// bwallstart = W_GetNumForName("WALBSTRT");
 	
 	if ((tile >= 1) && (tile <= 32))
 	{
@@ -4256,13 +4258,10 @@ int GetLumpForTile(int tile)
 	{
 		return (tile + wallstart - 16);
 	}
-	// should cap this to number of beta walls as well, probably just use an end marker in wad
-	// also, this should check if LE content is mounted. otherwise you're gonna have a bad time
-	// if((tile >= 512))
-	// {
-	// 	return (tile - 512) + bwallstart
-	// }
-
+	else if ((walbstart != -1) && (tile >= 512) && (tile < 512 + 32))
+	{
+		return (tile + walbstart - 512);
+	}
 	return -1;
 }
 
