@@ -50,7 +50,6 @@ extern word tilemap[MAPSIZE][MAPSIZE]; // wall values only
 extern byte spotvis[MAPSIZE][MAPSIZE];
 
 extern int tics;
-extern int wstart;
 extern int fandc;
 
 //

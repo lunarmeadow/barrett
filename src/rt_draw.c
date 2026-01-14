@@ -77,8 +77,6 @@ byte spotvis[MAPSIZE][MAPSIZE];
 byte mapseen[MAPSIZE][MAPSIZE];
 unsigned long* lights;
 
-int wstart;
-
 const int dirangle8[9] = {0,
 						  FINEANGLES / 8,
 						  2 * FINEANGLES / 8,
@@ -281,7 +279,6 @@ void BuildTables(void)
 
 	costable = (fixed*)&(sintable[FINEANGLES / 4]);
 
-	wstart = W_GetNumForName("WALLSTRT");
 #if (SHAREWARE == 0)
 	netlump = W_GetNumForName("net1");
 #endif
