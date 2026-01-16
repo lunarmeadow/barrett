@@ -1988,6 +1988,8 @@ void SetupWalls(void)
 	word *map, tile;
 	wall_t* tempwall;
 
+	int haswalb = W_CheckNumForName("WALBSTRT");
+
 	for (i = 0; i < MAXWALLTILES; i++)
 		memset(&walls[i], 0, sizeof(wall_t));
 
@@ -2013,8 +2015,16 @@ void SetupWalls(void)
 			}
 			tile = *map++;
 
-			if ((tile > 89) || ((tile > 32) && (tile < 36)) || (tile == 44) ||
-				(tile == 45) || (tile == 0) || ((tile < 512) && (tile >= 512 + 32)))
+			// we have beta walls, but no KPF data,
+			// remap 512 < tile < 512+32 range to closely matching vanilla textures
+			if(((tile >= 512) && (tile < 512 + 32)) && haswalb == -1)
+			{
+				tile = bwallFallback[tile - 512];
+			}
+
+			// filter out invalid tiles
+			if ((tile > 89 || (haswalb && (tile > 89 && tile < 512 && tile >= 512+32))) 
+			|| ((tile > 32) && (tile < 36)) || (tile == 44) || (tile == 45) || (tile == 0))
 			{
 				tilemap[i][j] = 0;
 				continue;
