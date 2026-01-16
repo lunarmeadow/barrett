@@ -30,6 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "rt_fixed.h"
 #include "rt_ted.h"
 #include "_rt_ted.h"
+#include "w_kpfdat.h"
 #include "w_wad.h"
 #include "z_zone.h"
 #include "rt_util.h"
@@ -4258,9 +4259,13 @@ int GetLumpForTile(int tile)
 	{
 		return (tile + wallstart - 16);
 	}
-	else if ((walbstart != -1) && (tile >= 512) && (tile < 512 + 32))
+	else if ((tile >= 512) && (tile < 512 + 32))
 	{
-		return (tile + walbstart - 512);
+		// let ppl who own the original dark war or throwback pack play community maps still
+		if(walbstart != -1)
+			return (tile + walbstart - 512);
+		else
+		 	return wallstart + bwallFallback[tile - 512];
 	}
 	return -1;
 }

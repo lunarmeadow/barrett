@@ -128,6 +128,45 @@ static int altSoundMapping[] = {
     60 // SD_SPLITFIRESND
 };
 
+// alas, shitty as ever
+// this remaps beta walls to hand-selected approximations from the base game,
+// to allow RTLX maps to be played for people who don't yet own LE,
+// but would like to play community maps made with the LE level editor
+static int bwallFallback[] = {
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    20,
+    21,
+    22,
+    23,
+    24,
+    29,
+    30,
+    31,
+    32,
+    31,
+    36,
+    37,
+    29,
+    5,
+    41,
+    59,
+    59,
+    63,
+    49,
+    54,
+    54,
+    54,
+    54,
+    61,
+    61,
+    89
+};
+
 static const char *bigJojHaha[] = {
     "BIGJDEAD",
     "BIGJDIE1",
