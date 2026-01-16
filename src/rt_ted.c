@@ -2013,10 +2013,8 @@ void SetupWalls(void)
 			}
 			tile = *map++;
 
-			// ludicrous todo: don't clear beta wall tiles when LE content is mounted 
-			// (tile such that 512 < tile < 512 + numwalls) && LE mounted something like that
 			if ((tile > 89) || ((tile > 32) && (tile < 36)) || (tile == 44) ||
-				(tile == 45) || (tile == 0))
+				(tile == 45) || (tile == 0) || ((tile < 512) && (tile >= 512 + 32)))
 			{
 				tilemap[i][j] = 0;
 				continue;
