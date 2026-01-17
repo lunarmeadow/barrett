@@ -1374,7 +1374,7 @@ void AdaptDetail(void)
 */
 
 // cache tic count here. GetTicCount is stil allowed
-void CalcTics(void)
+__attribute__((hot)) void CalcTics(void)
 {
 	int tc;
 

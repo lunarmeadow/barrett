@@ -115,7 +115,7 @@ static int ticbase;	  /* game-supplied base */
 // be cautious to only READ and not WRITE this, only WRITE from CalcTics().
 // use GetTicCount() in loops where CalcTics isn't called.
 // Be cautious using the cached tic for time operations/waiting as it may be out-of-sync with real tic.
-int GetCachedTic(void)
+__attribute__((always_inline)) int GetCachedTic(void)
 {
 	return ticCount;
 }
@@ -125,12 +125,12 @@ int GetCachedTic(void)
 // global tic cache to reduce expensive SDL timer calls during game loop.
 // be cautious to only READ and not WRITE this, only WRITE from CalcTics().
 // use GetTicCount() in loops where CalcTics isn't called.
-void SetCachedTic(int newTics)
+__attribute__((always_inline)) void SetCachedTic(int newTics)
 {
 	ticCount = newTics;
 }
 
-int GetTicCount(void)
+__attribute__((always_inline)) int GetTicCount(void)
 {
 	return (SDL_GetPerformanceCounter() * VBLCOUNTER) / frequencyCache;
 }
