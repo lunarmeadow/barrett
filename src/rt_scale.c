@@ -54,7 +54,7 @@ int sprtopoffset;
 int dc_yl;
 int dc_yh;
 // byte * dc_firstsource;
-byte* dc_source;
+ __attribute__((aligned(64))) byte* dc_source;
 int centeryclipped;
 int transparentlevel = 0;
 
@@ -1143,15 +1143,18 @@ void R_TransColumn(byte* buf)
 	}
 }
 
-void R_DrawWallColumn(byte* buf)
+__attribute__((hot, optimize(
+    "no-tree-loop-optimize"
+))) void R_DrawWallColumn(byte* buf)
 {
 	// This is *NOT* 100% correct - DDOI
 	int count;
-	uint32_t frac, fracstep;
+	uint32_t frac, frac2, fracstep;
 	byte* dest;
 
 	// force compiler to preload globals in a register
 	const int screenW = iGLOBAL_SCREENWIDTH;
+    const int twostep = screenW * 2;
 	const byte* restrict colormap = shadingtable;
 	const byte* restrict texture = dc_source;
 
@@ -1166,12 +1169,22 @@ void R_DrawWallColumn(byte* buf)
 	frac <<= 10;
 	fracstep <<= 10;
 
-	while (count--)
+	while (count >= 2)
 	{
-		//*dest = 6;
-		*dest = colormap[texture[(frac >> 26)]];
-		dest += screenW;
+		dest[0] = colormap[texture[(frac >> 26)]];
+		dest[screenW] = colormap[texture[((frac+fracstep) >> 26)]];
+
+		frac += (fracstep << 1);
+        dest += twostep;
+
+        count -= 2;
+	}
+
+	while(count--)
+	{
+		dest[0] = colormap[texture[(frac >> 26)]];
 		frac += fracstep;
+		dest += screenW;
 	}
 }
 

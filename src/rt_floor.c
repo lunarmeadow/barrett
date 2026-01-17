@@ -600,10 +600,12 @@ void DrawPlanes(void)
 	}
 }
 
-void DrawRow(int count, byte* dest, byte* src)
+__attribute__((hot, optimize(
+    "no-tree-loop-optimize"
+))) void DrawRow(int count, byte* restrict dest, byte* src)
 {
 	unsigned xfrac, yfrac;
-	int coord;
+	int coord, coord2;
 
 	xfrac = mr_xfrac;
 	yfrac = mr_yfrac;
@@ -611,14 +613,35 @@ void DrawRow(int count, byte* dest, byte* src)
 	const byte* restrict colormap = shadingtable;
 	const int xstep = mr_xstep;
 	const int ystep = mr_ystep;
+	const int xstep2 = mr_xstep << 1;
+	const int ystep2 = mr_ystep << 1;
 
-	while (count--)
+    __attribute__((aligned(64))) const byte* restrict tex = src;
+
+	while (count >= 2)
+	{
+		/* extract the x/y coordinates */
+		/* was: 0b00000001111111 and 0b11111110000000 */
+		coord = ((yfrac >> 24) & 0x7F) | ((xfrac >> 17) & 0x3F80);
+		coord2 = (((yfrac+ystep) >> 24) & 0x7F) | (((xfrac+xstep) >> 17) & 0x3F80);
+
+		dest[0] = colormap[tex[coord]];
+		dest[1] = colormap[tex[coord2]];
+        dest += 2;
+
+		xfrac += xstep2;
+		yfrac += ystep2;
+
+		count -= 2;
+	}
+
+	while(count--)
 	{
 		/* extract the x/y coordinates */
 		/* was: 0b00000001111111 and 0b11111110000000 */
 		coord = ((yfrac >> 24) & 0x7F) | ((xfrac >> 17) & 0x3F80);
 
-		*dest++ = colormap[src[coord]];
+		*dest++ = colormap[tex[coord]];
 
 		xfrac += xstep;
 		yfrac += ystep;
