@@ -73,8 +73,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "music.h"
 #include "fx_man.h"
 
-#include "w_kpf.h"
-
 volatile int oldtime;
 volatile int gametime;
 
@@ -119,8 +117,6 @@ static int demonumber = -1;
 
 char CWD[40]; // curent working directory
 static bool quitactive = false;
-
-char kpfPath[256];
 
 int timelimit;
 int maxtimelimit;
@@ -257,23 +253,6 @@ int main(int argc, char* argv[])
 		ReadSETUPFiles();
 		doublestep = 0;
 		SetupWads();
-		GetPathFromEnvironment(kpfPath, ApogeePath, "RottEX.KPF");
-
-		// check if string is populated
-		if(kpfPath[0] != '\0')
-		{
-			bool status;
-			if(KPF_Init(kpfPath))
-				status = KPF_MountAllResources();
-
-			if(!status)
-				Error("main: Failure in mounting KPF!");
-		}
-		else 
-		{
-			printf("main: no LE KPF found");
-		}
-
 		BuildTables();
 		GetMenuInfo();
 	}
@@ -982,6 +961,8 @@ skip_file_loading:
 	if (tempstr)
 		free(tempstr);
 
+	newargs [argnum++] = DATADIR "RottEX.kpf";
+
 	newargs[argnum++] = NULL;
 
 	W_InitMultipleFiles(newargs);
@@ -1624,7 +1605,6 @@ void ShutDown(void)
 	//      ShutdownModemGame ();
 	//      }
 
-	KPF_Shutdown();
 	ShutdownClientControls();
 	I_ShutdownKeyboard();
 	ShutdownGameCommands();
