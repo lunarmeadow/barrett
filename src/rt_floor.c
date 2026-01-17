@@ -600,7 +600,7 @@ void DrawPlanes(void)
 	}
 }
 
-__attribute__((hot, optimize(
+__attribute__((hot, always_inline, optimize(
     "no-tree-loop-optimize"
 ))) void DrawRow(int count, byte* restrict dest, byte* src)
 {

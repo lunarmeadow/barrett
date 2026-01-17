@@ -5715,7 +5715,7 @@ void DrawMaskedRotRow(int count, byte* dest, byte* src)
 	}
 }
 
-void DrawSkyPost(byte* buf, byte* src, int height)
+__attribute__((hot, always_inline)) void DrawSkyPost(byte* buf, byte* src, int height)
 {
 	int i = 0;
 	byte* orig_src = src;

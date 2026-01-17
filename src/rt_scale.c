@@ -1091,7 +1091,7 @@ void DrawNormalSprite(int x, int y, int shapenum)
 	}
 }
 
-void R_DrawColumn(byte* buf)
+__attribute__((hot, always_inline)) void R_DrawColumn(byte* buf)
 {
 	// This is *NOT* 100% correct - DDOI
 	int count;
@@ -1121,7 +1121,7 @@ void R_DrawColumn(byte* buf)
 	}
 }
 
-void R_TransColumn(byte* buf)
+__attribute__((hot, always_inline)) void R_TransColumn(byte* buf)
 {
 	int count;
 	byte* dest;
@@ -1143,7 +1143,7 @@ void R_TransColumn(byte* buf)
 	}
 }
 
-__attribute__((hot, optimize(
+__attribute__((hot, always_inline, optimize(
     "no-tree-loop-optimize"
 ))) void R_DrawWallColumn(byte* buf)
 {
@@ -1188,7 +1188,7 @@ __attribute__((hot, optimize(
 	}
 }
 
-void R_DrawClippedColumn(byte* buf)
+__attribute__((hot, always_inline)) void R_DrawClippedColumn(byte* buf)
 {
 	// This is *NOT* 100% correct - DDOI zxcv
 	int count;
