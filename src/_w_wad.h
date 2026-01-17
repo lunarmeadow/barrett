@@ -21,6 +21,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define _w_wad_private
 
 #include "develop.h"
+#include "miniz.h"
+#include "miniz_common.h"
+#include "miniz_zip.h"
 
 //===============
 //   TYPES
@@ -39,6 +42,7 @@ typedef struct wadInfo {
 	char path[MAX_PATH];
 	FILE *handle;
 	wadType_t type;
+	mz_zip_archive zip;
 } wadInfo_t;
 
 // cached lump

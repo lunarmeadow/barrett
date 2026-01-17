@@ -34,6 +34,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "rt_crc.h"
 #include "rt_main.h"
 #include "w_kpfdat.h"
+#include "spng.h"
 
 //=============
 // GLOBALS
@@ -78,6 +79,7 @@ void W_AddFile(char* _filename)
 	int length;
 	int startlump;
 	wadType_t type = WAD_TYPE_NONE;
+	mz_zip_archive zip;
 
 	char filename[MAX_PATH];
 	char buf[MAX_PATH + 100]; // bna++
@@ -106,7 +108,8 @@ void W_AddFile(char* _filename)
 	startlump = num_lumps;
 
 	if ((strcmpi(filename + strlen(filename) - 3, "wad")) &&
-		(strcmpi(filename + strlen(filename) - 3, "rts")))
+		(strcmpi(filename + strlen(filename) - 3, "rts")) &&
+		(strcmpi(filename + strlen(filename) - 3, "kpf")))
 	{
 		// single lump file
 		if (!quiet)
@@ -125,6 +128,10 @@ void W_AddFile(char* _filename)
 			printf("    Adding %s.\n", filename);
 		type = WAD_TYPE_KPF;
 
+		// open archive as zip
+		if (!mz_zip_reader_init_cfile(&zip, handle, 0, 0))
+			Error("Failed to open %s as zip file!\n", filename);
+
 		// manually add WALBs
 		fileinfo_ptr = fileinfo = malloc((ARRAY_COUNT(betaWalls) + 1) * sizeof(wadLump_t));
 
@@ -135,11 +142,15 @@ void W_AddFile(char* _filename)
 
 		for (int i = 1; i <= ARRAY_COUNT(betaWalls); i++)
 		{
+			char path[MAX_PATH];
+			snprintf(path, sizeof(path), "wad/wall/%s.png", betaWalls[i - 1]);
 			memset(fileinfo[i].name, '\0', sizeof(fileinfo[i].name));
 			strncpy(fileinfo[i].name, betaWalls[i - 1], sizeof(fileinfo[i].name));
-			fileinfo[i].filepos = 0;
-			fileinfo[i].size = 0;
+			fileinfo[i].filepos = IntelLong(mz_zip_reader_locate_file(&zip, path, NULL, 0)); // NOTE: reusing l->filepos to act as the zip file index
+			fileinfo[i].size = IntelLong(4096); // NOTE: this will byteswap it incorrectly at first, because it gets byteswapped back later
 		}
+
+		num_lumps += ARRAY_COUNT(betaWalls) + 1;
 	}
 	else
 	{
@@ -194,6 +205,7 @@ void W_AddFile(char* _filename)
 	strncpy(wadcache[num_wads].path, filename, sizeof(filename));
 	wadcache[num_wads].handle = handle;
 	wadcache[num_wads].type = type;
+	memcpy(&wadcache[num_wads].zip, &zip, sizeof(zip));
 	num_wads++;
 }
 
@@ -387,10 +399,54 @@ void W_ReadLump(int lump, void* dest)
 		Error("W_ReadLump: %i < 0", lump);
 	l = lumpcache + lump;
 
-	fseek(wadcache[l->handle].handle, l->position, SEEK_SET);
-	c = fread(dest, 1, l->size, wadcache[l->handle].handle);
-	if (c < l->size)
-		Error("W_ReadLump: only read %i of %i on lump %i", c, l->size, lump);
+	if (wadcache[l->handle].type == WAD_TYPE_KPF)
+	{
+		if (strncmp(l->name, "WALB", 4) == 0)
+		{
+			mz_zip_archive_file_stat fileStat;
+			void *pngBuffer;
+			spng_ctx *pngCtx;
+			size_t pngDecodeLen;
+			struct spng_ihdr pngHdr = {0};
+
+			// NOTE: reusing l->position to act as the zip file index
+			mz_zip_reader_file_stat(&wadcache[l->handle].zip, l->position, &fileStat);
+
+			pngBuffer = malloc(fileStat.m_uncomp_size);
+
+			mz_zip_reader_extract_to_mem(&wadcache[l->handle].zip, l->position, pngBuffer, fileStat.m_uncomp_size, 0);
+
+			pngCtx = spng_ctx_new(0);
+			spng_set_png_buffer(pngCtx, pngBuffer, fileStat.m_uncomp_size);
+			spng_decoded_image_size(pngCtx, SPNG_FMT_PNG, &pngDecodeLen);
+			spng_set_image_limits(pngCtx, 64, 64);
+
+			spng_get_ihdr(pngCtx, &pngHdr);
+
+			// ROTT walls must be 64x64, 8-bit indexed images! NOTE! Some LE textures are greyscale, and should be palette-matched.
+			if(pngHdr.bit_depth != 8 || pngHdr.width != 64 || pngHdr.height != 64 || pngDecodeLen != l->size)
+				Error("W_ReadLump: invalid texture format for %.8s\nbit-depth = %d\nwidth = %d, height = %d, decoded length = %zu!", l->name, pngHdr.bit_depth, pngHdr.width, pngHdr.height, pngDecodeLen);
+
+			if(pngHdr.color_type != SPNG_COLOR_TYPE_INDEXED)
+				printf("W_ReadLump: Warning! Beta wall entry %.8s isn't using indexed colour!\n", l->name);
+
+			spng_decode_image(pngCtx, dest, pngDecodeLen, SPNG_FMT_PNG, 0);
+
+			free(pngBuffer);
+			spng_ctx_free(pngCtx);
+		}
+		else
+		{
+			Error("W_ReadLump: unsupported KPF lump %.8s requested", l->name);
+		}
+	}
+	else
+	{
+		fseek(wadcache[l->handle].handle, l->position, SEEK_SET);
+		c = fread(dest, 1, l->size, wadcache[l->handle].handle);
+		if (c < l->size)
+			Error("W_ReadLump: only read %i of %i on lump %i", c, l->size, lump);
+	}
 }
 
 /*
@@ -480,7 +536,11 @@ void W_Shutdown(void)
 	if (wadcache)
 	{
 		for (int i = 0; i < num_wads; i++)
+		{
+			if (wadcache[i].type == WAD_TYPE_KPF)
+				mz_zip_reader_end(&wadcache[i].zip);
 			fclose(wadcache[i].handle);
+		}
 		free(wadcache);
 		wadcache = NULL;
 		num_wads = 0;
