@@ -2023,8 +2023,7 @@ void SetupWalls(void)
 			}
 
 			// filter out invalid tiles
-			if ((tile > 89 || (haswalb && (tile > 89 && tile < 512 && tile >= 512+32))) 
-			|| ((tile > 32) && (tile < 36)) || (tile == 44) || (tile == 45) || (tile == 0))
+			if (((tile > 89) && (tile < 512)) || ((tile > 32) && (tile < 36)) || (tile == 44) || (tile >= 512 + 32) || (tile == 45) || (tile == 0))
 			{
 				tilemap[i][j] = 0;
 				continue;
@@ -4238,6 +4237,12 @@ int GetLumpForTile(int tile)
 	walbstart = W_CheckNumForName("WALBSTRT");
 	exitstart = W_GetNumForName("EXITSTRT");
 	elevatorstart = W_GetNumForName("ELEVSTRT");
+
+	// let ppl who own the original dark war or throwback pack play community maps still
+	if (walbstart == -1 && (tile >= 512) && (tile < 512 + 32))
+	{
+		tile = bwallFallback[tile - 512];
+	}
 	
 	if ((tile >= 1) && (tile <= 32))
 	{
@@ -4267,13 +4272,9 @@ int GetLumpForTile(int tile)
 	{
 		return (tile + wallstart - 16);
 	}
-	else if ((tile >= 512) && (tile < 512 + 32))
+	else if (walbstart != -1 && (tile >= 512) && (tile < 512 + 32))
 	{
-		// let ppl who own the original dark war or throwback pack play community maps still
-		if(walbstart != -1)
-			return (tile + walbstart - 512);
-		else
-		 	return wallstart + bwallFallback[tile - 512];
+		return (tile - 512 + walbstart + 1);
 	}
 	return -1;
 }
