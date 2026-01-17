@@ -43,12 +43,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define num_lock	1
 #define caps_lock	2
 
-extern volatile int KeyboardQueue[KEYQMAX];
-extern volatile int Keyhead;
-extern volatile int Keytail;
+extern int KeyboardQueue[KEYQMAX];
+extern int Keyhead;
+extern int Keytail;
 
-extern volatile int Keyboard[MAXKEYBOARDSCAN]; // Keyboard status array
-extern volatile int Keystate[MAXKEYBOARDSCAN]; // Keyboard state array
+extern int Keyboard[MAXKEYBOARDSCAN]; // Keyboard status array
+extern int Keystate[MAXKEYBOARDSCAN]; // Keyboard state array
 
 static int ticCount;
 
@@ -60,8 +60,8 @@ extern int KeyboardStarted;
 
 extern const int ASCIINames[];		  // Ascii -> scan code conversion
 extern const int ShiftNames[];		  // Shifted Ascii->scancode conversion
-extern volatile bool PausePressed; // Game paused variable
-extern volatile bool PanicPressed; // Panic key variable
+extern bool PausePressed; // Game paused variable
+extern bool PanicPressed; // Panic key variable
 
 void I_StartupTimer(void);	 // Start up timer isr
 void I_SetTimer0(int speed); // Set the timer to a given speed

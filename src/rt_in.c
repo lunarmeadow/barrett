@@ -68,7 +68,7 @@ bool JoyPadPresent = 0;
 //
 bool Paused;
 char LastASCII;
-volatile int LastScan;
+int LastScan;
 
 byte Joy_xb, Joy_yb, Joy_xs, Joy_ys;
 word Joy_x, Joy_y;

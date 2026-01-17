@@ -94,8 +94,8 @@ char* MV_MixBuffer[NumberOfBuffers + 1];
 
 static VoiceNode* MV_Voices = NULL;
 
-static volatile VoiceNode VoiceList;
-static volatile VoiceNode VoicePool;
+static VoiceNode VoiceList;
+static VoiceNode VoicePool;
 
 /*static*/ int MV_MixPage = 0;
 static int MV_VoiceHandle = MV_MinVoiceHandle;

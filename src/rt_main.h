@@ -146,7 +146,7 @@ void UpdateGameObjects(void);
 
 extern int polltime;
 extern int oldpolltime;
-extern volatile int oldtime;
+extern int oldtime;
 void PauseLoop(void);
 #if SAVE_SCREEN
 extern bool inhmenu;

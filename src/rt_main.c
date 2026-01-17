@@ -72,8 +72,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "music.h"
 #include "fx_man.h"
 
-volatile int oldtime;
-volatile int gametime;
+int oldtime;
+int gametime;
 
 bool tedlevel;
 int tedlevelnum;

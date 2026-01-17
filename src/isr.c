@@ -39,14 +39,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 // Global Variables
 
-volatile int Keyboard[MAXKEYBOARDSCAN];
-volatile int KeyboardQueue[KEYQMAX];
-volatile int Keystate[MAXKEYBOARDSCAN];
-volatile int Keyhead;
-volatile int Keytail;
+int Keyboard[MAXKEYBOARDSCAN];
+int KeyboardQueue[KEYQMAX];
+int Keystate[MAXKEYBOARDSCAN];
+int Keyhead;
+int Keytail;
 
-volatile bool PausePressed = false;
-volatile bool PanicPressed = false;
+bool PausePressed = false;
+bool PanicPressed = false;
 int KeyboardStarted = false;
 
 // global tic cache to reduce expensive SDL timer calls during game loop.

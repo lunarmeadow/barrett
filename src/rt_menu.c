@@ -1603,7 +1603,7 @@ int HandleMenu(CP_iteminfo* item_i, CP_itemtype* items, void (*routine)(int w))
 	char key;
 	int i, x, y, basey, exit, numactive, count;
 	int newpos;
-	volatile int timer;
+	int timer;
 	ControlInfo ci;
 	bool playsnd = false;
 

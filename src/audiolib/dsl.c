@@ -7,14 +7,14 @@
 #include "SDL.h"
 #include "SDL_mixer.h"
 
-extern volatile int MV_MixPage;
+extern int MV_MixPage;
 
 static int DSL_ErrorCode = DSL_Ok;
 
 static int mixer_initialized;
 
 static void (*_CallBackFunc)(void);
-static volatile char* _BufferStart;
+static char* _BufferStart;
 static int _BufferSize;
 static int _NumDivisions;
 static int _SampleRate;
