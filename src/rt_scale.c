@@ -161,6 +161,10 @@ void SetLightLevel(int height)
 =
 ==========================
 */
+const int fix = 16;
+
+const int max = MAXSCREENWIDTH / 320;
+
 void ScaleTransparentPost(byte* src, byte* buf, int level)
 {
 	int offset;
@@ -174,13 +178,18 @@ void ScaleTransparentPost(byte* src, byte* buf, int level)
 	oldlevel = shadingtable;
 	offset = *(src++);
 
+	// normalize sparklie patch amongst diff resolutions
+	const int factor = iGLOBAL_SCREENWIDTH / 320;
+
 	for (; offset != 255 ;)
 	{
 		length = *(src++);
 		topscreen = sprtopoffset + (dc_invscale * offset);
 		bottomscreen = topscreen + (dc_invscale * length);
-		dc_yl = (topscreen + SFRACUNIT) >> SFRACBITS;
-		dc_yh = ((bottomscreen - 1) >> SFRACBITS);
+
+		// fuck you john carmack
+		dc_yl = ((topscreen + (dc_iscale >> (max - factor)) + (fix * (max - factor))) + SFRACUNIT) >> SFRACBITS;
+		dc_yh = ((bottomscreen - (dc_iscale >> (max - factor)) - (fix * (max - factor))) >> SFRACBITS);
 		if (dc_yh >= viewheight)
 			dc_yh = viewheight - 1;
 		if (dc_yl < 0)
@@ -215,14 +224,19 @@ void ScaleMaskedPost(byte* src, byte* buf)
 	int topscreen;
 	int bottomscreen;
 
+	// normalize sparklie patch amongst diff resolutions
+	const int factor = iGLOBAL_SCREENWIDTH / 320;
+
 	offset = *(src++);
 	for (; offset != 255 ;)
 	{
 		length = *(src++);
 		topscreen = sprtopoffset + (dc_invscale * offset);
 		bottomscreen = topscreen + (dc_invscale * length);
-		dc_yl = (topscreen + SFRACUNIT) >> SFRACBITS;
-		dc_yh = ((bottomscreen - 1) >> SFRACBITS);
+
+		// CURSE YOU VILE BEAST JOHN "CARMACK"
+		dc_yl = ((topscreen + (dc_iscale >> (max - factor)) + (fix * (max - factor))) + SFRACUNIT) >> SFRACBITS;
+		dc_yh = ((bottomscreen - (dc_iscale >> (max - factor)) - (fix * (max - factor))) >> SFRACBITS);
 		if (dc_yh >= viewheight)
 			dc_yh = viewheight - 1;
 		if (dc_yl < 0)
