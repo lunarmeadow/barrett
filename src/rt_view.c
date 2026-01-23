@@ -238,6 +238,9 @@ void SetViewSize(int size)
 	int screenx;
 	int screeny;
 	int topy;
+	int sW = iGLOBAL_SCREENWIDTH;
+	int sH = iGLOBAL_SCREENHEIGHT;
+
 	/*
 	if (size>=10){
 
@@ -250,8 +253,8 @@ void SetViewSize(int size)
 	height = 0;
 	for (height = 0; height < 21;)
 	{
-		viewsizes[height++] = iGLOBAL_SCREENWIDTH;
-		viewsizes[height++] = iGLOBAL_SCREENHEIGHT;
+		viewsizes[height++] = sW;
+		viewsizes[height++] = sH;
 	}
 
 	if ((size < 0) || (size >= MAXVIEWSIZES))
@@ -267,7 +270,7 @@ void SetViewSize(int size)
 	viewwidth = viewsizes[size << 1];		 // must be divisable by 16
 	viewheight = viewsizes[(size << 1) + 1]; // must be even
 
-	maxheight = iGLOBAL_SCREENHEIGHT;
+	maxheight = sH;
 	topy = 0;
 
 	// Only keep the kills flag
@@ -306,10 +309,10 @@ void SetViewSize(int size)
 	//   SetTextMode (  );
 	//   viewheight=viewheight;
 	height = viewheight;
-	if (height > 168 * iGLOBAL_SCREENHEIGHT / 200)
+	if (height > 168 * sH / 200)
 	{
 		// Prevent weapon from being scaled too big
-		height = 168 * iGLOBAL_SCREENHEIGHT / 200;
+		height = 168 * sH / 200;
 	}
 
 	weaponscale = (height << 16) / 168; //( height << 16 ) = 170 * 65536
@@ -318,14 +321,16 @@ void SetViewSize(int size)
 	centery = viewheight >> 1;
 	centeryfrac = (centery << 16);
 
-	// 0xE82A = tan(30deg) * (65536 / 2*pi)
-	// scale it by ratio of focal width to default
-	// 320 seems to work better than 200, 300, and 360. can't find a better value atm.
-	// this could probably be further refined.
-	yzangleconverter = (int)((0xA000 * ((float)focalwidth / 160)) * ((float)viewheight / 200));
+	// after trial and error, i found 0xA000 to work well at 16/9,
+	// and 0x8000 to work well at 4/3. I couldn't determine some formula to generalize that pattern,
+	// but for shits and giggles I entered it into a linear regression calculator and
+	// c = 18432x+8192 results in a perfect fit of R = 1. Don't ask why but it works.
+	int coeff = (int)(18432 * ((float)sW / sH) + 8192);
+
+	yzangleconverter = (int)((coeff * ((float)focalwidth / 160)) * ((float)viewheight / 200));
 
 	// Center the view horizontally
-	screenx = (iGLOBAL_SCREENWIDTH - viewwidth) >> 1;
+	screenx = (sW - viewwidth) >> 1;
 
 	if (viewheight >= maxheight)
 	{
