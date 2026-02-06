@@ -179,8 +179,10 @@ void ScaleTransparentPost(byte* src, byte* buf, int level)
 		length = *(src++);
 		topscreen = sprtopoffset + (dc_invscale * offset);
 		bottomscreen = topscreen + (dc_invscale * length);
-		dc_yl = (topscreen + SFRACUNIT) >> SFRACBITS;
-		dc_yh = ((bottomscreen - 1) >> SFRACBITS);
+
+		// fuck you john carmack
+		dc_yl = (topscreen + (dc_invscale/64) + SFRACUNIT) >> SFRACBITS;
+		dc_yh = ((bottomscreen - (dc_invscale/64)) >> SFRACBITS);
 		if (dc_yh >= viewheight)
 			dc_yh = viewheight - 1;
 		if (dc_yl < 0)
@@ -221,8 +223,9 @@ void ScaleMaskedPost(byte* src, byte* buf)
 		length = *(src++);
 		topscreen = sprtopoffset + (dc_invscale * offset);
 		bottomscreen = topscreen + (dc_invscale * length);
-		dc_yl = (topscreen + SFRACUNIT) >> SFRACBITS;
-		dc_yh = ((bottomscreen - 1) >> SFRACBITS);
+
+		dc_yl = (topscreen + (dc_invscale/64) + SFRACUNIT) >> SFRACBITS;
+		dc_yh = ((bottomscreen - (dc_invscale/64)) >> SFRACBITS);
 		if (dc_yh >= viewheight)
 			dc_yh = viewheight - 1;
 		if (dc_yl < 0)
