@@ -2347,7 +2347,7 @@ void InterpolateDoor(visobj_t* plane)
 						dc_yh = viewheight;
 
 					dc_source = shape2 + ((texture << 6) & 0xfc0);
-					R_DrawWallColumn(buf);
+					R_DrawUpperDoorColumn(buf);
 				}
 			}
 
