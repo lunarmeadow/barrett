@@ -2347,7 +2347,7 @@ void InterpolateDoor(visobj_t* plane)
 						dc_yh = viewheight;
 
 					dc_source = shape2 + ((texture << 6) & 0xfc0);
-					R_DrawWallColumn(buf);
+					R_DrawUpperDoorColumn(buf);
 				}
 			}
 
@@ -2464,22 +2464,37 @@ void InterpolateMaskedWall(visobj_t* plane)
 					texture = 63;
 
 				SetLightLevel(height >> DHEIGHTFRACTION);
-				if (drawbottom == true)
+
+				// apply sparkle patch to unstacked walls, apply special patch for stacked 
+				if (drawbottom && !(drawmiddle || drawtop))
+				{
 					ScaleTransparentPost(p->collumnofs[texture] + shape, buf,
 										 (p->translevel + 8));
+				}
+				else if (drawbottom && (drawmiddle || drawtop))
+				{
+					ScaleTransparentTallPost(p->collumnofs[texture] + shape, buf,
+										 (p->translevel + 8));
+				}
 				for (j = 0; j < levelheight - 2; j++)
 				{
 					sprtopoffset -= (dc_invscale << 6);
 					dc_texturemid += (1 << 22);
 					if (drawmiddle == true)
-						ScaleMaskedPost(p2->collumnofs[texture] + shape2, buf);
+						ScaleMaskedTallPost(p2->collumnofs[texture] + shape2, buf);
 				}
 				if (levelheight > 1)
 				{
 					sprtopoffset -= (dc_invscale << 6);
 					dc_texturemid += (1 << 22);
-					if (drawtop == true)
+					if (drawtop && !(drawbottom || drawmiddle))
+					{
 						ScaleMaskedPost(p3->collumnofs[texture] + shape3, buf);
+					}
+					if (drawtop && (drawbottom || drawmiddle))
+					{
+						ScaleMaskedTallPost(p3->collumnofs[texture] + shape3, buf);
+					}
 				}
 			}
 			top += topinc;

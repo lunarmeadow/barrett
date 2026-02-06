@@ -44,6 +44,8 @@ void SetLightLevel(int height);
 void ScaleMaskedPost(byte* src, byte* buf);
 void DrawScreenSizedSprite(int lump);
 void ScaleTransparentPost(byte* src, byte* buf, int level);
+void ScaleTransparentTallPost(byte* src, byte* buf, int level);
+void ScaleMaskedTallPost(byte* src, byte* buf);
 void ScaleTransparentShape(visobj_t* sprite);
 void ScaleSolidShape(visobj_t* sprite);
 void DrawUnScaledSprite(int x, int y, int shapenum, int shade);
@@ -52,6 +54,8 @@ void DrawPositionedScaledSprite(int x, int y, int shapenum, int height,
 void DrawNormalSprite(int x, int y, int shapenum);
 
 void R_DrawColumn(byte* buf);
+void R_DrawTallColumn(byte* buf);
+void R_DrawUpperDoorColumn(byte* buf);
 void R_DrawSolidColumn(int color, byte* buf);
 void R_TransColumn(byte* buf);
 void R_DrawClippedColumn(byte* buf);
