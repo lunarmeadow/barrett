@@ -268,17 +268,23 @@ void ScaleTransparentTallPost(byte* src, byte* buf, int level)
 		ylcmp = (topscreen + (dc_invscale/16) + SFRACUNIT) >> SFRACBITS;
 		yhcmp = ((bottomscreen - (dc_invscale/16)) >> SFRACBITS);
 
-		if (dc_yh >= viewheight)
-			dc_yh = viewheight - 1;
-		if (dc_yl < 0)
-			dc_yl = 0;
 		if (yhcmp >= viewheight)
 			yhcmp = viewheight - 1;
 		if (ylcmp < 0)
 			ylcmp = 0;
+		
 		if ((*src) == 254)
 		{
 			shadingtable = seelevel;
+
+			dc_yl = (topscreen - (dc_invscale/64) + SFRACUNIT) >> SFRACBITS;
+			dc_yh = ((bottomscreen + (dc_invscale/64)) >> SFRACBITS);
+
+			if (dc_yh >= viewheight)
+				dc_yh = viewheight - 1;
+			if (dc_yl < 0)
+				dc_yl = 0;
+
 			if (dc_yl <= dc_yh)
 				R_TransColumn(buf);
 			src++;
@@ -287,6 +293,11 @@ void ScaleTransparentTallPost(byte* src, byte* buf, int level)
 		}
 		else
 		{
+			if (dc_yh >= viewheight)
+				dc_yh = viewheight - 1;
+			if (dc_yl < 0)
+				dc_yl = 0;
+
 			if (dc_yl <= dc_yh)
 			{
 				dc_source = src - offset;
