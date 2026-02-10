@@ -321,13 +321,19 @@ void SetViewSize(int size)
 	centery = viewheight >> 1;
 	centeryfrac = (centery << 16);
 
-	// after trial and error, i found 0xA000 to work well at 16/9,
-	// and 0x8000 to work well at 4/3. I couldn't determine some formula to generalize that pattern,
-	// but for shits and giggles I entered it into a linear regression calculator and
-	// c = 18432x+8192 results in a perfect fit of R = 1. Don't ask why but it works.
-	int coeff = (int)(18432 * ((float)sW / sH) + 8192);
+	// this equation was derived from observing that the correlation between
+	// the player's z-angle and the camera shearing position was affected by screen resolution.
+	// i deduced that aspect ratio was the true factor 
+	// through testing different resolutions of a given aspect ratio
+	// Through trial and error I derived some different optimal fixed-point scaling coefficients
+	// for different aspect ratios, and this is the formula obtained, 
+	// through means of a linear correlation calculation. Was originally 0xAF85.
+	// 18432 was rounded to 16384 to compensate for the now truly centered crosshair,
+	// and as a manual test to determine accuracy. 
+	// This now very accurately, truly converts player angles to screen angles.
+	int anglescale = (int)(16384 * ((float)sW / sH) + 8192);
 
-	yzangleconverter = (int)((coeff * ((float)focalwidth / 160)) * ((float)viewheight / 200));
+	yzangleconverter = (int)((anglescale * ((float)focalwidth / 160)) * ((float)viewheight / 200));
 
 	// Center the view horizontally
 	screenx = (sW - viewwidth) >> 1;

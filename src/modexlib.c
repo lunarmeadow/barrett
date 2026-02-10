@@ -241,7 +241,7 @@ void VL_SetVGAPlaneMode(void)
 	bufferofs = page2start;
 
 	iG_X_center = iGLOBAL_SCREENWIDTH / 2;
-	iG_Y_center = (iGLOBAL_SCREENHEIGHT / 2) + 10; //+10 = move aim down a bit
+	iG_Y_center = (iGLOBAL_SCREENHEIGHT / 2); //+10 = move aim down a bit
 
 	iG_buf_center =
 		(char*)(bufferofs +
