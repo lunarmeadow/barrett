@@ -265,8 +265,8 @@ void ScaleTransparentTallPost(byte* src, byte* buf, int level)
 		// find out how many pixels to duplicate to cover sparkles
 		dc_yl = (topscreen + SFRACUNIT) >> SFRACBITS;
 		dc_yh = ((bottomscreen - (dc_invscale/64)) >> SFRACBITS);
-		ylcmp = (topscreen + (dc_invscale/16) + SFRACUNIT) >> SFRACBITS;
-		yhcmp = ((bottomscreen - (dc_invscale/16)) >> SFRACBITS);
+		ylcmp = (topscreen + (dc_invscale/64) + SFRACUNIT) >> SFRACBITS;
+		yhcmp = ((bottomscreen - (dc_invscale/64)) >> SFRACBITS);
 
 		if (yhcmp >= viewheight)
 			yhcmp = viewheight - 1;
@@ -327,8 +327,8 @@ void ScaleMaskedTallPost(byte* src, byte* buf)
 
 		dc_yl = (topscreen + SFRACUNIT) >> SFRACBITS;
 		dc_yh = ((bottomscreen) >> SFRACBITS);
-		ylcmp = (topscreen + (dc_invscale/16) + SFRACUNIT) >> SFRACBITS;
-		yhcmp = ((bottomscreen - (dc_invscale/16)) >> SFRACBITS);
+		ylcmp = (topscreen + (dc_invscale/64) + SFRACUNIT) >> SFRACBITS;
+		yhcmp = ((bottomscreen - (dc_invscale/64)) >> SFRACBITS);
 
 		if (dc_yh >= viewheight)
 			dc_yh = viewheight;
