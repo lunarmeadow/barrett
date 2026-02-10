@@ -320,11 +320,11 @@ void ScaleMaskedTallPost(byte* src, byte* buf)
 		yhcmp = ((bottomscreen - (dc_invscale/16)) >> SFRACBITS);
 
 		if (dc_yh >= viewheight)
-			dc_yh = viewheight - 1;
+			dc_yh = viewheight;
 		if (dc_yl < 0)
 			dc_yl = 0;
 		if (yhcmp >= viewheight)
-			yhcmp = viewheight - 1;
+			yhcmp = viewheight;
 		if (ylcmp < 0)
 			ylcmp = 0;
 		if (dc_yl <= dc_yh)
@@ -1221,11 +1221,13 @@ void R_DrawColumn(byte* buf)
 	}
 }
 
+// used to draw stacked masked walls without gaps and handle specific edge cases
 void R_DrawTallColumn(byte* buf)
 {
 	// This is *NOT* 100% correct - DDOI
-	int count, altcount;
-	uint32_t frac, fracstep;
+	int scalecount, texcount;
+	uint32_t frac, fracstep, sparkfrac;
+	bool sparkleMask;
 	byte* dest;
 
 	// force compiler to preload globals in a register
@@ -1233,10 +1235,18 @@ void R_DrawTallColumn(byte* buf)
 	const byte* restrict colormap = shadingtable;
 	const byte* restrict texture = dc_source;
 
-	count = dc_yh - dc_yl + 1;
-	altcount = yhcmp - ylcmp;
+	// ylcmp varies wildly if a sparklie is rendered. otherwise, a difference of one
+	if(ylcmp - dc_yl == 1)
+		sparkleMask = true;
 
-	if (count < 0)
+	scalecount = dc_yh - dc_yl + 1;
+
+	// seperate, virtual texture indexing. 
+	// count is valid for actual screen boundary, but not for texture indexing.
+	// that would cause gaps and other such graphical artifacts.
+	texcount = yhcmp - ylcmp;
+
+	if (scalecount < 0)
 		return;
 
 	dest = buf + ylookup[dc_yl];
@@ -1244,12 +1254,41 @@ void R_DrawTallColumn(byte* buf)
 	fracstep = dc_iscale;
 	frac = dc_texturemid + (dc_yl - centery) * fracstep;
 
-	while (count--)
+	while (scalecount--)
 	{
-		*dest = colormap[texture[(frac >> SFRACBITS)]];
-		dest += screenW;
+		// draw first pixel one frac ahead. edge case goes last for speed
+		if(!sparkleMask)
+		{
+			*dest = colormap[texture[(frac >> SFRACBITS)]];
+		}
+		else
+		{
+			sparkleMask = false;
 
-		if(altcount--)
+			// if we detect a sparklie, we need to draw the first pixel in a valid index.
+			// to do so, we should increment by fracstep, to essentially grab the next iteration.
+			// this has a few edge cases. 
+			// this will move sparklies to the top of the screen 
+			// when the top of a column is near the start of the screen,
+			// as this will mess up the frac calculations.
+
+			// likewise, if the fracstep is greater than 65536, 
+			// we will move the whole index over way too far, meaning that
+			// distant masked walls and at low resolutions, the tops of columns will shimmer.
+			// this effectively acts as a texel size check to ensure we don't cause shimmering.
+
+			if(dc_yl >= 1 && fracstep < 65536)
+				sparkfrac = frac + (dc_invscale >> 6); // 1/64 pixel step as in tex calc
+			else
+				sparkfrac = frac;
+
+			*dest = colormap[texture[(sparkfrac >> SFRACBITS)]];
+		}
+
+		dest += screenW;
+		
+		// fetch next texture
+		if(texcount--)
 			frac += fracstep;
 	}
 }
