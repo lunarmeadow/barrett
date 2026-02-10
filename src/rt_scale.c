@@ -264,7 +264,7 @@ void ScaleTransparentTallPost(byte* src, byte* buf, int level)
 
 		// find out how many pixels to duplicate to cover sparkles
 		dc_yl = (topscreen + SFRACUNIT) >> SFRACBITS;
-		dc_yh = ((bottomscreen) >> SFRACBITS);
+		dc_yh = ((bottomscreen - (dc_invscale/64)) >> SFRACBITS);
 		ylcmp = (topscreen + (dc_invscale/16) + SFRACUNIT) >> SFRACBITS;
 		yhcmp = ((bottomscreen - (dc_invscale/16)) >> SFRACBITS);
 
