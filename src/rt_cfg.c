@@ -77,6 +77,7 @@ bool usemouselook = 0;
 bool useoplmusic = 0;
 bool blackwpns = 0;
 bool doombobbing = 0;
+bool halfmonkhp = 1;
 bool disablelowhpsnd = 1;
 int inverse_mouse = 1; // set  to -1 to invert mouse
 bool sdl_fullscreen = 1;
@@ -436,6 +437,15 @@ bool ParseConfigFile(void)
 
 		// Read in UseOPLMusic
 		ReadBool("UseOPLMusic", &useoplmusic);
+
+		// you get the idea
+		ReadBool("LowHPSound", &disablelowhpsnd);
+
+		ReadBool("HalfMonkHP", &halfmonkhp);
+
+		ReadBool("DoomBobbing", &doombobbing);
+
+		ReadBool("WeaponColor", &blackwpns);
 
 		ReadInt("InverseMouse", &inverse_mouse);
 
@@ -1649,6 +1659,29 @@ void WriteConfig(void)
 	SafeWriteString(file, "; 0 - UseOPLMusic Disabled\n");
 	WriteParameter(file, "UseOPLMusic      ", useoplmusic);
 
+	// Write out lowhpsound
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - LowHPSound  Disabled\n");
+	SafeWriteString(file, "; 0 - LowHPSound  Enabled\n");
+	WriteParameter(file, "LowHPSound       ", disablelowhpsnd);
+
+	// Write out halfmonkhp
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - HalfMonkHP  Enabled\n");
+	SafeWriteString(file, "; 0 - HalfMonkHP  Disabled\n");
+	WriteParameter(file, "HalfMonkHP       ", halfmonkhp);
+
+	// Write out doombobbing
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - DoomBobbing Enabled\n");
+	SafeWriteString(file, "; 0 - DoomBobbing Disabled\n");
+	WriteParameter(file, "DoomBobbing      ", doombobbing);
+
+	// Write out weapon recolours
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - WeaponColor Enabled\n");
+	SafeWriteString(file, "; 0 - WeaponColor Disabled\n");
+	WriteParameter(file, "WeaponColor      ", blackwpns);
 
 	// Write out InverseMouse
 	SafeWriteString(file, "\n;\n");

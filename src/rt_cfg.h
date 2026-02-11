@@ -43,6 +43,7 @@ extern bool autoAimMissileWeps;
 extern bool autoAim;
 extern bool blackwpns;
 extern bool doombobbing;
+extern bool halfmonkhp;
 extern bool disablelowhpsnd;
 
 extern int joystickport;
