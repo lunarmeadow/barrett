@@ -1309,13 +1309,13 @@ void DrawPlayerWeapon(void)
 			// was += delta, this sets it to zero when doom bobbing is enabled (disables 3D motion)
 			weaponscale += doombobbing == false ? delta : 0;
 			ScaleWeapon(xdisp - weaponbobx,
-						ydisp + weaponboby + locplayerstate->weaponheight,
+						ydisp + weaponboby + 1 + locplayerstate->weaponheight,
 						shapenum);
 			
 			// was -= delta, this sets it to zero when doom bobbing is enabled (disables 3D motion)
 			weaponscale -= doombobbing == false ? delta : 0;
 			ScaleWeapon(weaponbobx - 80,
-						ydisp + weaponboby + locplayerstate->weaponheight,
+						ydisp + weaponboby + 1 + locplayerstate->weaponheight,
 						altshape);
 			weaponscale = temp;
 		}
@@ -1328,7 +1328,7 @@ void DrawPlayerWeapon(void)
 			delta = FixedMul((weaponbobx << 9), weaponscale);
 			weaponscale -= doombobbing == false ? delta : 0;
 			ScaleWeapon(xdisp + weaponbobx,
-						ydisp + weaponboby + locplayerstate->weaponheight,
+						ydisp + 1 + weaponboby + locplayerstate->weaponheight,
 						shapenum);
 			weaponscale = temp;
 		}
