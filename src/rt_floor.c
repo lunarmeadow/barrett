@@ -99,9 +99,16 @@ void DrawSky(void)
 	else
 		shadingtable = colormap + (1 << 12);
 
-	ofs = (((maxheight) - (player->z)) >> 4) +
+	int normalskyheight = ((viewheight * 200 / iGLOBAL_SCREENHEIGHT) >> 1);
+	int ludicrousheight = ((viewheight * 250 / iGLOBAL_SCREENHEIGHT) >> 1);
+
+	int normalparallax = 3;
+	int ludicrousparallax = 5;
+
+	// change height and scroll rate based on skybox mode
+	ofs = (((maxheight) - (player->z)) >> (ludicrousskybox ? ludicrousparallax : normalparallax)) +
 		  (centery * 200 / iGLOBAL_SCREENHEIGHT -
-		   ((viewheight * 200 / iGLOBAL_SCREENHEIGHT) >> 1));
+		   (ludicrousskybox ? ludicrousheight : normalskyheight));
 
 	if (ofs > centerskypost)
 	{
