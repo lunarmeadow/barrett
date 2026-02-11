@@ -89,7 +89,7 @@ extern int baseminshade;
 extern int basemaxshade;
 extern int viewheight;
 extern int viewwidth;
-extern longword heightnumerator;
+extern uint64_t heightnumerator;
 extern fixed scale;
 extern int screenofs;
 extern int centerx;
@@ -108,6 +108,7 @@ extern int lightninglevel;
 extern bool lightning;
 extern int darknesslevel;
 
+void SetViewDelta(void);
 int FOVToFocalLength(int fov);
 void DrawCPUJape(void);
 void SetupScreen(bool flip);

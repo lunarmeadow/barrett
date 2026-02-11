@@ -67,7 +67,7 @@ int baseminshade;
 int basemaxshade;
 int viewheight;
 int viewwidth;
-longword heightnumerator;
+uint64_t heightnumerator;
 fixed scale;
 int screenofs;
 int centerx;
@@ -113,7 +113,6 @@ static int lightningsoundtime = 0;
 static bool periodic = false;
 static int periodictime = 0;
 
-void SetViewDelta(void);
 void UpdatePeriodicLighting(void);
 
 /*
@@ -144,7 +143,7 @@ int FOVToFocalLength(int fov)
 
 	// GooberMan mentioned in LE discord to divide by 1.1 to get true FOV
 	// because ROTT is strange
-	f = (((double)200 / 2) / (tan((double)hfov / 2))) * 1.1;
+	f = (((double)200 / 2) / (tan((double)hfov / 2))) / 1.1;
 
 	// printf("len: %f\n", f);
 
@@ -204,12 +203,13 @@ void SetViewDelta(void)
 	//  and sprite x calculations
 	//
 
-	scale = (centerx * focallength) / (160);
+	scale = (fixed)((centerx / (float)160) * focallength);
 	//
 	// divide heightnumerator by a posts distance to get the posts height for
 	// the heightbuffer.  The pixel height is height>>HEIGHTFRACTION
 	//
-	heightnumerator = ((int)(((float)focallength / 10) * centerx * 4096) * 64);
+	heightnumerator = ((uint64_t)(((float)focallength / 10) * centerx * 4096) * 64);
+	printf("%u\n", heightnumerator);
 }
 
 /*

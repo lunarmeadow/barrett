@@ -35,6 +35,7 @@ extern int vfov;
 void RecalculateFocalLength(void)
 {
 	focallength = FOVToFocalLength(vfov);
+	SetViewDelta();
 }
 
 void SetRottScreenRes(int Width, int Height)
@@ -44,6 +45,7 @@ void SetRottScreenRes(int Width, int Height)
 	iGLOBAL_SCREENHEIGHT = Height;
 
 	focallength = FOVToFocalLength(vfov);
+	SetViewDelta();
 
 	int middleWidth = Width / 2;
 
