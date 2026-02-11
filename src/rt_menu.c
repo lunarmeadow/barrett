@@ -4628,7 +4628,7 @@ extern int vfov;
 
 void DoAdjustFOV(void)
 {
-	BoundSliderMenu(&vfov, MAXFOV, MINFOV, 44, 81, 194, 2, "block2", NULL, "Set FOV", "FOV: ", "degrees");
+	BoundSliderMenu(&vfov, MAXFOV, MINFOV, 44, 81, 194, 2, "block2", NULL, "Set FOV", "FOV: ", " degrees");
 	DrawVisualsMenu();
 }
 

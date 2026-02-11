@@ -135,7 +135,7 @@ int FOVToFocalLength(int fov)
 	// calculate horizontal fov from vertical fov
 	float hfov;
 	float f;
-	float aspectRatio = ((double)iGLOBAL_SCREENWIDTH / iGLOBAL_SCREENHEIGHT);
+	float aspectRatio = ((double)320 / 200);
 	float degToRad = M_PI / 180;
 
 	hfov = 2 * (atan((tan((double)(fov * degToRad) / 2)) * aspectRatio));
@@ -144,7 +144,7 @@ int FOVToFocalLength(int fov)
 
 	// GooberMan mentioned in LE discord to divide by 1.1 to get true FOV
 	// because ROTT is strange
-	f = (((double)200 / 2) / (tan((double)hfov / 2))) / 1.1;
+	f = (((double)200 / 2) / (tan((double)hfov / 2))) * 1.1;
 
 	// printf("len: %f\n", f);
 
