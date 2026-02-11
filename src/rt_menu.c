@@ -544,7 +544,7 @@ CP_MenuNames ExtOptionsNames[] = {
 	"MOUSELOOK", "INVERSE MOUSE",		 "ALLOW Y AXIS MOUSE", "CROSSHAIR",
 	"AUTOAIM MISSILE WEPS", "ENABLE AUTOAIM",	   "USE OPL MUSIC"};
 
-CP_MenuNames ExtGameOptionsNames[] = {"LOW MEMORY MODE", "WEAPON RECOLOURS", "DOOM BOBBING", "NO LOW HP SOUND", "HALF MONK HEALTH"}; // erysdren added
+CP_MenuNames ExtGameOptionsNames[] = {"LOW MEMORY MODE", "WEAPON RECOLOURS", "DOOM BOBBING", "NO LOW HP SOUND", "HALF MONK HEALTH", "LUDICROUS SKYBOX"}; // erysdren added
 
 CP_MenuNames VisualOptionsNames[] = {"SCREEN RESOLUTION", "FIELD-OF-VIEW",
 									 "HUD SCALING", "DISPLAY OPTIONS", "CROSSHAIR OPTIONS"};
@@ -596,7 +596,7 @@ CP_iteminfo ExtOptionsItems = {20, MENU_Y,			7,			 0,
 							   43, ExtOptionsNames, mn_largefont};
 
 CP_iteminfo ExtGameOptionsItems = {
-	20, MENU_Y, 5, 0, 43, ExtGameOptionsNames, mn_largefont}; // LT added
+	20, MENU_Y, 6, 0, 43, ExtGameOptionsNames, mn_largefont}; // LT added
 
 CP_iteminfo DisplayOptionsMenu = {
 	20, MENU_Y, 3, 0, 43, DisplayOptionsNames, mn_largefont}; // LT added
@@ -662,6 +662,7 @@ CP_itemtype ExtGameMenu[] = {
 	{1, "", 'D', NULL},
 	{1, "", 'H', NULL},
 	{1, "", 'M', NULL},
+	{1, "", 'S', NULL},
 };
 
 // bna added end
@@ -5204,7 +5205,8 @@ static char* ExtGameOptionsDesc[sizeof(ExtGameOptionsItems)] = {
 	"Removes the blue tinting from weapon sprites. (EXPERIMENTAL)",
 	"Implements DOOM's 2D weapon and view bobbing algorithm.",
 	"Disable the incessant orchestral hits on low health.",
-	"Monks have 50% of their original health pool."
+	"Monks have 50% of their original health pool.",
+	"Enhanced parallax, less distortion, raised higher."
 };
 
 void DrawExtGameOptionsButtons(void)
@@ -5253,6 +5255,12 @@ void DrawExtGameOptionsButtons(void)
 				break;
 			case 4:
 				if (halfmonkhp == 1)
+				{
+					on = 1;
+				}
+				break;
+			case 5:
+				if (ludicrousskybox == 1)
 				{
 					on = 1;
 				}
@@ -5349,6 +5357,10 @@ void CP_ExtGameOptionsMenu(void)
 			break;
 		case 4:
 			halfmonkhp ^= 1;
+			DrawExtGameOptionsButtons();
+			break;
+		case 5:
+			ludicrousskybox ^= 1;
 			DrawExtGameOptionsButtons();
 			break;
 		}
