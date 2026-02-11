@@ -108,6 +108,7 @@ extern int lightninglevel;
 extern bool lightning;
 extern int darknesslevel;
 
+int FOVToFocalLength(void);
 void DrawCPUJape(void);
 void SetupScreen(bool flip);
 void ResetFocalLength(void);

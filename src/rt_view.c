@@ -118,6 +118,35 @@ void UpdatePeriodicLighting(void);
 /*
 ====================
 =
+= FOVToFocalLength
+=
+====================
+*/
+
+extern int vfov;
+
+// https://wojtsterna.com/2024/01/09/field-of-view-horizontal-and-vertical-conversion/
+// https://stackoverflow.com/questions/18176215/how-to-select-focal-lengh-in-ray-tracing
+// this is the distance to the projection plane
+int FOVToFocalLength(void)
+{
+	// calculate horizontal fov from vertical fov
+	float hfov;
+	float f;
+	float aspectRatio = ((float)iGLOBAL_SCREENWIDTH / iGLOBAL_SCREENHEIGHT);
+
+	hfov = 2 * atan(aspectRatio * tan((float)vfov / 2));
+
+	// GooberMan mentioned in LE discord to multiply by 1.1 to get true FOV
+	// because ROTT is strange
+	f = (((float)iGLOBAL_SCREENWIDTH / 2) / tan(hfov / 2)) * 1.1;
+
+	return (int)round(f);
+}
+
+/*
+====================
+=
 = ResetFocalLength
 =
 ====================
