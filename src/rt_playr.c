@@ -4914,7 +4914,7 @@ void CheckProtectionsAndPowerups(objtype* ob, playertype* pstate)
 		}
 		else if (ob->flags & FL_SHROOMS)
 		{
-			ResetFocalWidth();
+			ResetFocalLength();
 			SD_PlaySoundRTP(SD_LOSEMODESND, ob->x, ob->y);
 		}
 		else if (ob->flags & FL_FLEET)

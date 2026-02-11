@@ -84,7 +84,7 @@ byte* playermaps[MAXPLAYERCOLORS];
 short pixelangle[MAXSCREENWIDTH];
 byte gammatable[GAMMAENTRIES];
 int gammaindex;
-int focalwidth = 160;
+int focallength = 160;
 int yzangleconverter;
 byte uniformcolors[MAXPLAYERCOLORS] = {25,	222, 29, 206, 52, 6,
 									   155, 16,	 90, 129, 109};
@@ -118,26 +118,26 @@ void UpdatePeriodicLighting(void);
 /*
 ====================
 =
-= ResetFocalWidth
+= ResetFocalLength
 =
 ====================
 */
-void ResetFocalWidth(void)
+void ResetFocalLength(void)
 {
-	focalwidth = iGLOBAL_FOCALWIDTH; // FOCALWIDTH;
+	focallength = iGLOBAL_FOCALLENGTH;
 	SetViewDelta();
 }
 
 /*
 ====================
 =
-= ChangeFocalWidth
+= ChangeFocalLength
 =
 ====================
 */
-void ChangeFocalWidth(int amount)
+void ChangeFocalLength(int amount)
 {
-	focalwidth = iGLOBAL_FOCALWIDTH + amount; // FOCALWIDTH+amount;
+	focallength = iGLOBAL_FOCALLENGTH + amount;
 	SetViewDelta();
 }
 
@@ -158,12 +158,12 @@ void SetViewDelta(void)
 	//  and sprite x calculations
 	//
 
-	scale = (centerx * focalwidth) / (160);
+	scale = (centerx * focallength) / (160);
 	//
 	// divide heightnumerator by a posts distance to get the posts height for
 	// the heightbuffer.  The pixel height is height>>HEIGHTFRACTION
 	//
-	heightnumerator = ((int)(((float)focalwidth / 10) * centerx * 4096) * 64);
+	heightnumerator = ((int)(((float)focallength / 10) * centerx * 4096) * 64);
 }
 
 /*
@@ -183,9 +183,6 @@ void CalcProjection(void)
 	byte* ptr;
 	int length;
 	int* pangle;
-
-	// Already being called in ResetFocalWidth
-	//    SetViewDelta();
 
 	//
 	// load in tables file
@@ -333,7 +330,7 @@ void SetViewSize(int size)
 	// This now very accurately, truly converts player angles to screen angles.
 	int anglescale = (int)(16384 * ((float)sW / sH) + 8192);
 
-	yzangleconverter = (int)((anglescale * ((float)focalwidth / 160)) * ((float)viewheight / 200));
+	yzangleconverter = (int)((anglescale * ((float)focallength / 160)) * ((float)viewheight / 200));
 
 	// Center the view horizontally
 	screenx = (sW - viewwidth) >> 1;
@@ -356,10 +353,7 @@ void SetViewSize(int size)
 	// calculate trace angles and projection constants
 	//
 
-	ResetFocalWidth();
-
-	// Already being called in ResetFocalWidth
-	//   SetViewDelta();
+	ResetFocalLength();
 
 	CalcProjection();
 }

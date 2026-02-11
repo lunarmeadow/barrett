@@ -16,8 +16,7 @@ int iGLOBAL_HEALTH_Y;
 int iGLOBAL_AMMO_X;
 int iGLOBAL_AMMO_Y;
 
-int iGLOBAL_FOCALWIDTH;
-float fGLOBAL_FPFOCALWIDTH;
+int iGLOBAL_FOCALLENGTH;
 
 int iG_X_center;
 int iG_Y_center;
@@ -32,10 +31,9 @@ extern int viewwidth;
 //----------------------------------------------------------------------
 #define FINEANGLES 2048
 
-void RecalculateFocalWidth(void)
+void RecalculateFocalLength(void)
 {
-	iGLOBAL_FOCALWIDTH = 160 - FocalWidthOffset;
-	fGLOBAL_FPFOCALWIDTH = (float)FocalWidthOffset;
+	iGLOBAL_FOCALLENGTH = 160;
 }
 
 void SetRottScreenRes(int Width, int Height)
@@ -44,8 +42,7 @@ void SetRottScreenRes(int Width, int Height)
 	iGLOBAL_SCREENWIDTH = Width;
 	iGLOBAL_SCREENHEIGHT = Height;
 
-	iGLOBAL_FOCALWIDTH = 160 - FocalWidthOffset;
-	fGLOBAL_FPFOCALWIDTH = (float)iGLOBAL_FOCALWIDTH;
+	iGLOBAL_FOCALLENGTH = 160;
 
 	int middleWidth = Width / 2;
 
