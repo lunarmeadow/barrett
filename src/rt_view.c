@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "rt_def.h"
+#include "rt_cfg.h"
 #include "rt_view.h"
 #include "z_zone.h"
 #include "w_wad.h"
@@ -66,7 +67,7 @@ int baseminshade;
 int basemaxshade;
 int viewheight;
 int viewwidth;
-longword heightnumerator;
+uint64_t heightnumerator;
 fixed scale;
 int screenofs;
 int centerx;
@@ -84,7 +85,7 @@ byte* playermaps[MAXPLAYERCOLORS];
 short pixelangle[MAXSCREENWIDTH];
 byte gammatable[GAMMAENTRIES];
 int gammaindex;
-int focalwidth = 160;
+int focallength = 160;
 int yzangleconverter;
 byte uniformcolors[MAXPLAYERCOLORS] = {25,	222, 29, 206, 52, 6,
 									   155, 16,	 90, 129, 109};
@@ -112,32 +113,76 @@ static int lightningsoundtime = 0;
 static bool periodic = false;
 static int periodictime = 0;
 
-void SetViewDelta(void);
 void UpdatePeriodicLighting(void);
 
 /*
 ====================
 =
-= ResetFocalWidth
+= FOVToFocalLength
 =
 ====================
 */
-void ResetFocalWidth(void)
+
+extern int vfov;
+
+// https://wojtsterna.com/2024/01/09/field-of-view-horizontal-and-vertical-conversion/
+// https://stackoverflow.com/questions/18176215/how-to-select-focal-lengh-in-ray-tracing
+// this is the distance to the projection plane
+// we need to do our math in the original 320x200 viewport
+int FOVToFocalLength(int fov)
 {
-	focalwidth = iGLOBAL_FOCALWIDTH; // FOCALWIDTH;
+	// calculate horizontal fov from vertical fov
+	float hfov;
+	float f;
+	float aspectRatio = ((double)320 / 200);
+	float degToRad = M_PI / 180;
+
+	hfov = 2 * (atan((tan((double)(fov * degToRad) / 2)) * aspectRatio));
+
+	// printf("fov: %d, hfov: %f\n", fov, (hfov * 180 / M_PI));
+
+	// GooberMan mentioned in LE discord to divide by 1.1 to get true FOV
+	// because ROTT is strange
+	f = (((double)200 / 2) / (tan((double)hfov / 2))) / 1.1;
+
+	// printf("len: %f\n", f);
+
+	return (int)round(f);
+}
+
+/*
+====================
+=
+= ResetFocalLength
+=
+====================
+*/
+void ResetFocalLength(void)
+{
+	focallength = FOVToFocalLength(vfov);
 	SetViewDelta();
 }
 
 /*
 ====================
 =
-= ChangeFocalWidth
+= ChangeFocalLength
 =
 ====================
 */
-void ChangeFocalWidth(int amount)
+void ChangeFocalLength(int amount)
 {
-	focalwidth = iGLOBAL_FOCALWIDTH + amount; // FOCALWIDTH+amount;
+	int min = FOVToFocalLength(MAXFOV);
+	int max = FOVToFocalLength(MAXFOV);
+
+	focallength = FOVToFocalLength(vfov) - amount;
+
+	// clamp fov for shroom mode etc
+	if(focallength < min)
+		focallength = min;
+	if(focallength < max)
+		focallength = max;
+
 	SetViewDelta();
 }
 
@@ -158,12 +203,12 @@ void SetViewDelta(void)
 	//  and sprite x calculations
 	//
 
-	scale = (centerx * focalwidth) / (160);
+	scale = (fixed)((centerx / (float)160) * focallength);
 	//
 	// divide heightnumerator by a posts distance to get the posts height for
 	// the heightbuffer.  The pixel height is height>>HEIGHTFRACTION
 	//
-	heightnumerator = ((int)(((float)focalwidth / 10) * centerx * 4096) * 64);
+	heightnumerator = ((uint64_t)(((float)focallength / 10) * centerx * 4096) * 64);
 }
 
 /*
@@ -183,9 +228,6 @@ void CalcProjection(void)
 	byte* ptr;
 	int length;
 	int* pangle;
-
-	// Already being called in ResetFocalWidth
-	//    SetViewDelta();
 
 	//
 	// load in tables file
@@ -333,7 +375,7 @@ void SetViewSize(int size)
 	// This now very accurately, truly converts player angles to screen angles.
 	int anglescale = (int)(16384 * ((float)sW / sH) + 8192);
 
-	yzangleconverter = (int)((anglescale * ((float)focalwidth / 160)) * ((float)viewheight / 200));
+	yzangleconverter = (int)((anglescale * ((float)focallength / 160)) * ((float)viewheight / 200));
 
 	// Center the view horizontally
 	screenx = (sW - viewwidth) >> 1;
@@ -356,10 +398,7 @@ void SetViewSize(int size)
 	// calculate trace angles and projection constants
 	//
 
-	ResetFocalWidth();
-
-	// Already being called in ResetFocalWidth
-	//   SetViewDelta();
+	ResetFocalLength();
 
 	CalcProjection();
 }

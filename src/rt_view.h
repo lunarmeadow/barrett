@@ -31,9 +31,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define HEIGHTFRACTION 6
 #define MAXVIEWSIZES   11
 
-// #define FOCALWIDTH 160//160
-// #define FPFOCALWIDTH 160.0//160.0
-
 #define NUMGAMMALEVELS 8
 #define GAMMAENTRIES   (64 * 8)
 
@@ -92,7 +89,7 @@ extern int baseminshade;
 extern int basemaxshade;
 extern int viewheight;
 extern int viewwidth;
-extern longword heightnumerator;
+extern uint64_t heightnumerator;
 extern fixed scale;
 extern int screenofs;
 extern int centerx;
@@ -105,16 +102,18 @@ extern byte* redmap;
 extern byte* blckmap;
 extern int weaponscale;
 extern int viewsize;
-extern int focalwidth;
+extern int focallength;
 extern int yzangleconverter;
 extern int lightninglevel;
 extern bool lightning;
 extern int darknesslevel;
 
+void SetViewDelta(void);
+int FOVToFocalLength(int fov);
 void DrawCPUJape(void);
 void SetupScreen(bool flip);
-void ResetFocalWidth(void);
-void ChangeFocalWidth(int amount);
+void ResetFocalLength(void);
+void ChangeFocalLength(int amount);
 void SetViewSize(int size);
 void LoadColorMap(void);
 void UpdateLightLevel(int area);

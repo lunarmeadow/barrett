@@ -3,6 +3,8 @@
 #include <string.h>
 #include "WinRott.h"
 #include "modexlib.h"
+#include "rt_def.h"
+#include "rt_view.h"
 
 // typedef unsigned char byte;
 
@@ -16,9 +18,6 @@ int iGLOBAL_HEALTH_Y;
 int iGLOBAL_AMMO_X;
 int iGLOBAL_AMMO_Y;
 
-int iGLOBAL_FOCALWIDTH;
-float fGLOBAL_FPFOCALWIDTH;
-
 int iG_X_center;
 int iG_Y_center;
 
@@ -28,14 +27,15 @@ bool iG_aimCross = 0;
 
 extern int viewheight;
 extern int viewwidth;
-extern int FocalWidthOffset;
+extern int vfov;
+
 //----------------------------------------------------------------------
 #define FINEANGLES 2048
 
-void RecalculateFocalWidth(void)
+void RecalculateFocalLength(void)
 {
-	iGLOBAL_FOCALWIDTH = 160 - FocalWidthOffset;
-	fGLOBAL_FPFOCALWIDTH = (float)FocalWidthOffset;
+	focallength = FOVToFocalLength(vfov);
+	SetViewDelta();
 }
 
 void SetRottScreenRes(int Width, int Height)
@@ -44,8 +44,8 @@ void SetRottScreenRes(int Width, int Height)
 	iGLOBAL_SCREENWIDTH = Width;
 	iGLOBAL_SCREENHEIGHT = Height;
 
-	iGLOBAL_FOCALWIDTH = 160 - FocalWidthOffset;
-	fGLOBAL_FPFOCALWIDTH = (float)iGLOBAL_FOCALWIDTH;
+	focallength = FOVToFocalLength(vfov);
+	SetViewDelta();
 
 	int middleWidth = Width / 2;
 
