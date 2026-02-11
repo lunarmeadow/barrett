@@ -209,7 +209,6 @@ void SetViewDelta(void)
 	// the heightbuffer.  The pixel height is height>>HEIGHTFRACTION
 	//
 	heightnumerator = ((uint64_t)(((float)focallength / 10) * centerx * 4096) * 64);
-	printf("%u\n", heightnumerator);
 }
 
 /*
