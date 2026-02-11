@@ -45,6 +45,7 @@ extern bool blackwpns;
 extern bool doombobbing;
 extern bool halfmonkhp;
 extern bool disablelowhpsnd;
+extern bool ludicrousskybox;
 
 extern int joystickport;
 extern int mouseadjustment;

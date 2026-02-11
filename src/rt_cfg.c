@@ -79,6 +79,7 @@ bool blackwpns = 0;
 bool doombobbing = 0;
 bool halfmonkhp = 1;
 bool disablelowhpsnd = 1;
+bool ludicrousskybox = 1;
 int inverse_mouse = 1; // set  to -1 to invert mouse
 bool sdl_fullscreen = 1;
 bool borderWindow = 0;
@@ -446,6 +447,8 @@ bool ParseConfigFile(void)
 		ReadBool("DoomBobbing", &doombobbing);
 
 		ReadBool("WeaponColor", &blackwpns);
+
+		ReadBool("LudicrousSkybox", &ludicrousskybox);
 
 		ReadInt("InverseMouse", &inverse_mouse);
 
@@ -1682,6 +1685,11 @@ void WriteConfig(void)
 	SafeWriteString(file, "; 1 - WeaponColor Enabled\n");
 	SafeWriteString(file, "; 0 - WeaponColor Disabled\n");
 	WriteParameter(file, "WeaponColor      ", blackwpns);
+
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - LudicrousSkybox Enabled\n");
+	SafeWriteString(file, "; 0 - LudicrousSkybox Disabled\n");
+	WriteParameter(file, "LudicrousSkybox  ", ludicrousskybox);
 
 	// Write out InverseMouse
 	SafeWriteString(file, "\n;\n");
