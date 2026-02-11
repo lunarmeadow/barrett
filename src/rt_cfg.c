@@ -87,7 +87,6 @@ bool autoAimMissileWeps = 0;
 bool autoAim = 1;
 bool allowMovementWithMouseYAxis = 1;
 int vfov = 90;
-int FocalWidthOffset = 0;
 int ScreenHeightToWriteToCfg = 0;
 int HudScaleToWriteToCfg = 0;
 int ScreenWidthToWriteToCfg = 0;
@@ -426,9 +425,6 @@ bool ParseConfigFile(void)
 
 		// Read in AutoAimMissileWeps
 		ReadBool("AutoAimMissileWeps", &autoAimMissileWeps);
-
-		// Read in scaleOffset
-		ReadInt("FocalWidthOffset", &FocalWidthOffset);
 
 		// Read in MouseEnabled
 		ReadBool("MouseEnabled", &mouseenabled);
@@ -1637,11 +1633,6 @@ void WriteConfig(void)
 	SafeWriteString(file, "; 0 - Missile weapons are not automatically aimed "
 						  "at targets. (ROTT default)\n");
 	WriteParameter(file, "AutoAimMissileWeps    ", autoAimMissileWeps);
-
-	// Write out scaleOffset
-	SafeWriteString(file, "\n;\n");
-	SafeWriteString(file, "; Field Of View offset\n");
-	WriteParameter(file, "FocalWidthOffset     ", FocalWidthOffset);
 
 	// Write out MouseEnabled
 

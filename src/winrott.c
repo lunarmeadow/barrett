@@ -28,7 +28,7 @@ bool iG_aimCross = 0;
 
 extern int viewheight;
 extern int viewwidth;
-extern int FocalWidthOffset;
+
 //----------------------------------------------------------------------
 #define FINEANGLES 2048
 
