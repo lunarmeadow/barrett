@@ -32,6 +32,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 //****************************************************************************
 
+#define MINFOV 60
+#define MAXFOV 150
+
 extern int FXMode;
 extern int MusicMode;
 extern int MUvolume;
