@@ -129,18 +129,24 @@ extern int vfov;
 // https://wojtsterna.com/2024/01/09/field-of-view-horizontal-and-vertical-conversion/
 // https://stackoverflow.com/questions/18176215/how-to-select-focal-lengh-in-ray-tracing
 // this is the distance to the projection plane
+// we need to do our math in the original 320x200 viewport
 int FOVToFocalLength(int fov)
 {
 	// calculate horizontal fov from vertical fov
 	float hfov;
 	float f;
-	float aspectRatio = ((float)iGLOBAL_SCREENWIDTH / iGLOBAL_SCREENHEIGHT);
+	float aspectRatio = ((double)iGLOBAL_SCREENWIDTH / iGLOBAL_SCREENHEIGHT);
+	float degToRad = M_PI / 180;
 
-	hfov = 2 * atan(aspectRatio * tan((float)fov / 2));
+	hfov = 2 * (atan((tan((double)(fov * degToRad) / 2)) * aspectRatio));
 
-	// GooberMan mentioned in LE discord to multiply by 1.1 to get true FOV
+	// printf("fov: %d, hfov: %f\n", fov, (hfov * 180 / M_PI));
+
+	// GooberMan mentioned in LE discord to divide by 1.1 to get true FOV
 	// because ROTT is strange
-	f = (((float)iGLOBAL_SCREENWIDTH / 2) / tan(hfov / 2)) * 1.1;
+	f = (((double)200 / 2) / (tan((double)hfov / 2))) / 1.1;
+
+	// printf("len: %f\n", f);
 
 	return (int)round(f);
 }
