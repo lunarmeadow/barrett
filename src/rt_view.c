@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "rt_def.h"
+#include "rt_cfg.h"
 #include "rt_view.h"
 #include "z_zone.h"
 #include "w_wad.h"
@@ -128,14 +129,14 @@ extern int vfov;
 // https://wojtsterna.com/2024/01/09/field-of-view-horizontal-and-vertical-conversion/
 // https://stackoverflow.com/questions/18176215/how-to-select-focal-lengh-in-ray-tracing
 // this is the distance to the projection plane
-int FOVToFocalLength(void)
+int FOVToFocalLength(int fov)
 {
 	// calculate horizontal fov from vertical fov
 	float hfov;
 	float f;
 	float aspectRatio = ((float)iGLOBAL_SCREENWIDTH / iGLOBAL_SCREENHEIGHT);
 
-	hfov = 2 * atan(aspectRatio * tan((float)vfov / 2));
+	hfov = 2 * atan(aspectRatio * tan((float)fov / 2));
 
 	// GooberMan mentioned in LE discord to multiply by 1.1 to get true FOV
 	// because ROTT is strange
@@ -153,7 +154,7 @@ int FOVToFocalLength(void)
 */
 void ResetFocalLength(void)
 {
-	focallength = iGLOBAL_FOCALLENGTH;
+	focallength = FOVToFocalLength(vfov);
 	SetViewDelta();
 }
 
@@ -166,7 +167,17 @@ void ResetFocalLength(void)
 */
 void ChangeFocalLength(int amount)
 {
-	focallength = iGLOBAL_FOCALLENGTH + amount;
+	int min = FOVToFocalLength(MAXFOV);
+	int max = FOVToFocalLength(MAXFOV);
+
+	focallength = FOVToFocalLength(vfov) - amount;
+
+	// clamp fov for shroom mode etc
+	if(focallength < min)
+		focallength = min;
+	if(focallength < max)
+		focallength = max;
+
 	SetViewDelta();
 }
 
