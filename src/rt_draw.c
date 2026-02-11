@@ -2040,7 +2040,7 @@ void WallRefresh(void)
 							 sintable[(GetCachedTic() << 5) & (FINEANGLES - 1)],
 							 (16 + 4))) &
 						(FINEANGLES - 1);
-			ChangeFocalWidth(FixedMulShift(
+			ChangeFocalLength(FixedMulShift(
 				40, sintable[(GetCachedTic() << 5) & (FINEANGLES - 1)], 16));
 		}
 		else

@@ -208,6 +208,6 @@ void UndoQuickSaveGame(void);
 void CP_CaptureTheTriadError(void);
 void CP_TeamPlayErrorMessage(void);
 void CP_ExtGameOptionsMenu(void);
-void DoAdjustFocalWidth(void);
+void DoAdjustFOV(void);
 
 #endif

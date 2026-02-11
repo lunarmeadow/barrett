@@ -20,16 +20,11 @@ extern int iGLOBAL_HEALTH_Y;
 extern int iGLOBAL_AMMO_X;
 extern int iGLOBAL_AMMO_Y;
 
-extern int iGLOBAL_FOCALWIDTH;
-extern float fGLOBAL_FPFOCALWIDTH;
-
 void EnableScreenStretch(void);
 void DisableScreenStretch(void);
 void WriteNewResolution(void);
-void RecalculateFocalWidth(void);
+void RecalculateFocalLength(void);
 /*
-#define FOCALWIDTH 160//160
-#define FPFOCALWIDTH 160.0//160.0
 
 
 

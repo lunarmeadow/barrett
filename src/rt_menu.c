@@ -546,7 +546,7 @@ CP_MenuNames ExtOptionsNames[] = {
 
 CP_MenuNames ExtGameOptionsNames[] = {"LOW MEMORY MODE", "WEAPON RECOLOURS", "DOOM BOBBING", "NO LOW HP SOUND", "HALF MONK HEALTH", "LUDICROUS SKYBOX"}; // erysdren added
 
-CP_MenuNames VisualOptionsNames[] = {"SCREEN RESOLUTION", "ADJUST FOCAL WIDTH",
+CP_MenuNames VisualOptionsNames[] = {"SCREEN RESOLUTION", "FIELD-OF-VIEW",
 									 "HUD SCALING", "DISPLAY OPTIONS", "CROSSHAIR OPTIONS"};
 
 CP_MenuNames CrosshairOptionsNames[] = {"COLOUR", "PARAMETERS",
@@ -634,7 +634,7 @@ void CP_CrosshairParameters(void);
 void DrawCrosshairOptionsButtons(void);
 
 CP_itemtype VisualsOptionsMenu[] = {{1, "", 'S', (menuptr)CP_ScreenResolution},
-									{1, "", 'F', (menuptr)DoAdjustFocalWidth},
+									{1, "", 'F', (menuptr)DoAdjustFOV},
 									{1, "", 'H', (menuptr)DoAdjustHudScale},
 									{1, "", 'D', (menuptr)CP_DisplayOptions},
 									{1, "", 'C', (menuptr)CP_CrosshairMenu}};
@@ -1356,7 +1356,7 @@ void CleanUpControlPanel(void)
 
 	// change the focal width if modified
 
-	RecalculateFocalWidth();
+	RecalculateFocalLength();
 
 	INL_GetJoyDelta(joystickport, &joyx, &joyy);
 
@@ -4625,12 +4625,16 @@ void CP_CrosshairMenu(void)
 	DrawVisualsMenu();
 }
 
-extern int FocalWidthOffset;
+extern int vfov;
 
-void DoAdjustFocalWidth(void)
+void DoAdjustFOV(void)
 {
-	SliderMenu(&FocalWidthOffset, 96, 0, 44, 81, 194, 4, "block2", NULL,
-			   "Adjust Focal Width", "Default", "You Crazy");
+	if(vfov < MINFOV)
+		vfov = MINFOV;
+	if(vfov > MAXFOV)
+		vfov = MAXFOV;
+	
+	BoundSliderMenu(&vfov, MAXFOV, MINFOV, 44, 81, 194, 5, "block2", NULL, "Set FOV", "FOV: ", " deg");
 	DrawVisualsMenu();
 }
 
