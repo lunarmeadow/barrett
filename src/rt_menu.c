@@ -544,7 +544,7 @@ CP_MenuNames ExtOptionsNames[] = {
 	"MOUSELOOK", "INVERSE MOUSE",		 "ALLOW Y AXIS MOUSE", "CROSSHAIR",
 	"AUTOAIM MISSILE WEPS", "ENABLE AUTOAIM",	   "USE OPL MUSIC"};
 
-CP_MenuNames ExtGameOptionsNames[] = {"LOW MEMORY MODE", "WEAPON RECOLOURS", "DOOM BOBBING", "NO LOW HP SOUND"}; // erysdren added
+CP_MenuNames ExtGameOptionsNames[] = {"LOW MEMORY MODE", "WEAPON RECOLOURS", "DOOM BOBBING", "NO LOW HP SOUND", "HALVED MONK HEALTH"}; // erysdren added
 
 CP_MenuNames VisualOptionsNames[] = {"SCREEN RESOLUTION", "ADJUST FOCAL WIDTH",
 									 "HUD SCALING", "DISPLAY OPTIONS", "CROSSHAIR OPTIONS"};
@@ -596,7 +596,7 @@ CP_iteminfo ExtOptionsItems = {20, MENU_Y,			7,			 0,
 							   43, ExtOptionsNames, mn_largefont};
 
 CP_iteminfo ExtGameOptionsItems = {
-	20, MENU_Y, 4, 0, 43, ExtGameOptionsNames, mn_largefont}; // LT added
+	20, MENU_Y, 5, 0, 43, ExtGameOptionsNames, mn_largefont}; // LT added
 
 CP_iteminfo DisplayOptionsMenu = {
 	20, MENU_Y, 3, 0, 43, DisplayOptionsNames, mn_largefont}; // LT added
@@ -661,6 +661,7 @@ CP_itemtype ExtGameMenu[] = {
 	{1, "", 'B', NULL},
 	{1, "", 'D', NULL},
 	{1, "", 'H', NULL},
+	{1, "", 'M', NULL},
 };
 
 // bna added end
@@ -5198,7 +5199,8 @@ static char* ExtGameOptionsDesc[sizeof(ExtGameOptionsItems)] = {
 	"If enabled, emulate DOS ROTT's \"low memory\" mode.",
 	"Removes the blue tinting from weapon sprites. (EXPERIMENTAL)",
 	"Implements DOOM's 2D weapon and view bobbing algorithm.",
-	"Disable the incessant orchestral hits on low health."
+	"Disable the incessant orchestral hits on low health.",
+	"Monks have 50% of their original health pool."
 };
 
 void DrawExtGameOptionsButtons(void)
@@ -5241,6 +5243,12 @@ void DrawExtGameOptionsButtons(void)
 				break;
 			case 3:
 				if (disablelowhpsnd == 1)
+				{
+					on = 1;
+				}
+				break;
+			case 4:
+				if (halfmonkhp == 1)
 				{
 					on = 1;
 				}
@@ -5333,6 +5341,10 @@ void CP_ExtGameOptionsMenu(void)
 			break;
 		case 3:
 			disablelowhpsnd ^= 1;
+			DrawExtGameOptionsButtons();
+			break;
+		case 4:
+			halfmonkhp ^= 1;
 			DrawExtGameOptionsButtons();
 			break;
 		}

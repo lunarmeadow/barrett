@@ -77,6 +77,7 @@ bool usemouselook = 0;
 bool useoplmusic = 0;
 bool blackwpns = 0;
 bool doombobbing = 0;
+bool halfmonkhp = 1;
 bool disablelowhpsnd = 1;
 int inverse_mouse = 1; // set  to -1 to invert mouse
 bool sdl_fullscreen = 1;
