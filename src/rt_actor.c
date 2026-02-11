@@ -1397,7 +1397,7 @@ void ConsiderAlternateActor(objtype* ob, classtype which)
 =
 ===================
 */
-
+extern bool halfmonkhp;
 void StandardEnemyInit(objtype* ob, int dir)
 {
 	int zoffset;
@@ -1409,6 +1409,11 @@ void StandardEnemyInit(objtype* ob, int dir)
 		ob->flags |= FL_HASAUTO;
 
 	ob->hitpoints = starthitpoints[gamestate.difficulty][ob->obclass];
+
+	// half monk hp toggle
+	if((ob->obclass == deathmonkobj || ob->obclass == dfiremonkobj) && halfmonkhp)
+		ob->hitpoints /= 2;
+
 	ob->dir = dir * 2;
 	ob->flags |= (FL_SHOOTABLE | FL_BLOCK);
 	ob->speed = ENEMYRUNSPEED;
