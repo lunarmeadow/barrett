@@ -86,6 +86,7 @@ bool borderlessWindow = 0;
 bool autoAimMissileWeps = 0;
 bool autoAim = 1;
 bool allowMovementWithMouseYAxis = 1;
+int vfov = 90;
 int FocalWidthOffset = 0;
 int ScreenHeightToWriteToCfg = 0;
 int HudScaleToWriteToCfg = 0;
@@ -446,6 +447,8 @@ bool ParseConfigFile(void)
 		ReadBool("DoomBobbing", &doombobbing);
 
 		ReadBool("WeaponColor", &blackwpns);
+
+		ReadInt("VerticalFOV", &vfov);
 
 		ReadInt("InverseMouse", &inverse_mouse);
 
@@ -1682,6 +1685,11 @@ void WriteConfig(void)
 	SafeWriteString(file, "; 1 - WeaponColor Enabled\n");
 	SafeWriteString(file, "; 0 - WeaponColor Disabled\n");
 	WriteParameter(file, "WeaponColor      ", blackwpns);
+
+	// Write out VerticalFov
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 60-150 VFOV \n");
+	WriteParameter(file, "VerticalFOV      ", vfov);
 
 	// Write out InverseMouse
 	SafeWriteString(file, "\n;\n");

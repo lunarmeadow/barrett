@@ -4625,6 +4625,7 @@ void CP_CrosshairMenu(void)
 }
 
 extern int FocalWidthOffset;
+extern int vfov;
 
 void DoAdjustFocalWidth(void)
 {
