@@ -248,7 +248,6 @@ void ScaleTransparentTallPost(byte* src, byte* buf, int level)
 	int length;
 	int topscreen;
 	int bottomscreen;
-	int ylcmp, yhcmp;
 	byte* oldlevel;
 	byte* seelevel;
 
@@ -1238,7 +1237,7 @@ void R_DrawTallColumn(byte* buf)
 	// This is *NOT* 100% correct - DDOI
 	int scalecount, texcount;
 	uint32_t frac, fracstep, sparkfrac;
-	bool sparkleMask;
+	bool sparkleMask = false;
 	byte* dest;
 
 	// force compiler to preload globals in a register
@@ -1248,7 +1247,7 @@ void R_DrawTallColumn(byte* buf)
 
 	// ylcmp varies wildly if a sparklie is rendered. otherwise, a difference of one.
 	// explicitly checking for a difference of 1 breaks GCC somehow.
-	if (ylcmp < dc_yl)
+	if (ylcmp - dc_yl == 1)
 		sparkleMask = true;
 
 	scalecount = dc_yh - dc_yl + 1;
