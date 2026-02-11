@@ -78,6 +78,7 @@ static int oldsky = -1;
 
 // bna fixit skyerror by 800x600 clouds not big enough
 
+extern bool ludicrousskybox;
 void DrawSky(void)
 {
 
@@ -87,6 +88,7 @@ void DrawSky(void)
 	int height;
 	//   int height2;
 	int ang;
+	int normalang, ludicrousang;
 	int angle;
 	int ofs;
 
@@ -118,7 +120,16 @@ void DrawSky(void)
 			{
 				if ((height = posts[dest].ceilingclip) <= 0)
 					continue;
-				ang = (angle + pixelangle[dest]) & (FINEANGLES - 1);
+				
+				// this gets the angle for each column's projection arc essentially
+				// * 160 is half of 320, so this is sort of to create 
+				// a smooth angular gradient within the boundaries of the screen width,
+				// and keep the movement relatively steady.
+				// this is basically the same calculation as diminished lighting and fog,
+				// but it works well here. Reduces distortion at the edges.
+				ludicrousang = (angle + pixelangle[dest] - ((dest * 160) / iGLOBAL_SCREENWIDTH)) & (FINEANGLES - 1);
+				normalang = (angle + pixelangle[dest]) & (FINEANGLES - 1);
+				ang = ludicrousskybox ? ludicrousang : normalang;
 				src = skysegs[ang] - ofs;
 				DrawSkyPost((byte*)bufferofs + dest, src, height);
 			}
