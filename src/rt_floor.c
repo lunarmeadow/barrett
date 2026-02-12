@@ -134,7 +134,7 @@ void DrawSky(void)
 				// and keep the movement relatively steady.
 				// this is basically the same calculation as diminished lighting and fog,
 				// but it works well here. Reduces distortion at the edges.
-				ludicrousang = (angle + pixelangle[dest] - ((dest * 160) / iGLOBAL_SCREENWIDTH)) & (FINEANGLES - 1);
+				ludicrousang = (angle + pixelangle[dest] - ((dest * 320) / iGLOBAL_SCREENWIDTH)) & (FINEANGLES - 1);
 				normalang = (angle + pixelangle[dest]) & (FINEANGLES - 1);
 				ang = ludicrousskybox ? ludicrousang : normalang;
 				src = skysegs[ang] - ofs;
