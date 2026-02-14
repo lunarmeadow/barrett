@@ -620,6 +620,7 @@ CP_itemtype CrosshairParamsMenu[] = {
 	{1, "", 'S', NULL},}; // ashley added
 
 void CP_ScreenResolution(void);
+void CP_RestartProgramMessage(void);
 
 void CP_DisplayOptions(void);
 void DoAdjustHudScale(void);
@@ -4630,6 +4631,8 @@ void CP_CrosshairMenu(void)
 
 void DoAdjustAspectRatio(void)
 {
+	int oldvalue = aspectRatioCorrection;
+
 	if(aspectRatioCorrection < 0)
 		aspectRatioCorrection = 0;
 	if(aspectRatioCorrection > 2)
@@ -4637,6 +4640,10 @@ void DoAdjustAspectRatio(void)
 
 	AspectSliderMenu(&aspectRatioCorrection, 44, 81, 194, "block2", NULL,
 			   "Asp. Ratio Correction", "Mode: ");
+
+	if(aspectRatioCorrection != oldvalue)
+		CP_RestartProgramMessage();
+	
 	DrawVisualsMenu();
 }
 
