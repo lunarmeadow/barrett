@@ -196,8 +196,8 @@ void ChangeFocalLength(int amount)
 
 void SetViewDelta(void)
 {
-	// iGLOBAL_SCREENHEIGHT
-	// iGLOBAL_SCREENWIDTH
+	// FRAMEBUFFERHEIGHT
+	// FRAMEBUFFERWIDTH
 	//
 	//  calculate scale value for vertical height calculations
 	//  and sprite x calculations
@@ -280,8 +280,8 @@ void SetViewSize(int size)
 	int screenx;
 	int screeny;
 	int topy;
-	int sW = iGLOBAL_SCREENWIDTH;
-	int sH = iGLOBAL_SCREENHEIGHT;
+	int sW = FRAMEBUFFERWIDTH;
+	int sH = FRAMEBUFFERHEIGHT;
 
 	/*
 	if (size>=10){
@@ -440,8 +440,8 @@ void SetupScreen(bool flip)
 	{
 		shape = (pic_t*)W_CacheLumpName("backtile", PU_CACHE, Cvt_pic_t, 1);
 		// DrawTiledRegion( 0, 16, 320, 200 - 32, 0, 16, shape );
-		DrawTiledRegion(0, 16 * hudRescaleFactor, iGLOBAL_SCREENWIDTH,
-						iGLOBAL_SCREENHEIGHT - 16 * hudRescaleFactor, 0, 16,
+		DrawTiledRegion(0, 16 * hudRescaleFactor, FRAMEBUFFERWIDTH,
+						FRAMEBUFFERHEIGHT - 16 * hudRescaleFactor, 0, 16,
 						shape); // bna++
 	}
 

@@ -1201,8 +1201,8 @@ void SetUpControlPanel(void)
 	int Yres = 400;
 
 	// dont work in 800x600 until we get a better screen schrinker
-	//   int Xres = iGLOBAL_SCREENWIDTH;//640;
-	//  int Yres = iGLOBAL_SCREENHEIGHT;//400;
+	//   int Xres = FRAMEBUFFERWIDTH;//640;
+	//  int Yres = FRAMEBUFFERHEIGHT;//400;
 
 	Xres = 640;
 	Yres = 400;
@@ -1225,29 +1225,29 @@ void SetUpControlPanel(void)
 
 	s = savedscreen;
 
-	if (iGLOBAL_SCREENWIDTH == 320)
+	if (FRAMEBUFFERWIDTH == 320)
 	{
 		for (i = 0; i < Xres; i += 2)
 		{
 			b = (byte*)bufferofs + i;
-			for (j = 0; j < 100; j++, s++, b += (iGLOBAL_SCREENWIDTH << 1))
+			for (j = 0; j < 100; j++, s++, b += (FRAMEBUFFERWIDTH << 1))
 				*s = *b;
 		}
 	}
-	if (iGLOBAL_SCREENWIDTH >= 640)
+	if (FRAMEBUFFERWIDTH >= 640)
 	{
 		for (i = 0; i < Xres; i += 4)
 		{
 			b = (byte*)bufferofs + i; // schrink screen to 1/2 size
 			for (j = 0; j < (Yres / 4);
-				 j++, s++, b += (iGLOBAL_SCREENWIDTH << 1) * 2)
+				 j++, s++, b += (FRAMEBUFFERWIDTH << 1) * 2)
 				*s = *b;
 		}
 	} /*
-	   if (iGLOBAL_SCREENWIDTH == 800) {
+	   if (FRAMEBUFFERWIDTH == 800) {
 		   for (i=0;i<Xres;i+=8)		{
 			   b=(byte *)bufferofs+i;//schrink screen to 1/3 size
-			   for (j=0;j<(Yres/8);j++,s++,b+=(iGLOBAL_SCREENWIDTH<<1)*3)
+			   for (j=0;j<(Yres/8);j++,s++,b+=(FRAMEBUFFERWIDTH<<1)*3)
 				  *s=*b;
 		   }
 
@@ -2946,7 +2946,7 @@ void QuickSaveGame(void)
 	for (i = 0; i < 320; i += 2)
 	{
 		b = (byte*)bufferofs + i;
-		for (j = 0; j < 100; j++, s++, b += (iGLOBAL_SCREENWIDTH << 1))
+		for (j = 0; j < 100; j++, s++, b += (FRAMEBUFFERWIDTH << 1))
 			*s = *b;
 	}
 
@@ -4754,8 +4754,8 @@ void DrawScreenResolutionMenu(void)
 	{
 		ScreenResolutionMenu[i].active = CP_Active;
 
-		if (AvailableResolutions[i].width == iGLOBAL_SCREENWIDTH &&
-			AvailableResolutions[i].height == iGLOBAL_SCREENHEIGHT)
+		if (AvailableResolutions[i].width == FRAMEBUFFERWIDTH &&
+			AvailableResolutions[i].height == FRAMEBUFFERHEIGHT)
 		{
 			position = i;
 		}

@@ -102,14 +102,14 @@ void SetPlayerLightLevel(void)
 		lv = (((LightSourceAt(player->x >> 16, player->y >> 16) >> intercept) &
 			   0xf) >>
 			  1);
-		i = maxshade - ((height * 200 / iGLOBAL_SCREENHEIGHT) >> normalshade) - lv;
+		i = maxshade - ((height * 200 / FRAMEBUFFERHEIGHT) >> normalshade) - lv;
 		if (i < minshade)
 			i = minshade;
 		shadingtable = colormap + (i << 8);
 	}
 	else
 	{
-		i = maxshade - ((height * 200 / iGLOBAL_SCREENHEIGHT) >> normalshade);
+		i = maxshade - ((height * 200 / FRAMEBUFFERHEIGHT) >> normalshade);
 		if (i < minshade)
 			i = minshade;
 		shadingtable = colormap + (i << 8);
@@ -141,14 +141,14 @@ void SetLightLevel(int height)
 	}
 	if (fog)
 	{
-		i = ((height * 200 / iGLOBAL_SCREENHEIGHT) >> normalshade) + minshade;
+		i = ((height * 200 / FRAMEBUFFERHEIGHT) >> normalshade) + minshade;
 		if (i > maxshade)
 			i = maxshade;
 		shadingtable = colormap + (i << 8);
 	}
 	else
 	{
-		i = maxshade - ((height * 200 / iGLOBAL_SCREENHEIGHT) >> normalshade);
+		i = maxshade - ((height * 200 / FRAMEBUFFERHEIGHT) >> normalshade);
 		if (i < minshade)
 			i = minshade;
 		shadingtable = colormap + (i << 8);
@@ -1089,7 +1089,7 @@ void DrawScreenSizedSprite(int lump)
 		// a new buffer (size=800x600) and slowed the game down so ?
 
 		// if its the gasmask, paint black patches at hires
-		if ((lump == G_gmasklump) && (iGLOBAL_SCREENWIDTH > 320))
+		if ((lump == G_gmasklump) && (FRAMEBUFFERWIDTH > 320))
 		{
 			src = ((p->collumnofs[frac >> SFRACBITS]) + shape);
 			offset = *(src++);
@@ -1103,18 +1103,18 @@ void DrawScreenSizedSprite(int lump)
 			// paint upper black patch in gasmask
 			for (cnt = b; cnt < b + viewwidth; cnt++)
 			{
-				for (Ycnt = cnt; Ycnt < cnt + (dc_yl * iGLOBAL_SCREENWIDTH);
-					 Ycnt += iGLOBAL_SCREENWIDTH)
+				for (Ycnt = cnt; Ycnt < cnt + (dc_yl * FRAMEBUFFERWIDTH);
+					 Ycnt += FRAMEBUFFERWIDTH)
 				{
 					*Ycnt = 36;
 				}
 			}
 			// paint lower black patch in gasmask
-			for (cnt = b + (dc_yh * iGLOBAL_SCREENWIDTH);
-				 cnt < b + (dc_yh * iGLOBAL_SCREENWIDTH) + viewwidth; cnt++)
+			for (cnt = b + (dc_yh * FRAMEBUFFERWIDTH);
+				 cnt < b + (dc_yh * FRAMEBUFFERWIDTH) + viewwidth; cnt++)
 			{
-				for (Ycnt = cnt; Ycnt < b + (viewheight * iGLOBAL_SCREENWIDTH);
-					 Ycnt += iGLOBAL_SCREENWIDTH)
+				for (Ycnt = cnt; Ycnt < b + (viewheight * FRAMEBUFFERWIDTH);
+					 Ycnt += FRAMEBUFFERWIDTH)
 				{
 					*Ycnt = 36;
 				}
@@ -1184,11 +1184,11 @@ void DrawNormalSprite(int x, int y, int shapenum)
 	p = (patch_t*)shape;
 
 	if (((x - p->leftoffset) < 0) ||
-		((x - p->leftoffset + p->width) > iGLOBAL_SCREENWIDTH))
+		((x - p->leftoffset + p->width) > FRAMEBUFFERWIDTH))
 		Error("DrawNormalSprite: x is out of range x=%d\n",
 			  x - p->leftoffset + p->width);
 	if (((y - p->topoffset) < 0) ||
-		((y - p->topoffset + p->height) > iGLOBAL_SCREENHEIGHT))
+		((y - p->topoffset + p->height) > FRAMEBUFFERHEIGHT))
 		Error("DrawNormalSprite: y is out of range y=%d\n",
 			  y - p->topoffset + p->height);
 
@@ -1209,7 +1209,7 @@ void R_DrawColumn(byte* buf)
 	byte* dest;
 
 	// force compiler to preload globals in a register
-	const int screenW = iGLOBAL_SCREENWIDTH;
+	const int screenW = FRAMEBUFFERWIDTH;
 	const byte* restrict colormap = shadingtable;
 	const byte* restrict texture = dc_source;
 
@@ -1241,7 +1241,7 @@ void R_DrawTallColumn(byte* buf)
 	byte* dest;
 
 	// force compiler to preload globals in a register
-	const int screenW = iGLOBAL_SCREENWIDTH;
+	const int screenW = FRAMEBUFFERWIDTH;
 	const byte* restrict colormap = shadingtable;
 	const byte* restrict texture = dc_source;
 
@@ -1309,7 +1309,7 @@ void R_TransColumn(byte* buf)
 	byte* dest;
 
 	// force compiler to preload globals in a register
-	const int screenW = iGLOBAL_SCREENWIDTH;
+	const int screenW = FRAMEBUFFERWIDTH;
 	const byte* restrict colormap = shadingtable;
 
 	count = dc_yh - dc_yl + 1;
@@ -1333,7 +1333,7 @@ void R_DrawUpperDoorColumn(byte* buf)
 	byte* dest;
 
 	// force compiler to preload globals in a register
-	const int screenW = iGLOBAL_SCREENWIDTH;
+	const int screenW = FRAMEBUFFERWIDTH;
 	const byte* restrict colormap = shadingtable;
 	const byte* restrict texture = dc_source;
 
@@ -1365,7 +1365,7 @@ void R_DrawWallColumn(byte* buf)
 	byte* dest;
 
 	// force compiler to preload globals in a register
-	const int screenW = iGLOBAL_SCREENWIDTH;
+	const int screenW = FRAMEBUFFERWIDTH;
 	const byte* restrict colormap = shadingtable;
 	const byte* restrict texture = dc_source;
 
@@ -1398,7 +1398,7 @@ void R_DrawClippedColumn(byte* buf)
 	//		byte *b;int y;
 
 	// force compiler to preload globals in a register
-	const int screenW = iGLOBAL_SCREENWIDTH;
+	const int screenW = FRAMEBUFFERWIDTH;
 	byte* restrict colormap = shadingtable;
 	const byte* restrict texture = dc_source;
 
@@ -1432,7 +1432,7 @@ void R_DrawSolidColumn(int color, byte* buf)
 		return;
 
 	// force compiler to preload globals in a register
-	const int screenW = iGLOBAL_SCREENWIDTH;
+	const int screenW = FRAMEBUFFERWIDTH;
 
 	dest = buf + ylookup[dc_yl];
 

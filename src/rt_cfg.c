@@ -527,8 +527,8 @@ bool ParseConfigFile(void)
 		ReadBool("BorderlessWindow", &borderlessWindow);
 
 		// Read in resolution
-		ReadInt("ScreenWidth", &iGLOBAL_SCREENWIDTH);
-		ReadInt("ScreenHeight", &iGLOBAL_SCREENHEIGHT);
+		ReadInt("ScreenWidth", &FRAMEBUFFERWIDTH);
+		ReadInt("ScreenHeight", &FRAMEBUFFERHEIGHT);
 
 		// Read in ViewSize
 		ReadInt("ViewSize", &viewsize);
@@ -1838,8 +1838,8 @@ void WriteConfig(void)
 	SafeWriteString(file, "; Screen Resolution, supported resolutions: \n");
 	SafeWriteString(file, "; 320x200, 640x480 and 800x600\n");
 
-	// WriteParameter(file,"ScreenWidth      ",iGLOBAL_SCREENWIDTH);
-	// WriteParameter(file,"ScreenHeight     ",iGLOBAL_SCREENHEIGHT);
+	// WriteParameter(file,"ScreenWidth      ",FRAMEBUFFERWIDTH);
+	// WriteParameter(file,"ScreenHeight     ",FRAMEBUFFERHEIGHT);
 
 	if (writeNewResIntoCfg)
 	{
@@ -1848,8 +1848,8 @@ void WriteConfig(void)
 	}
 	else
 	{
-		WriteParameter(file, "ScreenWidth      ", iGLOBAL_SCREENWIDTH);
-		WriteParameter(file, "ScreenHeight     ", iGLOBAL_SCREENHEIGHT);
+		WriteParameter(file, "ScreenWidth      ", FRAMEBUFFERWIDTH);
+		WriteParameter(file, "ScreenHeight     ", FRAMEBUFFERHEIGHT);
 	}
 
 	// Write out ViewSize

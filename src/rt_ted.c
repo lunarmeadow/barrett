@@ -1064,7 +1064,7 @@ void PreCache(void)
 	byte* tempbuf;
 
 	float Gs;
-	Gs = (iGLOBAL_SCREENWIDTH * 100 / 320);
+	Gs = (FRAMEBUFFERWIDTH * 100 / 320);
 	Gs = Gs / 100;
 
 	doRescaling = false;
@@ -1096,9 +1096,9 @@ void PreCache(void)
 
 	SortPreCache();
 
-	float ratioNewToOldWidth = ((float)iGLOBAL_SCREENWIDTH) / 320.0;
+	float ratioNewToOldWidth = ((float)FRAMEBUFFERWIDTH) / 320.0;
 
-	float ratioNewToOldHeight = ((float)iGLOBAL_SCREENHEIGHT) / 200.0;
+	float ratioNewToOldHeight = ((float)FRAMEBUFFERHEIGHT) / 200.0;
 
 	float newPrecacheBarX = ratioNewToOldWidth * 28.0; // PRECACHEBARX = 28
 
@@ -1139,7 +1139,7 @@ void PreCache(void)
 								 (int)(newPrecacheBarY + newPrecacheBar1LedY),
 								 W_GetNumForName("led1")); // led1 progressbar
 
-				if (iGLOBAL_SCREENWIDTH > 320)
+				if (FRAMEBUFFERWIDTH > 320)
 				{
 					DrawNormalSprite(
 						(int)(newPrecacheBarX + newPrecacheBar1LedX +
@@ -1152,7 +1152,7 @@ void PreCache(void)
 									   (Gs * (lastmem << 2)) + 3),
 								 (int)(newPrecacheBarY + newPrecacheBar1LedY),
 								 W_GetNumForName("led1")); // led1 progressbar
-				if (iGLOBAL_SCREENWIDTH > 320)
+				if (FRAMEBUFFERWIDTH > 320)
 				{
 					DrawNormalSprite(
 						(int)(newPrecacheBarX + newPrecacheBar1LedX +
@@ -1170,7 +1170,7 @@ void PreCache(void)
 									   (Gs * (lastcache << 2))),
 								 (int)(newPrecacheBarY + newPrecacheBar2LedY),
 								 W_GetNumForName("led2")); // led2 progressbar
-				if (iGLOBAL_SCREENWIDTH > 320)
+				if (FRAMEBUFFERWIDTH > 320)
 				{
 					DrawNormalSprite(
 						(int)(newPrecacheBarX + newPrecacheBar2LedX +
@@ -1217,8 +1217,8 @@ void PreCache(void)
 			char buf[30]; // byte * shape;
 			float WHratio = 16200 / 200;
 			WHratio = WHratio / 100;
-			///	iGLOBAL_SCREENWIDTH = 640;
-			//	iGLOBAL_SCREENHEIGHT = 480;
+			///	FRAMEBUFFERWIDTH = 640;
+			//	FRAMEBUFFERHEIGHT = 480;
 			DisableScreenStretch();
 
 			// Cache in fonts
@@ -1228,8 +1228,8 @@ void PreCache(void)
 
 			strcpy(buf, "Press Any Key");
 			US_MeasureStr(&width, &height, "%s", &buf[0]);
-			PrintX = (iGLOBAL_SCREENWIDTH - (width)) / 2;
-			PrintY = WHratio * iGLOBAL_SCREENHEIGHT; // 162;
+			PrintX = (FRAMEBUFFERWIDTH - (width)) / 2;
+			PrintY = WHratio * FRAMEBUFFERHEIGHT; // 162;
 			// VWB_TBar (PrintX-2, PrintY-2, width+4, height+4);
 			US_BufPrint(&buf[0]);
 

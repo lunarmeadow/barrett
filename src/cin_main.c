@@ -253,7 +253,7 @@ void R_DrawFilmColumn(byte* buf)
 	while (count--)
 	{
 		*dest = cin_source[(frac >> SFRACBITS)];
-		dest += iGLOBAL_SCREENWIDTH;
+		dest += FRAMEBUFFERWIDTH;
 		frac += fracstep;
 	}
 }
