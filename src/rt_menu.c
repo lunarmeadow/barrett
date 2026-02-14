@@ -546,7 +546,7 @@ CP_MenuNames ExtOptionsNames[] = {
 
 CP_MenuNames ExtGameOptionsNames[] = {"LOW MEMORY MODE", "WEAPON RECOLOURS", "DOOM BOBBING", "NO LOW HP SOUND", "HALF MONK HEALTH", "LUDICROUS SKYBOX"}; // erysdren added
 
-CP_MenuNames VisualOptionsNames[] = {"SCREEN RESOLUTION", "FIELD-OF-VIEW",
+CP_MenuNames VisualOptionsNames[] = {"SCREEN RESOLUTION", "ASPECT CORRECTION", "FIELD-OF-VIEW",
 									 "HUD SCALING", "DISPLAY OPTIONS", "CROSSHAIR OPTIONS"};
 
 CP_MenuNames CrosshairOptionsNames[] = {"COLOUR", "PARAMETERS",
@@ -588,7 +588,7 @@ CP_itemtype DisplayOptionsItems[] = {
 	{1, "", 'F', NULL}, {1, "", 'B', NULL}, {1, "", 'B', NULL}};
 
 CP_iteminfo VisualOptionsItems = {
-	20, MENU_Y, 5, 0, 43, VisualOptionsNames, mn_largefont};
+	20, MENU_Y, 6, 0, 43, VisualOptionsNames, mn_largefont};
 
 CP_iteminfo ScreenResolutionItems; // This gets filled in at run time
 
@@ -623,6 +623,8 @@ void CP_ScreenResolution(void);
 
 void CP_DisplayOptions(void);
 void DoAdjustHudScale(void);
+void DoAdjustFOV(void);
+void DoAdjustAspectRatio(void);
 
 void DoAdjustCrosshairColour(void);
 void DoAdjustCrosshairGap(void);
@@ -634,6 +636,7 @@ void CP_CrosshairParameters(void);
 void DrawCrosshairOptionsButtons(void);
 
 CP_itemtype VisualsOptionsMenu[] = {{1, "", 'S', (menuptr)CP_ScreenResolution},
+									{1, "", 'F', (menuptr)DoAdjustAspectRatio},
 									{1, "", 'F', (menuptr)DoAdjustFOV},
 									{1, "", 'H', (menuptr)DoAdjustHudScale},
 									{1, "", 'D', (menuptr)CP_DisplayOptions},
@@ -4625,6 +4628,18 @@ void CP_CrosshairMenu(void)
 	DrawVisualsMenu();
 }
 
+void DoAdjustAspectRatio(void)
+{
+	if(aspectRatioCorrection < 0)
+		aspectRatioCorrection = 0;
+	if(aspectRatioCorrection > 2)
+		aspectRatioCorrection = 0;
+
+	AspectSliderMenu(&aspectRatioCorrection, 44, 81, 194, "block2", NULL,
+			   "Asp. Ratio Correction", "Mode: ");
+	DrawVisualsMenu();
+}
+
 extern int vfov;
 
 void DoAdjustFOV(void)
@@ -4639,6 +4654,7 @@ void DoAdjustFOV(void)
 }
 
 extern int hudRescaleFactor;
+
 void DoAdjustHudScale(void)
 {
 	SliderMenu(&hudRescaleFactor, 10, 0, 44, 81, 194, 1, "block2", NULL,
