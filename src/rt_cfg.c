@@ -88,6 +88,27 @@ bool autoAimMissileWeps = 0;
 bool autoAim = 1;
 bool allowMovementWithMouseYAxis = 1;
 int vfov = 90;
+
+/* 
+	Different levels for aspect ratio correction
+
+	Fast applies 1.2x vertical stretch over a width x (height/1.2) framebuffer
+
+	e.g. 1920x1080 renders at 1920x900 and 1920x1080 is logical size
+
+	Accurate applies 1.2x horizontal squash over a (width/1.2) x height framebuffer
+
+	e.g. 1920x1080 renders at 2304x1080 and 1920x1080 is logical size
+
+	Fast reduces framebuffer size so makes the game faster
+
+	Accurate increases framebuffer size so makes the game slower. 
+
+	0 = none, 1 = fast, 2 = accurate;
+*/
+
+int aspectRatioCorrection = 1;
+
 int ScreenHeightToWriteToCfg = 0;
 int HudScaleToWriteToCfg = 0;
 int ScreenWidthToWriteToCfg = 0;
@@ -448,6 +469,8 @@ bool ParseConfigFile(void)
 		ReadBool("LudicrousSkybox", &ludicrousskybox);
     
 		ReadInt("VerticalFOV", &vfov);
+
+		ReadInt("AspectCorrection", &aspectRatioCorrection);
 
 		ReadInt("InverseMouse", &inverse_mouse);
 
@@ -1689,6 +1712,13 @@ void WriteConfig(void)
 	SafeWriteString(file, "\n;\n");
 	SafeWriteString(file, "; 60-150 VFOV \n");
 	WriteParameter(file, "VerticalFOV      ", vfov);
+
+	// Write out AspectRatioCorrection
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - No Aspect Correct\n");
+	SafeWriteString(file, "; 1 - Fast Aspect Correct\n");
+	SafeWriteString(file, "; 2 - Accurate Aspect Correct\n");
+	WriteParameter(file, "AspectCorrection ", aspectRatioCorrection);
 
 	// Write out InverseMouse
 	SafeWriteString(file, "\n;\n");

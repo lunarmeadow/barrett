@@ -50,6 +50,7 @@ extern bool halfmonkhp;
 extern bool disablelowhpsnd;
 extern bool ludicrousskybox;
 extern int vfov;
+extern int aspectRatioCorrection;
 extern int joystickport;
 extern int mouseadjustment;
 extern int threshold;
