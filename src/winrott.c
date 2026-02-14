@@ -3,6 +3,7 @@
 #include <string.h>
 #include "WinRott.h"
 #include "modexlib.h"
+#include "rt_cfg.h"
 #include "rt_def.h"
 #include "rt_view.h"
 
@@ -47,11 +48,27 @@ void RecalculateFocalLength(void)
 	SetViewDelta();
 }
 
+extern int aspectRatioCorrection;
 void SetRottScreenRes(int Width, int Height)
 {
+	// this is our virtual viewport size
+	DISPLAYWIDTH = Width;
+	DISPLAYHEIGHT = Height;
 
-	FRAMEBUFFERWIDTH = Width;
-	FRAMEBUFFERHEIGHT = Height;
+	switch(aspectRatioCorrection)
+	{
+		case 0: // none
+			FRAMEBUFFERWIDTH = Width;
+			FRAMEBUFFERHEIGHT = Height;
+		case 1: // fast
+			// upscale from width x (height/1.2)
+			FRAMEBUFFERWIDTH = Width;
+			FRAMEBUFFERHEIGHT = Height / 1.2f;
+		case 2: // accurate
+			// downscale from (width/1.2) x height
+			FRAMEBUFFERWIDTH = Width / 1.2f;
+			FRAMEBUFFERHEIGHT = Height;
+	}
 
 	focallength = FOVToFocalLength(vfov);
 	SetViewDelta();
