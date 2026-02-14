@@ -6285,6 +6285,167 @@ bool ColourSliderMenu(int* number, int erasex,
 	return (returnval);
 }
 
+const char *aspectCorrection[3] = {
+	"NONE",
+	"FAST",
+	"ACCURATE",
+};
+
+bool AspectSliderMenu(int* number, int erasex,
+				   int erasey, int erasew, char* blockname,
+				   void (*routine)(int w), char* title, char* label)
+
+{
+	ControlInfo ci;
+	Direction lastdir;
+	patch_t* shape;
+	bool returnval;
+	bool moved;
+	unsigned long scale;
+	int exit;
+	int range;
+	int timer;
+	int width;
+	int height;
+	int strx, stry, strw, strh;
+	int blkx;
+	int eraseh;
+	int block;
+
+	int numadjust = 1;
+	int upperbound = (sizeof(aspectCorrection) / sizeof(aspectCorrection[0])) - 1;
+	int lowerbound = 0;
+
+	SetAlternateMenuBuf();
+	ClearMenuBuf();
+	SetMenuTitle(title);
+
+	newfont1 = (font_t*)W_CacheLumpName("newfnt1", PU_CACHE, Cvt_font_t, 1);
+	CurrentFont = newfont1;
+	PrintX = 28;
+	PrintY = 62;
+	DrawMenuBufPropString(PrintX, PrintY, label);
+
+	VW_MeasurePropString(aspectCorrection[*number], &strw, &strh);
+
+	strx = PrintX + 8;
+	stry = PrintY;
+
+	DrawMenuBufPropString(strx, stry, aspectCorrection[*number]);
+
+	block = W_GetNumForName(blockname);
+	shape = (patch_t*)W_CacheLumpNum(block, PU_CACHE, Cvt_patch_t, 1);
+	blkx = erasex - shape->leftoffset;
+	eraseh = shape->height;
+	scale = (erasew + shape->leftoffset - shape->width) << 16;
+	range = upperbound - lowerbound;
+
+	DrawSTMenuBuf(erasex - 1, erasey - 1, erasew + 1, eraseh + 1, false);
+
+	DrawMenuBufItem(blkx + ((((*number - lowerbound) * scale) / range) >> 16),
+					erasey, block);
+
+	DisplayInfo(1);
+	FlipMenuBuf();
+
+	exit = 0;
+	moved = false;
+	timer = GetTicCount();
+	lastdir = dir_None;
+
+	do
+	{
+		RefreshMenuBuf(0);
+
+		ReadAnyControl(&ci);
+		if (((GetTicCount() - timer) > 5) || (ci.dir != lastdir))
+		{
+			timer = GetTicCount();
+
+			switch (ci.dir)
+			{
+			case dir_North:
+			case dir_West:
+				if (*number > lowerbound)
+				{
+					*number = *number - numadjust;
+
+					if (*number < lowerbound)
+					{
+						*number = lowerbound;
+					}
+
+					moved = true;
+				}
+				break;
+
+			case dir_South:
+			case dir_East:
+				if (*number < upperbound)
+				{
+					*number = *number + numadjust;
+
+					if (*number > upperbound)
+					{
+						*number = upperbound;
+					}
+
+					moved = true;
+				}
+				break;
+			default:;
+			}
+
+			lastdir = ci.dir;
+		}
+
+		if (moved)
+		{
+			moved = false;
+
+			EraseMenuBufRegion(erasex, erasey, erasew, eraseh);
+
+			DrawMenuBufItem(
+				blkx + ((((*number - lowerbound) * scale) / range) >> 16),
+				erasey, block);
+
+			EraseMenuBufRegion(strx, stry, strw, strh);
+			VW_MeasurePropString(aspectCorrection[*number], &strw, &strh);
+			DrawMenuBufPropString(strx, stry, aspectCorrection[*number]);
+			
+			if (routine)
+			{
+				routine(*number);
+			}
+
+			MN_PlayMenuSnd(SD_MOVECURSORSND);
+		}
+
+		if (ci.button0 || Keyboard[sc_Space] || Keyboard[sc_Enter])
+		{
+			exit = 1;
+		}
+		else if (ci.button1 || Keyboard[sc_Escape])
+		{
+			exit = 2;
+		}
+	} while (!exit);
+
+	if (exit == 2)
+	{
+		MN_PlayMenuSnd(SD_ESCPRESSEDSND);
+		returnval = false;
+	}
+	else
+	{
+		MN_PlayMenuSnd(SD_SELECTSND);
+		returnval = true;
+	}
+
+	WaitKeyUp();
+	return (returnval);
+}
+
 //******************************************************************************
 //
 // DrawF1Help ()
