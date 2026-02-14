@@ -31,6 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <string.h>
 #include <ctype.h>
 
+#include "modexlib.h"
 #include "rt_def.h"
 
 #include "rt_cfg.h"
@@ -527,8 +528,8 @@ bool ParseConfigFile(void)
 		ReadBool("BorderlessWindow", &borderlessWindow);
 
 		// Read in resolution
-		ReadInt("ScreenWidth", &FRAMEBUFFERWIDTH);
-		ReadInt("ScreenHeight", &FRAMEBUFFERHEIGHT);
+		ReadInt("ScreenWidth", &DISPLAYWIDTH);
+		ReadInt("ScreenHeight", &DISPLAYHEIGHT);
 
 		// Read in ViewSize
 		ReadInt("ViewSize", &viewsize);

@@ -256,7 +256,9 @@ int main(int argc, char* argv[])
 		GetMenuInfo();
 	}
 
-	SetRottScreenRes(FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT);
+	
+	SetRottScreenRes(DISPLAYWIDTH, DISPLAYHEIGHT);
+	printf("main: framebuffer res %d x %d\nmain: target res %d x %d\n", FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT, DISPLAYWIDTH, DISPLAYHEIGHT);
 
 	GenerateSkyScalerTable();
 
@@ -762,8 +764,8 @@ void SetupWads(void)
 					sscanf(_argv[i], "%dx%d", &width, &height);
 				if (numResParams == 2)
 				{
-					FRAMEBUFFERWIDTH = width;
-					FRAMEBUFFERHEIGHT = height;
+					DISPLAYWIDTH = width;
+					DISPLAYHEIGHT = height;
 				}
 				/*
 								else

@@ -51,23 +51,22 @@ void RecalculateFocalLength(void)
 extern int aspectRatioCorrection;
 void SetRottScreenRes(int Width, int Height)
 {
-	// this is our virtual viewport size
-	DISPLAYWIDTH = Width;
-	DISPLAYHEIGHT = Height;
-
 	switch(aspectRatioCorrection)
 	{
-		case 0: // none
-			FRAMEBUFFERWIDTH = Width;
-			FRAMEBUFFERHEIGHT = Height;
 		case 1: // fast
 			// upscale from width x (height/1.2)
 			FRAMEBUFFERWIDTH = Width;
 			FRAMEBUFFERHEIGHT = Height / 1.2f;
+			break;
 		case 2: // accurate
-			// downscale from (width/1.2) x height
-			FRAMEBUFFERWIDTH = Width / 1.2f;
+			// downscale from (width*1.2) x height
+			FRAMEBUFFERWIDTH = Width * 1.2f;
 			FRAMEBUFFERHEIGHT = Height;
+			break;
+		default: // none
+			FRAMEBUFFERWIDTH = Width;
+			FRAMEBUFFERHEIGHT = Height;
+			break;
 	}
 
 	focallength = FOVToFocalLength(vfov);

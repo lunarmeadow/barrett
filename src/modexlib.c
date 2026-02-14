@@ -409,8 +409,8 @@ void DisableScreenStretch(void)
 	page2start = sdl_surface->pixels;
 	page3start = sdl_surface->pixels;
 	StretchScreen = 0;
-	SDL_RenderSetLogicalSize(renderer, FRAMEBUFFERWIDTH,
-							 FRAMEBUFFERHEIGHT);
+	SDL_RenderSetLogicalSize(renderer, DISPLAYWIDTH,
+							 DISPLAYHEIGHT);
 	// SDL_RenderSetLogicalSize(renderer, 320, 200);
 }
 

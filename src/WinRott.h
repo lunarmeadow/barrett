@@ -9,6 +9,8 @@
 
 extern int FRAMEBUFFERWIDTH;	 // bna val 800
 extern int FRAMEBUFFERHEIGHT; // bna val 600
+extern int DISPLAYWIDTH;	 // bna val 800
+extern int DISPLAYHEIGHT; // bna val 600
 
 // extern int topBarCenterOffsetX;
 
