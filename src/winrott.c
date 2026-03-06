@@ -51,16 +51,30 @@ void RecalculateFocalLength(void)
 extern int aspectRatioCorrection;
 void SetRottScreenRes(int Width, int Height)
 {
+	constexpr int FAST = 1;
+	constexpr int ACCURATE = 2;
+
+	// prevent 320x200 at fast rendering as 320x160 and 3840x2160 as 4608x2160 at accurate
+	// (essentially clamp buffer sizes to 320x200 < res < 3840x2160)
+	if(Width >= 3840 && aspectRatioCorrection == ACCURATE)
+	{
+		aspectRatioCorrection = FAST;
+	}
+	if(Width <= 320 && aspectRatioCorrection == FAST)
+	{
+		aspectRatioCorrection = ACCURATE;
+	}
+
 	switch(aspectRatioCorrection)
 	{
-		case 1: // fast
+		case FAST:
 			// upscale from width x (height/1.2)
 			FRAMEBUFFERWIDTH = Width;
-			FRAMEBUFFERHEIGHT = Height / 1.2f;
+			FRAMEBUFFERHEIGHT = (int)round(Height / 1.2f);
 			break;
-		case 2: // accurate
+		case ACCURATE:
 			// downscale from (width*1.2) x height
-			FRAMEBUFFERWIDTH = Width * 1.2f;
+			FRAMEBUFFERWIDTH = (int)round(Width * 1.2f);
 			FRAMEBUFFERHEIGHT = Height;
 			break;
 		default: // none
