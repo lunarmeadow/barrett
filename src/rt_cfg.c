@@ -528,8 +528,8 @@ bool ParseConfigFile(void)
 		ReadBool("BorderlessWindow", &borderlessWindow);
 
 		// Read in resolution
-		ReadInt("ScreenWidth", &DISPLAYWIDTH);
-		ReadInt("ScreenHeight", &DISPLAYHEIGHT);
+		ReadInt("ScreenWidth", &VIRTUALWIDTH);
+		ReadInt("ScreenHeight", &VIRTUALHEIGHT);
 
 		// Read in ViewSize
 		ReadInt("ViewSize", &viewsize);
@@ -1849,8 +1849,8 @@ void WriteConfig(void)
 	}
 	else
 	{
-		WriteParameter(file, "ScreenWidth      ", FRAMEBUFFERWIDTH);
-		WriteParameter(file, "ScreenHeight     ", FRAMEBUFFERHEIGHT);
+		WriteParameter(file, "ScreenWidth      ", MONITORWIDTH);
+		WriteParameter(file, "ScreenHeight     ", MONITORHEIGHT);
 	}
 
 	// Write out ViewSize

@@ -237,6 +237,22 @@ int main(int argc, char* argv[])
 	StartupSoftError();
 	//   UL_ErrorStartup ();
 
+	// initialize SDL
+	if (SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
+	{
+		Error("Could not initialize SDL\n");
+	}
+
+	// setup screen res and aspect correction
+	GetMonitorResolution();
+
+	// start with monitor width and height on first boot, gets overwritten by config on secondary boot
+	// in effect the monitor resolution becomes the new default resolution
+	VIRTUALWIDTH = MONITORWIDTH;
+	VIRTUALHEIGHT = MONITORHEIGHT;
+	FRAMEBUFFERWIDTH = MONITORWIDTH;
+	FRAMEBUFFERHEIGHT = MONITORHEIGHT;
+
 	CheckCommandLineParameters();
 
 	// Start up Memory manager with a certain amount of reserved memory
@@ -256,9 +272,9 @@ int main(int argc, char* argv[])
 		GetMenuInfo();
 	}
 
-	
-	SetRottScreenRes(DISPLAYWIDTH, DISPLAYHEIGHT);
-	printf("main: framebuffer res %d x %d\nmain: target res %d x %d\n", FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT, DISPLAYWIDTH, DISPLAYHEIGHT);
+	SetRottScreenRes(VIRTUALWIDTH, VIRTUALHEIGHT);
+
+	printf("main: framebuffer res %d x %d\nmain: target res %d x %d\n", FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT, VIRTUALWIDTH, VIRTUALHEIGHT);
 
 	GenerateSkyScalerTable();
 
@@ -764,8 +780,8 @@ void SetupWads(void)
 					sscanf(_argv[i], "%dx%d", &width, &height);
 				if (numResParams == 2)
 				{
-					DISPLAYWIDTH = width;
-					DISPLAYHEIGHT = height;
+					VIRTUALWIDTH = width;
+					VIRTUALHEIGHT = height;
 				}
 				/*
 								else

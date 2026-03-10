@@ -113,14 +113,8 @@ void GraphicsMode(void)
 {
 	Uint32 flags = 0;
 
-	if (SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
-	{
-		Error("Could not initialize SDL\n");
-	}
-
 	// SDL_SetRelativeMouseMode(SDL_TRUE);
 
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 	if (sdl_fullscreen)
 		flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
 
@@ -144,9 +138,6 @@ void GraphicsMode(void)
 									   FRAMEBUFFERHEIGHT, 8, 0, 0, 0, 0);
 
 	SDL_SetSurfaceRLE(sdl_surface, 1);
-
-	SDL_RenderSetLogicalSize(renderer, FRAMEBUFFERWIDTH,
-							 FRAMEBUFFERHEIGHT);
 
 	Uint32 r,g,b,a = 0;
 
@@ -347,7 +338,7 @@ void RenderSurface(void)
 						   FRAMEBUFFERHEIGHT - 16, 320, 16},
 				(SDL_Rect){(FRAMEBUFFERWIDTH - (320 * hudRescaleFactor)) >>
 							   1,
-						    DISPLAYHEIGHT - (16 * hudRescaleFactor),
+						    VIRTUALHEIGHT - (16 * hudRescaleFactor),
 						   320 * hudRescaleFactor,
 						   16 * hudRescaleFactor}); // Bottom Bar
 	}
@@ -409,8 +400,8 @@ void DisableScreenStretch(void)
 	page2start = sdl_surface->pixels;
 	page3start = sdl_surface->pixels;
 	StretchScreen = 0;
-	SDL_RenderSetLogicalSize(renderer, DISPLAYWIDTH,
-							 DISPLAYHEIGHT);
+	SDL_RenderSetLogicalSize(renderer, VIRTUALWIDTH,
+							 VIRTUALHEIGHT);
 	// SDL_RenderSetLogicalSize(renderer, 320, 200);
 }
 

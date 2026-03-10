@@ -5,6 +5,7 @@
 #include "modexlib.h"
 #include "rt_cfg.h"
 #include "rt_def.h"
+#include "rt_util.h"
 #include "rt_view.h"
 
 // typedef unsigned char byte;
@@ -17,8 +18,12 @@ int FRAMEBUFFERHEIGHT = 480;
 // width and height of the displlay in pixels
 // e.g. aspect ratio corrected 1920x1080 may be 1920x900 or 2304x1080 real fb.
 // this is the native target resolution to rescale to
-int DISPLAYWIDTH = 640; 
-int DISPLAYHEIGHT = 480;
+int VIRTUALWIDTH = 640; 
+int VIRTUALHEIGHT = 480;
+
+// width/height of monitor
+int MONITORWIDTH = 640; 
+int MONITORHEIGHT = 480;
 
 int iGLOBAL_SCREENBWIDE;
 int iG_SCREENWIDTH; // default screen width in bytes
@@ -49,6 +54,17 @@ void RecalculateFocalLength(void)
 }
 
 extern int aspectRatioCorrection;
+void GetMonitorResolution()
+{
+	SDL_DisplayMode DM;
+
+	if (SDL_GetDesktopDisplayMode(0, &DM) != 0)
+		Error("Can't get monitor resolution from SDL!\n%s\n", SDL_GetError());
+
+	MONITORWIDTH = DM.w;
+	MONITORHEIGHT = DM.h;
+}
+
 void SetRottScreenRes(int Width, int Height)
 {
 	constexpr int FAST = 1;

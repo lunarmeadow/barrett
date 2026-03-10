@@ -9,8 +9,10 @@
 
 extern int FRAMEBUFFERWIDTH;	 // bna val 800
 extern int FRAMEBUFFERHEIGHT; // bna val 600
-extern int DISPLAYWIDTH;	 // bna val 800
-extern int DISPLAYHEIGHT; // bna val 600
+extern int VIRTUALWIDTH;	 // bna val 800
+extern int VIRTUALHEIGHT; // bna val 600
+extern int MONITORWIDTH;	 // bna val 800
+extern int MONITORHEIGHT; // bna val 600
 
 // extern int topBarCenterOffsetX;
 
@@ -22,6 +24,7 @@ extern int iGLOBAL_HEALTH_Y;
 extern int iGLOBAL_AMMO_X;
 extern int iGLOBAL_AMMO_Y;
 
+void GetMonitorResolution(void);
 void EnableScreenStretch(void);
 void DisableScreenStretch(void);
 void WriteNewResolution(void);
