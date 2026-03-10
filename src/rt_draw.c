@@ -2606,15 +2606,15 @@ void ThreeDRefresh(void)
 			DrawScreenSprite(SCREENEYE->targettilex, SCREENEYE->targettiley,
 							 SCREENEYE->state->condition + GIBEYE1 +
 								 shapestart);
+
+		DrawPlayScreen(false);
+		DrawStats();
+		DrawTime(false);
+
 		UpdateClientControls();
 
 		if (player->flags & FL_GASMASK)
 			DrawScreenSizedSprite(gmasklump);
-
-		if (SHOW_PLAYER_STATS())
-		{
-			DrawStats();
-		}
 
 		DoBorderShifts();
 
@@ -2660,6 +2660,7 @@ void ThreeDRefresh(void)
 		DrawPlayerLocation();
 
 	FlipPage();
+
 	gamestate.frame++;
 
 	player = tempptr;

@@ -347,7 +347,7 @@ void RenderSurface(void)
 						   FRAMEBUFFERHEIGHT - 16, 320, 16},
 				(SDL_Rect){(FRAMEBUFFERWIDTH - (320 * hudRescaleFactor)) >>
 							   1,
-						   FRAMEBUFFERHEIGHT - 16 * hudRescaleFactor,
+						    DISPLAYHEIGHT - (16 * hudRescaleFactor),
 						   320 * hudRescaleFactor,
 						   16 * hudRescaleFactor}); // Bottom Bar
 	}

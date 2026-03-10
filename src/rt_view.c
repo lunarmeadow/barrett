@@ -321,7 +321,7 @@ void SetViewSize(int size)
 	if (SHOW_KILLS())
 	{
 		// Account for height of kill boxes
-		maxheight -= 24;
+		// maxheight -= 24;
 	}
 
 	if (size < 9)
@@ -329,8 +329,8 @@ void SetViewSize(int size)
 		StatusBar |= TOP_STATUS_BAR;
 
 		// Account for height of top status bar
-		maxheight -= 16 * hudRescaleFactor;
-		topy += 16 * hudRescaleFactor;
+		// maxheight -= 16 * hudRescaleFactor;
+		// topy += 16 * hudRescaleFactor;
 	}
 
 	//   if ( size == 7 ){maxheight -= 16;}//bna++
@@ -341,7 +341,7 @@ void SetViewSize(int size)
 		// Turn on health and ammo bar
 		StatusBar |= BOTTOM_STATUS_BAR;
 
-		maxheight -= 16 * hudRescaleFactor;
+		// maxheight -= 16 * hudRescaleFactor;
 	}
 	else if (size < 10)
 	{
@@ -440,9 +440,9 @@ void SetupScreen(bool flip)
 	{
 		shape = (pic_t*)W_CacheLumpName("backtile", PU_CACHE, Cvt_pic_t, 1);
 		// DrawTiledRegion( 0, 16, 320, 200 - 32, 0, 16, shape );
-		DrawTiledRegion(0, 16 * hudRescaleFactor, FRAMEBUFFERWIDTH,
-						FRAMEBUFFERHEIGHT - 16 * hudRescaleFactor, 0, 16,
-						shape); // bna++
+		// DrawTiledRegion(0, 16 * hudRescaleFactor, FRAMEBUFFERWIDTH,
+		// 				FRAMEBUFFERHEIGHT - 16 * hudRescaleFactor, 0, 16,
+		// 				shape); // bna++
 	}
 
 	if (viewsize == 0)
