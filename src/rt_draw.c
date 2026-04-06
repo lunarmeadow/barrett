@@ -2339,6 +2339,8 @@ void InterpolateDoor(visobj_t* plane)
 					bottomscreen = sprtopoffset + (dc_invscale * nominalheight);
 					dc_yl = (sprtopoffset + SFRACUNIT - 1) >> SFRACBITS;
 					dc_yh = ((bottomscreen - 1) >> SFRACBITS) + 1;
+					ylcmp = (sprtopoffset + (dc_invscale>>6) + SFRACUNIT - 1) >> SFRACBITS;
+					yhcmp = ((bottomscreen - 1 - (dc_invscale>>6)) >> SFRACBITS) + 1;
 					if (dc_yl >= viewheight)
 						continue;
 					else if (dc_yl < 0)

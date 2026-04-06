@@ -264,8 +264,8 @@ void ScaleTransparentTallPost(byte* src, byte* buf, int level)
 		// find out how many pixels to duplicate to cover sparkles
 		dc_yl = (topscreen + SFRACUNIT) >> SFRACBITS;
 		dc_yh = ((bottomscreen - (dc_invscale/64)) >> SFRACBITS);
-		ylcmp = (topscreen + (dc_invscale/64) + SFRACUNIT) >> SFRACBITS;
-		yhcmp = ((bottomscreen - (dc_invscale/64)) >> SFRACBITS);
+		ylcmp = (topscreen + (dc_invscale>>6) + SFRACUNIT) >> SFRACBITS;
+		yhcmp = ((bottomscreen - (dc_invscale>>6)) >> SFRACBITS);
 
 		if (yhcmp >= viewheight)
 			yhcmp = viewheight - 1;
@@ -1236,12 +1236,12 @@ void R_DrawTallColumn(byte* buf)
 {
 	// This is *NOT* 100% correct - DDOI
 	int scalecount, texcount;
-	uint32_t frac, fracstep, sparkfrac;
+	uint32_t frac, fracstep;
 	bool sparkleMask = false;
 	byte* dest;
 
 	// force compiler to preload globals in a register
-	const int screenW = FRAMEBUFFERWIDTH;
+	const int screenW = iGLOBAL_SCREENWIDTH;
 	const byte* restrict colormap = shadingtable;
 	const byte* restrict texture = dc_source;
 
@@ -1265,18 +1265,7 @@ void R_DrawTallColumn(byte* buf)
 	fracstep = dc_iscale;
 	frac = dc_texturemid + (dc_yl - centery) * fracstep;
 
-	// if we detect a sparklie, we need to draw the first pixel in a valid index.
-	// to do so, we should increment by fracstep, to essentially grab the next iteration.
-	// this has a few edge cases. 
-	// this will move sparklies to the top of the screen 
-	// when the top of a column is near the start of the screen,
-	// as this will mess up the frac calculations.
-
-	// likewise, if the fracstep is greater than 65536, 
-	// we will move the whole index over way too far, meaning that
-	// distant masked walls and at low resolutions, the tops of columns will shimmer.
-	// this effectively acts as a texel size check to ensure we don't cause shimmering.
-	if(sparkleMask && dc_yl >= 1 && fracstep < 65536)
+	if(sparkleMask && scalecount--)
 	{
 		// move pixel back over by 1/64th
 		*dest = colormap[texture[((frac + (dc_invscale >> 6)) >> SFRACBITS)]];
@@ -1286,9 +1275,6 @@ void R_DrawTallColumn(byte* buf)
 		// fetch next texture
 		if(texcount--)
 			frac += fracstep;
-
-		// replaces first iteration, so skip last of scaler loop
-		scalecount--;
 	}
 
 	while (scalecount--)
@@ -1337,7 +1323,9 @@ void R_DrawUpperDoorColumn(byte* buf)
 	const byte* restrict colormap = shadingtable;
 	const byte* restrict texture = dc_source;
 
-	count = dc_yh - dc_yl + 1;
+	count = dc_yh - dc_yl;
+	texcount = yhcmp - ylcmp;
+
 	if (count < 0)
 		return;
 
@@ -1353,7 +1341,9 @@ void R_DrawUpperDoorColumn(byte* buf)
 		//*dest = 6;
 		*dest = colormap[texture[(frac >> 26)]];
 		dest += screenW;
-		frac += fracstep;
+
+		if(texcount--)
+			frac += fracstep;
 	}
 }
 
