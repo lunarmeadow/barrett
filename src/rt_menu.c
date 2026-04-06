@@ -4710,6 +4710,30 @@ void DoAdjustCrosshairLength(void)
 	DrawCrosshairMenu();
 }
 
+int ResCompare(const void* a, const void* b)
+{
+    // get validresolution objects out for comparison
+    const ValidResolution *rA = (const ValidResolution *)a;
+    const ValidResolution *rB = (const ValidResolution *)b;
+
+    // get fields
+    float w1 = rA->width;
+    float h1 = rA->height;
+    float w2 = rB->width;
+    float h2 = rB->height;
+
+    // get ratios
+    float r1 = w1 / h1;
+    float r2 = w2 / h2;
+
+    // compare and return
+    if(r1 > r2)
+        return 1;
+    else if(r2 < r1)
+        return -1;
+    else
+        return 0;
+}
 
 void DrawScreenResolutionMenu(void)
 {
@@ -4727,6 +4751,8 @@ void DrawScreenResolutionMenu(void)
 		int nbrResolutions =
 			sizeof(AvailableResolutions) / sizeof(AvailableResolutions[0]);
 
+		qsort(AvailableResolutions, nbrResolutions, sizeof(ValidResolution), ResCompare);
+		
 		ScreenResolutions = malloc(nbrResolutions * sizeof(CP_MenuNames));
 		ScreenResolutionMenu = malloc(nbrResolutions * sizeof(CP_itemtype));
 
