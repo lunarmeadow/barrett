@@ -1241,7 +1241,7 @@ void R_DrawTallColumn(byte* buf)
 	byte* dest;
 
 	// force compiler to preload globals in a register
-	const int screenW = iGLOBAL_SCREENWIDTH;
+	const int screenW = FRAMEBUFFERWIDTH;
 	const byte* restrict colormap = shadingtable;
 	const byte* restrict texture = dc_source;
 
@@ -1314,7 +1314,7 @@ void R_TransColumn(byte* buf)
 void R_DrawUpperDoorColumn(byte* buf)
 {
 	// This is *NOT* 100% correct - DDOI
-	int count;
+	int count, texcount;
 	uint32_t frac, fracstep;
 	byte* dest;
 

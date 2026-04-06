@@ -621,6 +621,7 @@ CP_itemtype CrosshairParamsMenu[] = {
 
 void CP_ScreenResolution(void);
 void CP_RestartProgramMessage(void);
+void CP_HighResMessage(void);
 
 void CP_DisplayOptions(void);
 void DoAdjustHudScale(void);
@@ -4771,11 +4772,19 @@ void DrawScreenResolutionMenu(void)
 }
 
 void CP_RestartProgramMessage(void)
-
 {
 	CP_ErrorMsg(
 		"Note:",
 		"Changes will not be applied until the application is restarted. "
+		"Hit any key to continue.",
+		mn_smallfont);
+}
+
+void CP_HighResMessage(void)
+{
+	CP_ErrorMsg(
+		"Note:",
+		"Resolutions above 1920x1080 may have poor performance and/or graphical artifacting. "
 		"Hit any key to continue.",
 		mn_smallfont);
 }
@@ -4801,6 +4810,9 @@ void CP_ScreenResolution(void)
 		writeNewResIntoCfg = true;
 	}
 
+	if(ScreenWidthToWriteToCfg > 1920 || ScreenHeightToWriteToCfg > 1080)
+		CP_HighResMessage();
+	
 	if (writeNewResIntoCfg)
 		CP_RestartProgramMessage();
 
