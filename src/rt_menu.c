@@ -1208,6 +1208,11 @@ void SetUpControlPanel(void)
 	Xres = 640;
 	Yres = 400;
 
+	if(aspectRatioCorrection == 1)
+		Yres = (int)Yres / 1.2f;
+	else if (aspectRatioCorrection == 2)
+	 	Xres = (int)Xres / 1.2f;
+
 	// Save the current game screen
 
 	// bna--savedscreen = SafeMalloc (16000);
