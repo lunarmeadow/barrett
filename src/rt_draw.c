@@ -2337,16 +2337,16 @@ void InterpolateDoor(visobj_t* plane)
 				{
 					sprtopoffset -= (dc_invscale << 6) * (levelheight - 1);
 					bottomscreen = sprtopoffset + (dc_invscale * nominalheight);
-					dc_yl = (sprtopoffset + SFRACUNIT - 1) >> SFRACBITS;
-					dc_yh = ((bottomscreen - 1) >> SFRACBITS) + 1;
-					ylcmp = (sprtopoffset + (dc_invscale>>6) + SFRACUNIT - 1) >> SFRACBITS;
-					yhcmp = ((bottomscreen - 1 - (dc_invscale>>6)) >> SFRACBITS) + 1;
+					dc_yl = (sprtopoffset + SFRACUNIT) >> SFRACBITS;
+					dc_yh = ((bottomscreen + (dc_invscale>>6)) >> SFRACBITS) + 1;
+					ylcmp = (sprtopoffset + (dc_invscale>>6) + SFRACUNIT) >> SFRACBITS;
+					yhcmp = ((bottomscreen - (dc_invscale>>6)) >> SFRACBITS) + 1;
 					if (dc_yl >= viewheight)
 						continue;
 					else if (dc_yl < 0)
 						dc_yl = 0;
 					if (dc_yh > viewheight)
-						dc_yh = viewheight;
+						dc_yh = viewheight - 1;
 
 					dc_source = shape2 + ((texture << 6) & 0xfc0);
 					R_DrawUpperDoorColumn(buf);

@@ -330,11 +330,11 @@ void ScaleMaskedTallPost(byte* src, byte* buf)
 		yhcmp = ((bottomscreen - (dc_invscale/64)) >> SFRACBITS);
 
 		if (dc_yh >= viewheight)
-			dc_yh = viewheight;
+			dc_yh = viewheight - 1;
 		if (dc_yl < 0)
 			dc_yl = 0;
 		if (yhcmp >= viewheight)
-			yhcmp = viewheight;
+			yhcmp = viewheight - 1;
 		if (ylcmp < 0)
 			ylcmp = 0;
 		if (dc_yl <= dc_yh)
@@ -1317,6 +1317,7 @@ void R_DrawUpperDoorColumn(byte* buf)
 	int count, texcount;
 	uint32_t frac, fracstep;
 	byte* dest;
+	//bool sparkleMask;
 
 	// force compiler to preload globals in a register
 	const int screenW = FRAMEBUFFERWIDTH;
@@ -1325,6 +1326,9 @@ void R_DrawUpperDoorColumn(byte* buf)
 
 	count = dc_yh - dc_yl;
 	texcount = yhcmp - ylcmp;
+
+	// if (ylcmp - dc_yl == 1)
+	// 	count = dc_yh - dc_yl + 1;
 
 	if (count < 0)
 		return;
