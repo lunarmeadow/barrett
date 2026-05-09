@@ -7,9 +7,9 @@ project(barrett
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 # only ONE of these may be active at a time (or none for the default registered version)
-option(BARRETT_SHAREWARE "Shareware" OFF)
-option(BARRETT_SUPERROTT "SuperROTT" OFF)
-option(BARRETT_SITELICENSE "Site License" OFF)
+option(BARRETT_SHAREWARE "Build Shareware version" OFF)
+option(BARRETT_SUPERROTT "Build SuperROTT version" OFF)
+option(BARRETT_SITELICENSE "Build Site License version" OFF)
 option(BARRETT_USEASAN "Turn on ASAN" OFF)
 
 if((BARRETT_SHAREWARE AND BARRETT_SUPERROTT) OR (BARRETT_SUPERROTT AND BARRETT_SITELICENSE) OR (BARRETT_SHAREWARE AND BARRETT_SITELICENSE))
@@ -136,27 +136,22 @@ target_compile_definitions(barrett PRIVATE SUPERROTT=$<BOOL:${BARRETT_SUPERROTT}
 target_compile_definitions(barrett PRIVATE SITELICENSE=$<BOOL:${BARRETT_SITELICENSE}>)
 target_compile_definitions(barrett PRIVATE PLATFORM_UNIX=1)
 set_target_properties(barrett PROPERTIES C_STANDARD_REQUIRED ON C_STANDARD 23)
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "CLANG")
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
 	target_compile_options(barrett PRIVATE -Wall -Wextra -Wshadow=compatible-local -Wpedantic -Wfatal-errors)
-endif()
-
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_options(barrett PRIVATE -g -O0)
-endif()
-
-if (CMAKE_BUILD_TYPE STREQUAL "Release")
-    target_compile_options(barrett PRIVATE -O2)
+	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+		target_compile_options(barrett PRIVATE -g -O0)
+		if(NOT MINGW)
+			target_link_options(barrett PRIVATE -rdynamic)
+		endif()
+	elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+		target_compile_options(barrett PRIVATE -O2)
+	endif()
 endif()
 
 # statically link libc on windows bc mingw is a royal pain in the ass.
 # maybe use MSVC eventually but this should be good for now.
 # windows executable is probably huge so it should be stripped and compiled for size.
-if(WIN32)	
-    if(MINGW)
-		target_link_options(barrett PRIVATE -static-libgcc -static-libstdc++ -static)
-	endif()
-endif()
-
-if (CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT WIN32)
-    target_link_options(barrett PRIVATE -rdynamic)
+if(MINGW)
+	target_compile_options(barrett PRIVATE -static-libgcc -static-libstdc++ -static)
+	target_link_options(barrett PRIVATE -static-libgcc -static-libstdc++ -static)
 endif()
