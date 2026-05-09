@@ -33,7 +33,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "rt_fixed.h"
 #include <stdio.h>
 #include <stdlib.h>
+#if PLATFORM_UNIX
 #include <unistd.h>
+#endif
 
 #include "rt_cfg.h"
 #include "isr.h"
@@ -711,8 +713,9 @@ void SD_PreCacheSoundGroup(int lo, int hi)
 		SD_PreCacheSound(i);
 }
 
-#define MAXSHAREWARESONGS 18
-static song_t rottsharewaresongs[MAXSHAREWARESONGS] = {
+#if (SHAREWARE == 1)
+#define MAXSONGS 18
+static song_t rottsongs[MAXSONGS] = {
 	{loop_no, song_apogee, "FANFARE2", "Apogee Fanfare"},
 	{loop_yes, song_title, "RISE", "Rise"},
 	{loop_yes, song_menu, "MMMENU", "MMMenu"},
@@ -732,9 +735,9 @@ static song_t rottsharewaresongs[MAXSHAREWARESONGS] = {
 	{loop_yes, song_level, "SMOOTH", "Havana Smooth"},
 	{loop_yes, song_level, "CHANT", "Chant"}
 };
-
-#define MAXREGISTEREDSONGS 34
-static song_t rottregisteredsongs[MAXREGISTEREDSONGS] = {
+#else
+#define MAXSONGS 34
+static song_t rottsongs[MAXSONGS] = {
 	{loop_no, song_apogee, "FANFARE2", "Apogee Fanfare"},
 	{loop_yes, song_title, "RISE", "Rise"},
 	{loop_yes, song_menu, "MMMENU", "MMMenu"},
@@ -770,9 +773,7 @@ static song_t rottregisteredsongs[MAXREGISTEREDSONGS] = {
 	{loop_yes, song_youwin, "VICTORY", "Victory!"},
 	{loop_yes, song_dogend, "HERE_BOY", "Here Boy"}
 };
-
-static int MAXSONGS = 0;
-static song_t *rottsongs = NULL;
+#endif
 
 static char* currentsong;
 static int MU_Started = false;
@@ -885,6 +886,7 @@ int MU_Startup(bool bombonerror)
 
 	MU_SetVolume(MUvolume);
 
+#if 0
 	if (IS_SHAREWARE)
 	{
 		rottsongs = rottsharewaresongs;
@@ -895,6 +897,7 @@ int MU_Startup(bool bombonerror)
 		rottsongs = rottregisteredsongs;
 		MAXSONGS = MAXREGISTEREDSONGS;
 	}
+#endif
 
 	return (0);
 }

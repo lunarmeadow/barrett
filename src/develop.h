@@ -20,6 +20,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _develop_public
 #define _develop_public
 
+#include <stdbool.h>
+#include <stdint.h>
+
 #define NOMEMCHECK
 #define WEAPONCHEAT 1
 #define SYNCCHECK	1
@@ -40,5 +43,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // okay?
 
 #define TEDLAUNCH 0
+
+#if defined(__GNUC__) || defined(__clang__)
+#define ATTR_PRINTF(FMT, VARGS) __attribute__((format(printf, FMT , VARGS)))
+#define ATTR_NORETURN  __attribute__((noreturn))
+#else
+#define ATTR_PRINTF(FMT, VARGS)
+#define ATTR_NORETURN __declspec(noreturn)
+#endif
 
 #endif

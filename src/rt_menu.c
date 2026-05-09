@@ -31,7 +31,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <string.h>
 #include <ctype.h>
 
+#if PLATFORM_UNIX
 #include <unistd.h>
+#endif
+
 #include "SDL.h"
 
 #include <sys/types.h>

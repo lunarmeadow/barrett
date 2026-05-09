@@ -26,6 +26,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _rt_str_public
 #define _rt_str_public
 
+#include "develop.h"
 #include "lumpy.h"
 
 //***************************************************************************
@@ -73,8 +74,7 @@ void US_ClippedPrint(int x, int y, const char* s);
 void VWB_DrawPropString(const char* string);
 void VW_MeasurePropString(const char* string, int* width, int* height);
 
-void US_MeasureStr(int* width, int* height, const char* s, ...)
-	__attribute__((format(printf, 3, 4)));
+void US_MeasureStr(int* width, int* height, const char* s, ...) ATTR_PRINTF(3, 4);
 
 void VW_DrawPropString(const char* string);
 

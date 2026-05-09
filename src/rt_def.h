@@ -40,9 +40,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <malloc.h>
 #include <fcntl.h>
 #include <io.h>
+#include <direct.h>
 // #define alloca(x) _alloca(x)
 #define access(x, y) _access(x, y)
-#define F_OK		 0
+#define getcwd(x, y) _getcwd(x, y)
+#define chdir(x) _chdir(x)
+#define F_OK 0
+#define R_OK 4
+#define S_IWUSR S_IWRITE
+#define S_IRUSR S_IREAD
 #endif
 
 #if PLATFORM_WIN32
