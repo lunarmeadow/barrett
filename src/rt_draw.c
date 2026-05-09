@@ -2609,14 +2609,19 @@ void ThreeDRefresh(void)
 							 SCREENEYE->state->condition + GIBEYE1 +
 								 shapestart);
 
-		DrawPlayScreen(false);
-		DrawStats();
-		DrawTime(false);
+		// DrawPlayScreen(false);
+		// DrawStats();
+		// DrawTime(false);
 
 		UpdateClientControls();
 
 		if (player->flags & FL_GASMASK)
 			DrawScreenSizedSprite(gmasklump);
+
+		if(SHOW_PLAYER_STATS())
+		{
+			DrawStats();
+		}
 
 		DoBorderShifts();
 

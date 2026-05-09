@@ -326,21 +326,25 @@ void RenderSurface(void)
 		if (SHOW_TOP_STATUS_BAR())
 			RescaleAreaOfTexture(
 				renderer, newTex,
-				(SDL_Rect){(FRAMEBUFFERWIDTH - 320) >> 1, 0, 320, 16},
-				(SDL_Rect){(FRAMEBUFFERWIDTH - (320 * hudRescaleFactor)) >>
-							   1,
-						   0, 320 * hudRescaleFactor,
-						   16 * hudRescaleFactor}); // Status Bar
+				(SDL_Rect){(FRAMEBUFFERWIDTH - 320) >> 1,
+							0,
+							320,
+							16},
+				(SDL_Rect){(VIRTUALWIDTH - (320 * hudRescaleFactor)) >> 1,
+						    0,
+							320 * hudRescaleFactor,
+						    16 * hudRescaleFactor}); // Status Bar
 		if (SHOW_BOTTOM_STATUS_BAR())
 			RescaleAreaOfTexture(
 				renderer, newTex,
 				(SDL_Rect){(FRAMEBUFFERWIDTH - 320) >> 1,
-						   FRAMEBUFFERHEIGHT - 16, 320, 16},
-				(SDL_Rect){(FRAMEBUFFERWIDTH - (320 * hudRescaleFactor)) >>
-							   1,
+						    FRAMEBUFFERHEIGHT - 16,
+							320,
+							16},
+				(SDL_Rect){(VIRTUALWIDTH - (320 * hudRescaleFactor)) >> 1,
 						    VIRTUALHEIGHT - (16 * hudRescaleFactor),
-						   320 * hudRescaleFactor,
-						   16 * hudRescaleFactor}); // Bottom Bar
+							320 * hudRescaleFactor,
+						    16 * hudRescaleFactor}); // Bottom Bar
 	}
 
 	SDL_RenderPresent(renderer);

@@ -283,6 +283,16 @@ void SetViewSize(int size)
 	int sW = FRAMEBUFFERWIDTH;
 	int sH = FRAMEBUFFERHEIGHT;
 
+	// scale screen boundaries for diff ARC modes
+	// VGA pixels are 1:1.2
+
+	// ARC mode 1 is fast, which affects height.
+	// as such height must be recalculated.
+	// this doesn't apply to ARC mode 2 which downscales width
+	int scaleConstant = 16;
+	if(aspectRatioCorrection == 1)
+		scaleConstant = 13;
+
 	/*
 	if (size>=10){
 
@@ -321,7 +331,7 @@ void SetViewSize(int size)
 	if (SHOW_KILLS())
 	{
 		// Account for height of kill boxes
-		// maxheight -= 24;
+		maxheight -= 24;
 	}
 
 	if (size < 9)
@@ -329,8 +339,8 @@ void SetViewSize(int size)
 		StatusBar |= TOP_STATUS_BAR;
 
 		// Account for height of top status bar
-		// maxheight -= 16 * hudRescaleFactor;
-		// topy += 16 * hudRescaleFactor;
+		maxheight -= scaleConstant * hudRescaleFactor;
+		topy += scaleConstant * hudRescaleFactor;
 	}
 
 	//   if ( size == 7 ){maxheight -= 16;}//bna++
@@ -341,7 +351,7 @@ void SetViewSize(int size)
 		// Turn on health and ammo bar
 		StatusBar |= BOTTOM_STATUS_BAR;
 
-		// maxheight -= 16 * hudRescaleFactor;
+		maxheight -= scaleConstant * hudRescaleFactor;
 	}
 	else if (size < 10)
 	{
@@ -363,16 +373,6 @@ void SetViewSize(int size)
 	centery = viewheight >> 1;
 	centeryfrac = (centery << 16);
 
-	// this equation was derived from observing that the correlation between
-	// the player's z-angle and the camera shearing position was affected by screen resolution.
-	// i deduced that aspect ratio was the true factor 
-	// through testing different resolutions of a given aspect ratio
-	// Through trial and error I derived some different optimal fixed-point scaling coefficients
-	// for different aspect ratios, and this is the formula obtained, 
-	// through means of a linear correlation calculation. Was originally 0xAF85.
-	// 18432 was rounded to 16384 to compensate for the now truly centered crosshair,
-	// and as a manual test to determine accuracy. 
-	// This now very accurately, truly converts player angles to screen angles.
 	int anglescale = (int)(16384 * ((float)sW / sH) + 8192);
 
 	yzangleconverter = (int)((anglescale * ((float)focallength / 160)) * ((float)viewheight / 200));
@@ -440,9 +440,9 @@ void SetupScreen(bool flip)
 	{
 		shape = (pic_t*)W_CacheLumpName("backtile", PU_CACHE, Cvt_pic_t, 1);
 		// DrawTiledRegion( 0, 16, 320, 200 - 32, 0, 16, shape );
-		// DrawTiledRegion(0, 16 * hudRescaleFactor, FRAMEBUFFERWIDTH,
-		// 				FRAMEBUFFERHEIGHT - 16 * hudRescaleFactor, 0, 16,
-		// 				shape); // bna++
+		DrawTiledRegion(0, 16 * hudRescaleFactor, FRAMEBUFFERWIDTH,
+						FRAMEBUFFERHEIGHT - 16 * hudRescaleFactor, 0, 16,
+						shape); // bna++
 	}
 
 	if (viewsize == 0)

@@ -372,8 +372,8 @@ void DrawPlayScreen(bool bufferofsonly)
 		{
 			shape = (pic_t*)W_CacheLumpName("backtile", PU_CACHE, Cvt_pic_t, 1);
 
-			// DrawTiledRegion(0, 0, FRAMEBUFFERWIDTH, 16 * hudRescaleFactor, 0,
-			// 				16, shape);
+			DrawTiledRegion(0, 0, FRAMEBUFFERWIDTH, 16 * hudRescaleFactor, 0,
+							16, shape);
 		}
 		shape = (pic_t*)W_CacheLumpName("stat_bar", PU_CACHE, Cvt_pic_t, 1);
 
@@ -393,9 +393,9 @@ void DrawPlayScreen(bool bufferofsonly)
 		{
 			shape = (pic_t*)W_CacheLumpName("backtile", PU_CACHE, Cvt_pic_t, 1);
 
-			// DrawTiledRegion(0, FRAMEBUFFERHEIGHT - 16 * hudRescaleFactor,
-			// 				FRAMEBUFFERWIDTH, 13 * hudRescaleFactor, 10, 10,
-			// 				shape);
+			DrawTiledRegion(0, FRAMEBUFFERHEIGHT - 16 * hudRescaleFactor,
+							FRAMEBUFFERWIDTH, 13 * hudRescaleFactor, 10, 10,
+							shape);
 			// DrawTiledRegion( 0, FRAMEBUFFERHEIGHT - 29*hudRescaleFactor,
 			// FRAMEBUFFERWIDTH, 3*hudRescaleFactor, 10,10, shape );
 

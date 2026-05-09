@@ -102,7 +102,7 @@ void SetRottScreenRes(int Width, int Height)
 	focallength = FOVToFocalLength(vfov);
 	SetViewDelta();
 
-	int middleWidth = Width / 2;
+	int middleWidth = FRAMEBUFFERWIDTH / 2;
 
 	iGLOBAL_AMMO_X = middleWidth + 160 - 20;
 
