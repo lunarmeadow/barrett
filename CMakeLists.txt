@@ -46,9 +46,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(adlmidi inih)
 
 if(MSVC)
-	if(NOT BARRETT_SDL2_VERSION)
-		set(BARRETT_SDL2_VERSION "2.32.10")
-	endif()
+	set(BARRETT_SDL2_VERSION "2.32.10")
 	FetchContent_Declare(
 		sdl2_msvc
 		URL "https://github.com/libsdl-org/SDL/releases/download/release-${BARRETT_SDL2_VERSION}/SDL2-devel-${BARRETT_SDL2_VERSION}-VC.zip"
@@ -56,9 +54,7 @@ if(MSVC)
 	)
 	FetchContent_MakeAvailable(sdl2_msvc)
 	set(SDL2_DIR "${sdl2_msvc_SOURCE_DIR}/cmake")
-	if(NOT BARRETT_SDL2_MIXER_VERSION)
-		set(BARRETT_SDL2_MIXER_VERSION "2.8.1")
-	endif()
+	set(BARRETT_SDL2_MIXER_VERSION "2.8.1")
 	FetchContent_Declare(
 		sdl2_mixer_msvc
 		URL "https://github.com/libsdl-org/SDL_mixer/releases/download/release-${BARRETT_SDL2_MIXER_VERSION}/SDL2_mixer-devel-${BARRETT_SDL2_MIXER_VERSION}-VC.zip"
