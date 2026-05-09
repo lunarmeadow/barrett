@@ -33,7 +33,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "rt_fixed.h"
 #include <stdio.h>
 #include <stdlib.h>
+#if PLATFORM_UNIX
 #include <unistd.h>
+#endif
 
 #include "rt_cfg.h"
 #include "isr.h"
