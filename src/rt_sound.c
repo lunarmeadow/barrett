@@ -773,7 +773,12 @@ static song_t rottregisteredsongs[MAXREGISTEREDSONGS] = {
 	{loop_yes, song_dogend, "HERE_BOY", "Here Boy"}
 };
 
-static int MAXSONGS = 0;
+#if (SHAREWARE == 1)
+#define MAXSONGS MAXSHAREWARESONGS
+#else
+#define MAXSONGS MAXREGISTEREDSONGS
+#endif
+
 static song_t *rottsongs = NULL;
 
 static char* currentsong;
@@ -890,6 +895,16 @@ int MU_Startup(bool bombonerror)
 	if (IS_SHAREWARE)
 	{
 		rottsongs = rottsharewaresongs;
+	}
+	else
+	{
+		rottsongs = rottregisteredsongs;
+	}
+
+#if 0
+	if (IS_SHAREWARE)
+	{
+		rottsongs = rottsharewaresongs;
 		MAXSONGS = MAXSHAREWARESONGS;
 	}
 	else
@@ -897,6 +912,7 @@ int MU_Startup(bool bombonerror)
 		rottsongs = rottregisteredsongs;
 		MAXSONGS = MAXREGISTEREDSONGS;
 	}
+#endif
 
 	return (0);
 }
