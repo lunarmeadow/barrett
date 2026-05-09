@@ -162,7 +162,7 @@ target_compile_definitions(barrett PRIVATE SITELICENSE=$<BOOL:${BARRETT_SITELICE
 if(MSVC)
 	target_compile_definitions(barrett PRIVATE PLATFORM_WIN32=1)
 	target_compile_definitions(barrett PRIVATE PLATFORM_UNIX=0)
-	target_compile_options(barrett PRIVATE /wd4996 /wd4305 /wd4244)
+	target_compile_options(barrett PRIVATE /wd4996 /wd4305 /wd4244 /wd4101)
 else()
 	target_compile_definitions(barrett PRIVATE PLATFORM_WIN32=0)
 	target_compile_definitions(barrett PRIVATE PLATFORM_UNIX=1)

@@ -713,8 +713,9 @@ void SD_PreCacheSoundGroup(int lo, int hi)
 		SD_PreCacheSound(i);
 }
 
-#define MAXSHAREWARESONGS 18
-static song_t rottsharewaresongs[MAXSHAREWARESONGS] = {
+#if (SHAREWARE == 1)
+#define MAXSONGS 18
+static song_t rottsongs[MAXSONGS] = {
 	{loop_no, song_apogee, "FANFARE2", "Apogee Fanfare"},
 	{loop_yes, song_title, "RISE", "Rise"},
 	{loop_yes, song_menu, "MMMENU", "MMMenu"},
@@ -734,9 +735,9 @@ static song_t rottsharewaresongs[MAXSHAREWARESONGS] = {
 	{loop_yes, song_level, "SMOOTH", "Havana Smooth"},
 	{loop_yes, song_level, "CHANT", "Chant"}
 };
-
-#define MAXREGISTEREDSONGS 34
-static song_t rottregisteredsongs[MAXREGISTEREDSONGS] = {
+#else
+#define MAXSONGS 34
+static song_t rottsongs[MAXSONGS] = {
 	{loop_no, song_apogee, "FANFARE2", "Apogee Fanfare"},
 	{loop_yes, song_title, "RISE", "Rise"},
 	{loop_yes, song_menu, "MMMENU", "MMMenu"},
@@ -772,14 +773,7 @@ static song_t rottregisteredsongs[MAXREGISTEREDSONGS] = {
 	{loop_yes, song_youwin, "VICTORY", "Victory!"},
 	{loop_yes, song_dogend, "HERE_BOY", "Here Boy"}
 };
-
-#if (SHAREWARE == 1)
-#define MAXSONGS MAXSHAREWARESONGS
-#else
-#define MAXSONGS MAXREGISTEREDSONGS
 #endif
-
-static song_t *rottsongs = NULL;
 
 static char* currentsong;
 static int MU_Started = false;
@@ -891,15 +885,6 @@ int MU_Startup(bool bombonerror)
 	MU_Started = true;
 
 	MU_SetVolume(MUvolume);
-
-	if (IS_SHAREWARE)
-	{
-		rottsongs = rottsharewaresongs;
-	}
-	else
-	{
-		rottsongs = rottregisteredsongs;
-	}
 
 #if 0
 	if (IS_SHAREWARE)
