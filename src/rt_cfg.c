@@ -31,6 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <string.h>
 #include <ctype.h>
 
+#include "modexlib.h"
 #include "rt_def.h"
 
 #include "rt_cfg.h"
@@ -88,6 +89,27 @@ bool autoAimMissileWeps = 0;
 bool autoAim = 1;
 bool allowMovementWithMouseYAxis = 1;
 int vfov = 90;
+
+/* 
+	Different levels for aspect ratio correction
+
+	Fast applies 1.2x vertical stretch over a width x (height/1.2) framebuffer
+
+	e.g. 1920x1080 renders at 1920x900 and 1920x1080 is logical size
+
+	Accurate applies 1.2x horizontal squash over a (width/1.2) x height framebuffer
+
+	e.g. 1920x1080 renders at 2304x1080 and 1920x1080 is logical size
+
+	Fast reduces framebuffer size so makes the game faster
+
+	Accurate increases framebuffer size so makes the game slower. 
+
+	0 = none, 1 = fast, 2 = accurate;
+*/
+
+int aspectRatioCorrection = 1;
+
 int ScreenHeightToWriteToCfg = 0;
 int HudScaleToWriteToCfg = 0;
 int ScreenWidthToWriteToCfg = 0;
@@ -449,6 +471,8 @@ bool ParseConfigFile(void)
     
 		ReadInt("VerticalFOV", &vfov);
 
+		ReadInt("AspectCorrection", &aspectRatioCorrection);
+
 		ReadInt("InverseMouse", &inverse_mouse);
 
 		ReadBool("AllowMovementWithMouseYAxis",
@@ -504,8 +528,8 @@ bool ParseConfigFile(void)
 		ReadBool("BorderlessWindow", &borderlessWindow);
 
 		// Read in resolution
-		ReadInt("ScreenWidth", &iGLOBAL_SCREENWIDTH);
-		ReadInt("ScreenHeight", &iGLOBAL_SCREENHEIGHT);
+		ReadInt("ScreenWidth", &VIRTUALWIDTH);
+		ReadInt("ScreenHeight", &VIRTUALHEIGHT);
 
 		// Read in ViewSize
 		ReadInt("ViewSize", &viewsize);
@@ -1690,6 +1714,13 @@ void WriteConfig(void)
 	SafeWriteString(file, "; 60-150 VFOV \n");
 	WriteParameter(file, "VerticalFOV      ", vfov);
 
+	// Write out AspectRatioCorrection
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - No Aspect Correct\n");
+	SafeWriteString(file, "; 1 - Fast Aspect Correct\n");
+	SafeWriteString(file, "; 2 - Accurate Aspect Correct\n");
+	WriteParameter(file, "AspectCorrection ", aspectRatioCorrection);
+
 	// Write out InverseMouse
 	SafeWriteString(file, "\n;\n");
 	SafeWriteString(file, "; 1 - Normal Mouse Enabled\n");
@@ -1808,8 +1839,8 @@ void WriteConfig(void)
 	SafeWriteString(file, "; Screen Resolution, supported resolutions: \n");
 	SafeWriteString(file, "; 320x200, 640x480 and 800x600\n");
 
-	// WriteParameter(file,"ScreenWidth      ",iGLOBAL_SCREENWIDTH);
-	// WriteParameter(file,"ScreenHeight     ",iGLOBAL_SCREENHEIGHT);
+	// WriteParameter(file,"ScreenWidth      ",FRAMEBUFFERWIDTH);
+	// WriteParameter(file,"ScreenHeight     ",FRAMEBUFFERHEIGHT);
 
 	if (writeNewResIntoCfg)
 	{
@@ -1818,8 +1849,8 @@ void WriteConfig(void)
 	}
 	else
 	{
-		WriteParameter(file, "ScreenWidth      ", iGLOBAL_SCREENWIDTH);
-		WriteParameter(file, "ScreenHeight     ", iGLOBAL_SCREENHEIGHT);
+		WriteParameter(file, "ScreenWidth      ", MONITORWIDTH);
+		WriteParameter(file, "ScreenHeight     ", MONITORHEIGHT);
 	}
 
 	// Write out ViewSize

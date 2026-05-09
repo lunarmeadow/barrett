@@ -546,7 +546,7 @@ CP_MenuNames ExtOptionsNames[] = {
 
 CP_MenuNames ExtGameOptionsNames[] = {"LOW MEMORY MODE", "WEAPON RECOLOURS", "DOOM BOBBING", "NO LOW HP SOUND", "HALF MONK HEALTH", "LUDICROUS SKYBOX"}; // erysdren added
 
-CP_MenuNames VisualOptionsNames[] = {"SCREEN RESOLUTION", "FIELD-OF-VIEW",
+CP_MenuNames VisualOptionsNames[] = {"SCREEN RESOLUTION", "ASPECT CORRECTION", "FIELD-OF-VIEW",
 									 "HUD SCALING", "DISPLAY OPTIONS", "CROSSHAIR OPTIONS"};
 
 CP_MenuNames CrosshairOptionsNames[] = {"COLOUR", "PARAMETERS",
@@ -565,13 +565,13 @@ typedef struct
 } ValidResolution;
 
 ValidResolution AvailableResolutions[] = {
-	{320, 200, NULL, 1},   {640, 400, NULL, 2},	  {640, 480, NULL, 2},
-	{800, 600, NULL, 2},   {1024, 768, NULL, 2},  {1152, 864, NULL, 2},
-	{1280, 720, NULL, 2},  {1280, 768, NULL, 2},  {1280, 800, NULL, 2},
-	{1280, 960, NULL, 2},  {1280, 1024, NULL, 2}, {1400, 1050, NULL, 2},
-	{1440, 900, NULL, 2},  {1600, 900, NULL, 2},  {1680, 1050, NULL, 2},
-	{1920, 1080, NULL, 2}, {2560, 1080, NULL, 2}, {2560, 1440, NULL, 2},
-	{3840, 2160, NULL, 2},
+	{640, 400, "16:10", 2},	  {640, 480, "4:3", 2},
+	{800, 600, "4:3", 2},   {1024, 768, "4:3", 2},  {1152, 864, "4:3", 2},
+	{1280, 720, "16:9", 2},  {1280, 768, "5:3", 2},  {1280, 800, "16:10", 2},
+	{1280, 960, "4:3", 2},  {1280, 1024, "5:4", 2}, {1400, 1050, "4:3", 2},
+	{1440, 900, "16:10", 2},  {1600, 900, "16:9", 2},  {1680, 1050, "16:10", 2},
+	{1920, 1080, "16:9", 2}, {2560, 1080, "21:9", 2}, {2560, 1440, "16:9", 2},
+	{3840, 2160, "16:9", 2},
 };
 
 CP_MenuNames* ScreenResolutions = NULL;
@@ -588,7 +588,7 @@ CP_itemtype DisplayOptionsItems[] = {
 	{1, "", 'F', NULL}, {1, "", 'B', NULL}, {1, "", 'B', NULL}};
 
 CP_iteminfo VisualOptionsItems = {
-	20, MENU_Y, 5, 0, 43, VisualOptionsNames, mn_largefont};
+	20, MENU_Y, 6, 0, 43, VisualOptionsNames, mn_largefont};
 
 CP_iteminfo ScreenResolutionItems; // This gets filled in at run time
 
@@ -620,9 +620,13 @@ CP_itemtype CrosshairParamsMenu[] = {
 	{1, "", 'S', NULL},}; // ashley added
 
 void CP_ScreenResolution(void);
+void CP_RestartProgramMessage(void);
+void CP_HighResMessage(void);
 
 void CP_DisplayOptions(void);
 void DoAdjustHudScale(void);
+void DoAdjustFOV(void);
+void DoAdjustAspectRatio(void);
 
 void DoAdjustCrosshairColour(void);
 void DoAdjustCrosshairGap(void);
@@ -634,6 +638,7 @@ void CP_CrosshairParameters(void);
 void DrawCrosshairOptionsButtons(void);
 
 CP_itemtype VisualsOptionsMenu[] = {{1, "", 'S', (menuptr)CP_ScreenResolution},
+									{1, "", 'F', (menuptr)DoAdjustAspectRatio},
 									{1, "", 'F', (menuptr)DoAdjustFOV},
 									{1, "", 'H', (menuptr)DoAdjustHudScale},
 									{1, "", 'D', (menuptr)CP_DisplayOptions},
@@ -1197,11 +1202,16 @@ void SetUpControlPanel(void)
 	int Yres = 400;
 
 	// dont work in 800x600 until we get a better screen schrinker
-	//   int Xres = iGLOBAL_SCREENWIDTH;//640;
-	//  int Yres = iGLOBAL_SCREENHEIGHT;//400;
+	//   int Xres = FRAMEBUFFERWIDTH;//640;
+	//  int Yres = FRAMEBUFFERHEIGHT;//400;
 
 	Xres = 640;
 	Yres = 400;
+
+	if(aspectRatioCorrection == 1)
+		Yres = (int)Yres / 1.2f;
+	else if (aspectRatioCorrection == 2)
+	 	Xres = (int)Xres / 1.2f;
 
 	// Save the current game screen
 
@@ -1221,29 +1231,29 @@ void SetUpControlPanel(void)
 
 	s = savedscreen;
 
-	if (iGLOBAL_SCREENWIDTH == 320)
+	if (FRAMEBUFFERWIDTH == 320)
 	{
 		for (i = 0; i < Xres; i += 2)
 		{
 			b = (byte*)bufferofs + i;
-			for (j = 0; j < 100; j++, s++, b += (iGLOBAL_SCREENWIDTH << 1))
+			for (j = 0; j < 100; j++, s++, b += (FRAMEBUFFERWIDTH << 1))
 				*s = *b;
 		}
 	}
-	if (iGLOBAL_SCREENWIDTH >= 640)
+	if (FRAMEBUFFERWIDTH >= 640)
 	{
 		for (i = 0; i < Xres; i += 4)
 		{
 			b = (byte*)bufferofs + i; // schrink screen to 1/2 size
 			for (j = 0; j < (Yres / 4);
-				 j++, s++, b += (iGLOBAL_SCREENWIDTH << 1) * 2)
+				 j++, s++, b += (FRAMEBUFFERWIDTH << 1) * 2)
 				*s = *b;
 		}
 	} /*
-	   if (iGLOBAL_SCREENWIDTH == 800) {
+	   if (FRAMEBUFFERWIDTH == 800) {
 		   for (i=0;i<Xres;i+=8)		{
 			   b=(byte *)bufferofs+i;//schrink screen to 1/3 size
-			   for (j=0;j<(Yres/8);j++,s++,b+=(iGLOBAL_SCREENWIDTH<<1)*3)
+			   for (j=0;j<(Yres/8);j++,s++,b+=(FRAMEBUFFERWIDTH<<1)*3)
 				  *s=*b;
 		   }
 
@@ -2942,7 +2952,7 @@ void QuickSaveGame(void)
 	for (i = 0; i < 320; i += 2)
 	{
 		b = (byte*)bufferofs + i;
-		for (j = 0; j < 100; j++, s++, b += (iGLOBAL_SCREENWIDTH << 1))
+		for (j = 0; j < 100; j++, s++, b += (FRAMEBUFFERWIDTH << 1))
 			*s = *b;
 	}
 
@@ -4625,6 +4635,24 @@ void CP_CrosshairMenu(void)
 	DrawVisualsMenu();
 }
 
+void DoAdjustAspectRatio(void)
+{
+	int oldvalue = aspectRatioCorrection;
+
+	if(aspectRatioCorrection < 0)
+		aspectRatioCorrection = 0;
+	if(aspectRatioCorrection > 2)
+		aspectRatioCorrection = 0;
+
+	AspectSliderMenu(&aspectRatioCorrection, 44, 81, 194, "block2", NULL,
+			   "Asp. Ratio Correction", "Mode: ");
+
+	if(aspectRatioCorrection != oldvalue)
+		CP_RestartProgramMessage();
+	
+	DrawVisualsMenu();
+}
+
 extern int vfov;
 
 void DoAdjustFOV(void)
@@ -4639,6 +4667,7 @@ void DoAdjustFOV(void)
 }
 
 extern int hudRescaleFactor;
+
 void DoAdjustHudScale(void)
 {
 	SliderMenu(&hudRescaleFactor, 10, 0, 44, 81, 194, 1, "block2", NULL,
@@ -4681,6 +4710,30 @@ void DoAdjustCrosshairLength(void)
 	DrawCrosshairMenu();
 }
 
+int ResCompare(const void* a, const void* b)
+{
+    // get validresolution objects out for comparison
+    const ValidResolution *rA = (const ValidResolution *)a;
+    const ValidResolution *rB = (const ValidResolution *)b;
+
+    // get fields
+    float w1 = rA->width;
+    float h1 = rA->height;
+    float w2 = rB->width;
+    float h2 = rB->height;
+
+    // get ratios
+    float r1 = w1 / h1;
+    float r2 = w2 / h2;
+
+    // compare and return
+    if(r1 > r2)
+        return 1;
+    else if(r2 < r1)
+        return -1;
+    else
+        return 0;
+}
 
 void DrawScreenResolutionMenu(void)
 {
@@ -4698,6 +4751,8 @@ void DrawScreenResolutionMenu(void)
 		int nbrResolutions =
 			sizeof(AvailableResolutions) / sizeof(AvailableResolutions[0]);
 
+		qsort(AvailableResolutions, nbrResolutions, sizeof(ValidResolution), ResCompare);
+		
 		ScreenResolutions = malloc(nbrResolutions * sizeof(CP_MenuNames));
 		ScreenResolutionMenu = malloc(nbrResolutions * sizeof(CP_itemtype));
 
@@ -4731,8 +4786,8 @@ void DrawScreenResolutionMenu(void)
 	{
 		ScreenResolutionMenu[i].active = CP_Active;
 
-		if (AvailableResolutions[i].width == iGLOBAL_SCREENWIDTH &&
-			AvailableResolutions[i].height == iGLOBAL_SCREENHEIGHT)
+		if (AvailableResolutions[i].width == FRAMEBUFFERWIDTH &&
+			AvailableResolutions[i].height == FRAMEBUFFERHEIGHT)
 		{
 			position = i;
 		}
@@ -4748,11 +4803,19 @@ void DrawScreenResolutionMenu(void)
 }
 
 void CP_RestartProgramMessage(void)
-
 {
 	CP_ErrorMsg(
 		"Note:",
 		"Changes will not be applied until the application is restarted. "
+		"Hit any key to continue.",
+		mn_smallfont);
+}
+
+void CP_HighResMessage(void)
+{
+	CP_ErrorMsg(
+		"Note:",
+		"Resolutions above 1920x1080 may have poor performance and/or graphical artifacting. "
 		"Hit any key to continue.",
 		mn_smallfont);
 }
@@ -4778,6 +4841,9 @@ void CP_ScreenResolution(void)
 		writeNewResIntoCfg = true;
 	}
 
+	if(ScreenWidthToWriteToCfg > 1920 || ScreenHeightToWriteToCfg > 1080)
+		CP_HighResMessage();
+	
 	if (writeNewResIntoCfg)
 		CP_RestartProgramMessage();
 
@@ -6251,6 +6317,167 @@ bool ColourSliderMenu(int* number, int erasex,
 			EraseMenuBufRegion(strx, stry, strw, strh);
 			VW_MeasurePropString(colourNames[*number], &strw, &strh);
 			DrawMenuBufPropString(strx, stry, colourNames[*number]);
+			
+			if (routine)
+			{
+				routine(*number);
+			}
+
+			MN_PlayMenuSnd(SD_MOVECURSORSND);
+		}
+
+		if (ci.button0 || Keyboard[sc_Space] || Keyboard[sc_Enter])
+		{
+			exit = 1;
+		}
+		else if (ci.button1 || Keyboard[sc_Escape])
+		{
+			exit = 2;
+		}
+	} while (!exit);
+
+	if (exit == 2)
+	{
+		MN_PlayMenuSnd(SD_ESCPRESSEDSND);
+		returnval = false;
+	}
+	else
+	{
+		MN_PlayMenuSnd(SD_SELECTSND);
+		returnval = true;
+	}
+
+	WaitKeyUp();
+	return (returnval);
+}
+
+const char *aspectCorrection[3] = {
+	"NONE",
+	"FAST",
+	"ACCURATE",
+};
+
+bool AspectSliderMenu(int* number, int erasex,
+				   int erasey, int erasew, char* blockname,
+				   void (*routine)(int w), char* title, char* label)
+
+{
+	ControlInfo ci;
+	Direction lastdir;
+	patch_t* shape;
+	bool returnval;
+	bool moved;
+	unsigned long scale;
+	int exit;
+	int range;
+	int timer;
+	int width;
+	int height;
+	int strx, stry, strw, strh;
+	int blkx;
+	int eraseh;
+	int block;
+
+	int numadjust = 1;
+	int upperbound = (sizeof(aspectCorrection) / sizeof(aspectCorrection[0])) - 1;
+	int lowerbound = 0;
+
+	SetAlternateMenuBuf();
+	ClearMenuBuf();
+	SetMenuTitle(title);
+
+	newfont1 = (font_t*)W_CacheLumpName("newfnt1", PU_CACHE, Cvt_font_t, 1);
+	CurrentFont = newfont1;
+	PrintX = 28;
+	PrintY = 62;
+	DrawMenuBufPropString(PrintX, PrintY, label);
+
+	VW_MeasurePropString(aspectCorrection[*number], &strw, &strh);
+
+	strx = PrintX + 8;
+	stry = PrintY;
+
+	DrawMenuBufPropString(strx, stry, aspectCorrection[*number]);
+
+	block = W_GetNumForName(blockname);
+	shape = (patch_t*)W_CacheLumpNum(block, PU_CACHE, Cvt_patch_t, 1);
+	blkx = erasex - shape->leftoffset;
+	eraseh = shape->height;
+	scale = (erasew + shape->leftoffset - shape->width) << 16;
+	range = upperbound - lowerbound;
+
+	DrawSTMenuBuf(erasex - 1, erasey - 1, erasew + 1, eraseh + 1, false);
+
+	DrawMenuBufItem(blkx + ((((*number - lowerbound) * scale) / range) >> 16),
+					erasey, block);
+
+	DisplayInfo(1);
+	FlipMenuBuf();
+
+	exit = 0;
+	moved = false;
+	timer = GetTicCount();
+	lastdir = dir_None;
+
+	do
+	{
+		RefreshMenuBuf(0);
+
+		ReadAnyControl(&ci);
+		if (((GetTicCount() - timer) > 5) || (ci.dir != lastdir))
+		{
+			timer = GetTicCount();
+
+			switch (ci.dir)
+			{
+			case dir_North:
+			case dir_West:
+				if (*number > lowerbound)
+				{
+					*number = *number - numadjust;
+
+					if (*number < lowerbound)
+					{
+						*number = lowerbound;
+					}
+
+					moved = true;
+				}
+				break;
+
+			case dir_South:
+			case dir_East:
+				if (*number < upperbound)
+				{
+					*number = *number + numadjust;
+
+					if (*number > upperbound)
+					{
+						*number = upperbound;
+					}
+
+					moved = true;
+				}
+				break;
+			default:;
+			}
+
+			lastdir = ci.dir;
+		}
+
+		if (moved)
+		{
+			moved = false;
+
+			EraseMenuBufRegion(erasex, erasey, erasew, eraseh);
+
+			DrawMenuBufItem(
+				blkx + ((((*number - lowerbound) * scale) / range) >> 16),
+				erasey, block);
+
+			EraseMenuBufRegion(strx, stry, strw, strh);
+			VW_MeasurePropString(aspectCorrection[*number], &strw, &strh);
+			DrawMenuBufPropString(strx, stry, aspectCorrection[*number]);
 			
 			if (routine)
 			{

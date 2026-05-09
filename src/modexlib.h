@@ -30,8 +30,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "rt_def.h"
 #include "SDL.h"
 /*
-int iGLOBAL_SCREENWIDTH;//bna val 800
-int iGLOBAL_SCREENHEIGHT;//bna val 600
+int FRAMEBUFFERWIDTH;//bna val 800
+int FRAMEBUFFERHEIGHT;//bna val 600
 
 
 #define MAXSCREENHEIGHT    600//     200*2

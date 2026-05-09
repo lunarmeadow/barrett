@@ -123,7 +123,7 @@ void VL_MemStrechedToScreen(byte* source, int width, int height, int x, int y)
 	{
 		for (j = 0; j < height; j++)
 		{
-			destline = (byte*)(bufferofs + (iGLOBAL_SCREENWIDTH * j) +
+			destline = (byte*)(bufferofs + (FRAMEBUFFERWIDTH * j) +
 							   ylookup[y + j] + x);
 			o = ptr;
 			for (i = 0; i < width; i += 1)
@@ -134,8 +134,8 @@ void VL_MemStrechedToScreen(byte* source, int width, int height, int x, int y)
 			}
 			ptr = o;
 
-			destline = (byte*)(bufferofs + iGLOBAL_SCREENWIDTH +
-							   (iGLOBAL_SCREENWIDTH * j) + ylookup[y + j] + x);
+			destline = (byte*)(bufferofs + FRAMEBUFFERWIDTH +
+							   (FRAMEBUFFERWIDTH * j) + ylookup[y + j] + x);
 			for (i = 0; i < width; i += 1)
 			{
 				*(destline + i * 4 + plane) = *ptr;
@@ -173,7 +173,7 @@ void DrawTiledRegion(int x, int y, int width, int height, int offx, int offy,
 	int WidthIndex;
 
 	// don't reload register constantly
-	const int screenW = iGLOBAL_SCREENWIDTH;
+	const int screenW = FRAMEBUFFERWIDTH;
 
 	start = (byte*)(bufferofs + x + ylookup[y]);
 
@@ -244,7 +244,7 @@ void DrawTiledRegion(int x, int y, int width, int height, int offx, int offy,
 
 void VWB_DrawPic(int x, int y, pic_t* pic)
 {
-	if (((iGLOBAL_SCREENWIDTH > 320) && !StretchScreen) ||
+	if (((FRAMEBUFFERWIDTH > 320) && !StretchScreen) ||
 		VW_MarkUpdateBlock(x, y, x + (pic->width << 2) - 1,
 						   y + (pic->height) - 1))
 		VL_MemToScreen((byte*)&pic->data, pic->width, pic->height, x, y);
@@ -276,7 +276,7 @@ void VL_Bar(int x, int y, int width, int height, int color)
 
 void VWB_Bar(int x, int y, int width, int height, int color)
 {
-	if (((iGLOBAL_SCREENWIDTH > 320) && !StretchScreen) ||
+	if (((FRAMEBUFFERWIDTH > 320) && !StretchScreen) ||
 		VW_MarkUpdateBlock(x, y, x + width, y + height - 1))
 		VL_Bar(x, y, width, height, color);
 }
@@ -634,13 +634,13 @@ void VL_FadeOutScaledScreen(int start, int end, int red, int green, int blue,
 		WaitVBL();
 		VL_SetPalette(&palette2[0][0]);
 
-		// printf("%d \n", (int)((float)iGLOBAL_SCREENWIDTH*scale));
-		// printf("%d \n", (int)((float)iGLOBAL_SCREENHEIGHT*scale));
+		// printf("%d \n", (int)((float)FRAMEBUFFERWIDTH*scale));
+		// printf("%d \n", (int)((float)FRAMEBUFFERHEIGHT*scale));
 		// printf("%f \n", scale);
 
 		SDL_Texture* tex = GetMainSurfaceAsTexture();
 
-		DoScreenRotateScale(iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT, tex, 0,
+		DoScreenRotateScale(FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT, tex, 0,
 							scale);
 
 		SDL_DestroyTexture(tex);
@@ -837,9 +837,9 @@ void VL_DecompressLBM(lbm_t* lbminfo, bool flip)
 			count += rept;
 
 		} while (count < lbminfo->width);
-		if (iGLOBAL_SCREENWIDTH > 320)
+		if (FRAMEBUFFERWIDTH > 320)
 		{
-			buf += (iGLOBAL_SCREENWIDTH - 320); // eg 800 - 320)
+			buf += (FRAMEBUFFERWIDTH - 320); // eg 800 - 320)
 		}
 	}
 
@@ -868,8 +868,8 @@ void SetBorderColor(int color)
 	// paint top red line
 	for (cnt = b; cnt < b + viewwidth; cnt++)
 	{
-		for (Ycnt = cnt; Ycnt < cnt + (5 * iGLOBAL_SCREENWIDTH);
-			 Ycnt += iGLOBAL_SCREENWIDTH)
+		for (Ycnt = cnt; Ycnt < cnt + (5 * FRAMEBUFFERWIDTH);
+			 Ycnt += FRAMEBUFFERWIDTH)
 		{
 			*Ycnt = color;
 		}
@@ -877,8 +877,8 @@ void SetBorderColor(int color)
 	// paint left red line
 	for (cnt = b; cnt < b + 5; cnt++)
 	{
-		for (Ycnt = cnt; Ycnt < cnt + (viewheight * iGLOBAL_SCREENWIDTH);
-			 Ycnt += iGLOBAL_SCREENWIDTH)
+		for (Ycnt = cnt; Ycnt < cnt + (viewheight * FRAMEBUFFERWIDTH);
+			 Ycnt += FRAMEBUFFERWIDTH)
 		{
 			*Ycnt = color;
 		}
@@ -886,18 +886,18 @@ void SetBorderColor(int color)
 	// paint right red line
 	for (cnt = b + (viewwidth - 5); cnt < b + viewwidth; cnt++)
 	{
-		for (Ycnt = cnt; Ycnt < cnt + (viewheight * iGLOBAL_SCREENWIDTH);
-			 Ycnt += iGLOBAL_SCREENWIDTH)
+		for (Ycnt = cnt; Ycnt < cnt + (viewheight * FRAMEBUFFERWIDTH);
+			 Ycnt += FRAMEBUFFERWIDTH)
 		{
 			*Ycnt = color;
 		}
 	}
 	// paint lower red line
-	for (cnt = b + ((viewheight - 5) * iGLOBAL_SCREENWIDTH);
-		 cnt < b + ((viewheight - 5) * iGLOBAL_SCREENWIDTH) + viewwidth; cnt++)
+	for (cnt = b + ((viewheight - 5) * FRAMEBUFFERWIDTH);
+		 cnt < b + ((viewheight - 5) * FRAMEBUFFERWIDTH) + viewwidth; cnt++)
 	{
-		for (Ycnt = cnt; Ycnt < b + (viewheight * iGLOBAL_SCREENWIDTH);
-			 Ycnt += iGLOBAL_SCREENWIDTH)
+		for (Ycnt = cnt; Ycnt < b + (viewheight * FRAMEBUFFERWIDTH);
+			 Ycnt += FRAMEBUFFERWIDTH)
 		{
 			*Ycnt = color;
 		}

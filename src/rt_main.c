@@ -237,6 +237,22 @@ int main(int argc, char* argv[])
 	StartupSoftError();
 	//   UL_ErrorStartup ();
 
+	// initialize SDL
+	if (SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
+	{
+		Error("Could not initialize SDL\n");
+	}
+
+	// setup screen res and aspect correction
+	GetMonitorResolution();
+
+	// start with monitor width and height on first boot, gets overwritten by config on secondary boot
+	// in effect the monitor resolution becomes the new default resolution
+	VIRTUALWIDTH = MONITORWIDTH;
+	VIRTUALHEIGHT = MONITORHEIGHT;
+	FRAMEBUFFERWIDTH = MONITORWIDTH;
+	FRAMEBUFFERHEIGHT = MONITORHEIGHT;
+
 	CheckCommandLineParameters();
 
 	// Start up Memory manager with a certain amount of reserved memory
@@ -256,7 +272,9 @@ int main(int argc, char* argv[])
 		GetMenuInfo();
 	}
 
-	SetRottScreenRes(iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT);
+	SetRottScreenRes(VIRTUALWIDTH, VIRTUALHEIGHT);
+
+	printf("main: framebuffer res %d x %d\nmain: target res %d x %d\n", FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT, VIRTUALWIDTH, VIRTUALHEIGHT);
 
 	GenerateSkyScalerTable();
 
@@ -762,8 +780,8 @@ void SetupWads(void)
 					sscanf(_argv[i], "%dx%d", &width, &height);
 				if (numResParams == 2)
 				{
-					iGLOBAL_SCREENWIDTH = width;
-					iGLOBAL_SCREENHEIGHT = height;
+					VIRTUALWIDTH = width;
+					VIRTUALHEIGHT = height;
 				}
 				/*
 								else
@@ -1060,7 +1078,7 @@ void GameLoop(void)
 	while (1)
 	{
 		// no longer needed in SDL2
-		// SDL_WarpMouse(iGLOBAL_SCREENWIDTH<<1, iGLOBAL_SCREENHEIGHT<<1);
+		// SDL_WarpMouse(FRAMEBUFFERWIDTH<<1, FRAMEBUFFERHEIGHT<<1);
 
 		if (playstate == ex_battledone)
 		{
@@ -1792,13 +1810,13 @@ void PauseLoop(void)
 		if (GamePaused == false)
 		{
 			// bna++ section
-			if ((playstate == ex_stillplaying) && (iGLOBAL_SCREENWIDTH > 320))
+			if ((playstate == ex_stillplaying) && (FRAMEBUFFERWIDTH > 320))
 			{
 				pic_t* shape;
 				shape =
 					(pic_t*)W_CacheLumpName("backtile", PU_CACHE, Cvt_pic_t, 1);
-				DrawTiledRegion(0, 16, iGLOBAL_SCREENWIDTH,
-								iGLOBAL_SCREENHEIGHT - 32, 0, 16, shape);
+				DrawTiledRegion(0, 16, FRAMEBUFFERWIDTH,
+								FRAMEBUFFERHEIGHT - 32, 0, 16, shape);
 				DisableScreenStretch(); // dont strech when we go BACK TO GAME
 				DrawPlayScreen(true);	// repaint ammo and life stat
 				EnableHudStretch();
@@ -2452,7 +2470,7 @@ void WriteLBMfile(char* filename, byte* data, int width, int height)
 	int i;
 
 	lbm = lbmptr =
-		(byte*)SafeMalloc((iGLOBAL_SCREENWIDTH * iGLOBAL_SCREENHEIGHT) + 4000);
+		(byte*)SafeMalloc((FRAMEBUFFERWIDTH * FRAMEBUFFERHEIGHT) + 4000);
 
 	//
 	// start FORM
@@ -2619,16 +2637,16 @@ void SaveScreen(bool saveLBM)
 
 	// buffer = (byte *) SafeMalloc (65000);
 	buffer =
-		(byte*)SafeMalloc((iGLOBAL_SCREENHEIGHT * iGLOBAL_SCREENWIDTH) + 4000);
+		(byte*)SafeMalloc((FRAMEBUFFERHEIGHT * FRAMEBUFFERWIDTH) + 4000);
 
 	GetFileName(saveLBM);
 	GetPathFromEnvironment(filename, ApogeePath, savename);
-	memcpy(buffer, screen, iGLOBAL_SCREENWIDTH * iGLOBAL_SCREENHEIGHT);
+	memcpy(buffer, screen, FRAMEBUFFERWIDTH * FRAMEBUFFERHEIGHT);
 
 	if (saveLBM)
 	{
-		WriteLBMfile(filename, buffer, iGLOBAL_SCREENWIDTH,
-					 iGLOBAL_SCREENHEIGHT);
+		WriteLBMfile(filename, buffer, FRAMEBUFFERWIDTH,
+					 FRAMEBUFFERHEIGHT);
 		while (Keyboard[sc_Alt] && Keyboard[sc_V])
 			IN_UpdateKeyboard();
 	}
@@ -2675,15 +2693,15 @@ void WritePCX(char* file, byte* source)
 
 	pcxHDR.bitsperpixel = 8; // bpp;
 	pcxHDR.xmin = pcxHDR.ymin = 0;
-	pcxHDR.xmax = iGLOBAL_SCREENWIDTH - 1;
-	pcxHDR.ymax = iGLOBAL_SCREENHEIGHT - 1;
-	pcxHDR.hres = iGLOBAL_SCREENWIDTH;	// N_COLUMNS;
-	pcxHDR.vres = iGLOBAL_SCREENHEIGHT; // N_LINES;
+	pcxHDR.xmax = FRAMEBUFFERWIDTH - 1;
+	pcxHDR.ymax = FRAMEBUFFERHEIGHT - 1;
+	pcxHDR.hres = FRAMEBUFFERWIDTH;	// N_COLUMNS;
+	pcxHDR.vres = FRAMEBUFFERHEIGHT; // N_LINES;
 
 	// bytesperline doesn't take into account multiple planes.
 	// Output in same format as bitmap (planar vs packed).
 	//
-	pcxHDR.bytesperline = iGLOBAL_SCREENWIDTH; // bitmap->width;
+	pcxHDR.bytesperline = FRAMEBUFFERWIDTH; // bitmap->width;
 
 	pcxHDR.nplanes = 1; // bitmap->planes;
 	pcxHDR.reserved = 0;
@@ -2706,15 +2724,15 @@ void WritePCX(char* file, byte* source)
 	SafeWrite(pcxhandle, &buffer1, GAP_SIZE);
 
 	tempbuffer =
-		(byte*)SafeMalloc((iGLOBAL_SCREENHEIGHT * iGLOBAL_SCREENWIDTH) + 4000);
+		(byte*)SafeMalloc((FRAMEBUFFERHEIGHT * FRAMEBUFFERWIDTH) + 4000);
 	bptr = tempbuffer;
 	totalbytes = 0;
 
 	//
 	// Write to a bit-packed file.
 	//
-	for (y = 0; y < iGLOBAL_SCREENHEIGHT; ++y) // for each line in band
-		if (PutBytes(((unsigned char*)(source + (y * iGLOBAL_SCREENWIDTH))),
+	for (y = 0; y < FRAMEBUFFERHEIGHT; ++y) // for each line in band
+		if (PutBytes(((unsigned char*)(source + (y * FRAMEBUFFERWIDTH))),
 					 pcxHDR.bytesperline))
 			Error("Error writing PCX bit-packed line!\n");
 

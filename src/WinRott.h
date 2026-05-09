@@ -7,8 +7,12 @@
 #define MAXSCREENWIDTH	3840
 #define MAXSCREENHEIGHT 2160 // max res is set to be 4k
 
-extern int iGLOBAL_SCREENWIDTH;	 // bna val 800
-extern int iGLOBAL_SCREENHEIGHT; // bna val 600
+extern int FRAMEBUFFERWIDTH;	 // bna val 800
+extern int FRAMEBUFFERHEIGHT; // bna val 600
+extern int VIRTUALWIDTH;	 // bna val 800
+extern int VIRTUALHEIGHT; // bna val 600
+extern int MONITORWIDTH;	 // bna val 800
+extern int MONITORHEIGHT; // bna val 600
 
 // extern int topBarCenterOffsetX;
 
@@ -20,6 +24,7 @@ extern int iGLOBAL_HEALTH_Y;
 extern int iGLOBAL_AMMO_X;
 extern int iGLOBAL_AMMO_Y;
 
+void GetMonitorResolution(void);
 void EnableScreenStretch(void);
 void DisableScreenStretch(void);
 void WriteNewResolution(void);

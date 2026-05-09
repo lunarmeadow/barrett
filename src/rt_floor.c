@@ -99,26 +99,26 @@ void DrawSky(void)
 	else
 		shadingtable = colormap + (1 << 12);
 
-	int normalskyheight = ((viewheight * 200 / iGLOBAL_SCREENHEIGHT) >> 1);
-	int ludicrousheight = ((viewheight * 250 / iGLOBAL_SCREENHEIGHT) >> 1);
+	int normalskyheight = ((viewheight * 200 / FRAMEBUFFERHEIGHT) >> 1);
+	int ludicrousheight = ((viewheight * 250 / FRAMEBUFFERHEIGHT) >> 1);
 
 	int normalparallax = 3;
 	int ludicrousparallax = 5;
 
 	// change height and scroll rate based on skybox mode
 	ofs = (((maxheight) - (player->z)) >> (ludicrousskybox ? ludicrousparallax : normalparallax)) +
-		  (centery * 200 / iGLOBAL_SCREENHEIGHT -
+		  (centery * 200 / FRAMEBUFFERHEIGHT -
 		   (ludicrousskybox ? ludicrousheight : normalskyheight));
 
 	if (ofs > centerskypost)
 	{
 		ofs = centerskypost;
 	}
-	else if (((centerskypost - ofs) + viewheight * 200 / iGLOBAL_SCREENHEIGHT) >
+	else if (((centerskypost - ofs) + viewheight * 200 / FRAMEBUFFERHEIGHT) >
 			 1799)
 	{
 		ofs =
-			-(1799 - (centerskypost + viewheight * 200 / iGLOBAL_SCREENHEIGHT));
+			-(1799 - (centerskypost + viewheight * 200 / FRAMEBUFFERHEIGHT));
 	}
 	// ofs=centerskypost;
 	{
@@ -134,7 +134,7 @@ void DrawSky(void)
 				// and keep the movement relatively steady.
 				// this is basically the same calculation as diminished lighting and fog,
 				// but it works well here. Reduces distortion at the edges.
-				ludicrousang = (angle + pixelangle[dest] - ((dest * 320) / iGLOBAL_SCREENWIDTH)) & (FINEANGLES - 1);
+				ludicrousang = (angle + pixelangle[dest] - ((dest * 320) / FRAMEBUFFERWIDTH)) & (FINEANGLES - 1);
 				normalang = (angle + pixelangle[dest]) & (FINEANGLES - 1);
 				ang = ludicrousskybox ? ludicrousang : normalang;
 				src = skysegs[ang] - ofs;
@@ -486,14 +486,14 @@ void SetFCLightLevel(int height)
 	}
 	if (fog)
 	{
-		i = ((height * 200 / iGLOBAL_SCREENHEIGHT) >> normalshade) + minshade;
+		i = ((height * 200 / FRAMEBUFFERHEIGHT) >> normalshade) + minshade;
 		if (i > maxshade)
 			i = maxshade;
 		shadingtable = colormap + (i << 8);
 	}
 	else
 	{
-		i = maxshade - ((height * 200 / iGLOBAL_SCREENHEIGHT) >> normalshade);
+		i = maxshade - ((height * 200 / FRAMEBUFFERHEIGHT) >> normalshade);
 		if (i < minshade)
 			i = minshade;
 		shadingtable = colormap + (i << 8);

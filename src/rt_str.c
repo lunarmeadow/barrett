@@ -96,13 +96,13 @@ void VW_DrawClippedString(int x, int y, const char* string)
 		source = ((byte*)CurrentFont) + CurrentFont->charofs[ch];
 		while (width--)
 		{
-			if ((x >= 0) && (x < iGLOBAL_SCREENWIDTH))
+			if ((x >= 0) && (x < FRAMEBUFFERWIDTH))
 			{
 				y = oy;
 				height = ht;
 				while (height--)
 				{
-					if ((y >= 0) && (y < iGLOBAL_SCREENHEIGHT))
+					if ((y >= 0) && (y < FRAMEBUFFERHEIGHT))
 					{
 						if (*source > 0)
 							*((byte*)(bufferofs + ylookup[y] + x)) = *source;
@@ -1294,8 +1294,8 @@ void US_DrawWindow(int x, int y, int w, int h)
 void US_CenterWindow(int w, int h)
 {
 	// HDG US_DrawWindow (((MaxX / 8) - w) / 2,  ((MaxY / 8) - h) / 2, w, h);
-	US_DrawWindow(((iGLOBAL_SCREENWIDTH / 8) - w) / 2,
-				  ((iGLOBAL_SCREENHEIGHT / 8) - h) / 2, w, h);
+	US_DrawWindow(((FRAMEBUFFERWIDTH / 8) - w) / 2,
+				  ((FRAMEBUFFERHEIGHT / 8) - h) / 2, w, h);
 }
 
 //==============================================================================
@@ -1352,7 +1352,7 @@ void DrawIntensityChar(char ch)
 	width = IFont->width[(unsigned char)ch];
 	source = ((byte*)IFont) + IFont->charofs[(unsigned char)ch];
 
-	if ((iGLOBAL_SCREENWIDTH <= 320) || (StretchScreen == true))
+	if ((FRAMEBUFFERWIDTH <= 320) || (StretchScreen == true))
 	{
 		while (width--)
 		{
@@ -1385,10 +1385,10 @@ void DrawIntensityChar(char ch)
 				if (pix != 0xFE)
 				{
 					*dest = GetIntensityColor(pix);
-					*(dest + iGLOBAL_SCREENWIDTH) = GetIntensityColor(pix);
+					*(dest + FRAMEBUFFERWIDTH) = GetIntensityColor(pix);
 
 					*(dest + 1) = GetIntensityColor(pix);
-					*(dest + 1 + iGLOBAL_SCREENWIDTH) = GetIntensityColor(pix);
+					*(dest + 1 + FRAMEBUFFERWIDTH) = GetIntensityColor(pix);
 				}
 
 				source++;

@@ -223,8 +223,8 @@ void ScaleFilmPost(byte* src, byte* buf)
 		bottomscreen = topscreen + (cin_invscale * length);
 		cin_yl = (topscreen + FRACTIONUNIT - 1) >> FRACTIONBITS;
 		cin_yh = (bottomscreen - FRACTIONUNIT) >> FRACTIONBITS;
-		if (cin_yh >= iGLOBAL_SCREENHEIGHT)
-			cin_yh = iGLOBAL_SCREENHEIGHT - 1;
+		if (cin_yh >= FRAMEBUFFERHEIGHT)
+			cin_yh = FRAMEBUFFERHEIGHT - 1;
 		if (cin_yl < 0)
 			cin_yl = 0;
 		if (cin_yl <= cin_yh)
@@ -319,10 +319,10 @@ void DrawCinematicBackground(cine_bgevent* back)
 	pic = (lpic_t*)W_CacheLumpName(back->name, PU_CACHE, Cvt_lpic_t, 1);
 
 	height = pic->height;
-	if (height + back->yoffset > iGLOBAL_SCREENHEIGHT)
-		height = iGLOBAL_SCREENHEIGHT - back->yoffset;
+	if (height + back->yoffset > FRAMEBUFFERHEIGHT)
+		height = FRAMEBUFFERHEIGHT - back->yoffset;
 
-	if (height != iGLOBAL_SCREENHEIGHT)
+	if (height != FRAMEBUFFERHEIGHT)
 		DrawClearBuffer();
 
 	plane = 0;
@@ -331,7 +331,7 @@ void DrawCinematicBackground(cine_bgevent* back)
 		buf = (byte*)bufferofs + ylookup[back->yoffset];
 		offset = (back->currentoffset >> FRACTIONBITS) + plane;
 
-		for (i = 0; i < iGLOBAL_SCREENWIDTH; i++, offset++, buf++)
+		for (i = 0; i < FRAMEBUFFERWIDTH; i++, offset++, buf++)
 		{
 			if (offset >= back->backdropwidth)
 				src = &(pic->data) +
@@ -364,10 +364,10 @@ void DrawCinematicMultiBackground(cine_bgevent* back)
 	int height;
 
 	height = back->height;
-	if (height + back->yoffset > iGLOBAL_SCREENHEIGHT)
-		height = iGLOBAL_SCREENHEIGHT - back->yoffset;
+	if (height + back->yoffset > FRAMEBUFFERHEIGHT)
+		height = FRAMEBUFFERHEIGHT - back->yoffset;
 
-	if (height != iGLOBAL_SCREENHEIGHT)
+	if (height != FRAMEBUFFERHEIGHT)
 		DrawClearBuffer();
 
 	plane = 0;
@@ -376,7 +376,7 @@ void DrawCinematicMultiBackground(cine_bgevent* back)
 		buf = (byte*)bufferofs + ylookup[back->yoffset];
 		offset = (back->currentoffset >> FRACTIONBITS) + plane;
 
-		for (i = 0; i < iGLOBAL_SCREENWIDTH; i++, offset++, buf++)
+		for (i = 0; i < FRAMEBUFFERWIDTH; i++, offset++, buf++)
 		{
 			if (offset >= back->backdropwidth)
 				src = back->data +
@@ -423,7 +423,7 @@ void DrawCinematicBackdrop(cine_bgevent* back)
 		buf = (byte*)bufferofs;
 		offset = (back->currentoffset >> FRACTIONBITS) + plane;
 
-		for (i = 0; i < iGLOBAL_SCREENWIDTH; i++, offset++, buf++)
+		for (i = 0; i < FRAMEBUFFERWIDTH; i++, offset++, buf++)
 		{
 			if (offset >= back->backdropwidth)
 				src = shape + p->collumnofs[offset - back->backdropwidth];
@@ -495,7 +495,7 @@ void DrawCinematicSprite(cinespr_event* sprite)
 	// calculate edges of the shape
 	//
 	x1 = (xcent + (tx * cin_invscale)) >> FRACTIONBITS;
-	if (x1 >= iGLOBAL_SCREENWIDTH)
+	if (x1 >= FRAMEBUFFERWIDTH)
 		return; // off the right side
 	tx += p->width;
 	x2 = ((xcent + (tx * cin_invscale)) >> FRACTIONBITS) - 1;
@@ -511,7 +511,7 @@ void DrawCinematicSprite(cinespr_event* sprite)
 	}
 	else
 		frac = 0;
-	x2 = x2 >= iGLOBAL_SCREENWIDTH ? (iGLOBAL_SCREENWIDTH - 1) : x2;
+	x2 = x2 >= FRAMEBUFFERWIDTH ? (FRAMEBUFFERWIDTH - 1) : x2;
 
 	cin_texturemid = (((p->origsize >> 1) + p->topoffset) << FRACTIONBITS) +
 					 (FRACTIONUNIT >> 1);
@@ -625,7 +625,7 @@ void DrawBlankScreen(void)
 */
 void DrawClearBuffer(void)
 {
-	memset((byte*)bufferofs, 0, iGLOBAL_SCREENWIDTH * iGLOBAL_SCREENHEIGHT);
+	memset((byte*)bufferofs, 0, FRAMEBUFFERWIDTH * FRAMEBUFFERHEIGHT);
 }
 
 /*
@@ -818,7 +818,7 @@ void ProfileDisplay(void)
 	byte* buf;
 	int i;
 	byte src[200];
-	int width = StretchScreen ? 320 : iGLOBAL_SCREENWIDTH;
+	int width = StretchScreen ? 320 : FRAMEBUFFERWIDTH;
 
 	DrawClearBuffer();
 
@@ -848,7 +848,7 @@ void DrawPostPic(int lumpnum)
 	int i;
 	int plane;
 	int height;
-	int width = StretchScreen ? 320 : iGLOBAL_SCREENWIDTH;
+	int width = StretchScreen ? 320 : FRAMEBUFFERWIDTH;
 
 	pic = (lpic_t*)W_CacheLumpNum(lumpnum, PU_CACHE, Cvt_lpic_t, 1);
 

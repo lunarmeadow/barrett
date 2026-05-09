@@ -34,6 +34,8 @@ extern int centeryclipped;
 extern int sprtopoffset;
 extern int dc_yl;
 extern int dc_yh;
+extern int ylcmp; 
+extern int yhcmp;
 extern byte* dc_source;
 extern int transparentlevel;
 
