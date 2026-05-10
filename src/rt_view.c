@@ -290,7 +290,7 @@ void SetViewSize(int size)
 	// as such height must be recalculated.
 	// this doesn't apply to ARC mode 2 which downscales width
 	int scaleConstant = 16;
-	if(aspectRatioCorrection == 1)
+	if(aspectRatioCorrection == 1 && hudRescaleFactor != 1)
 		scaleConstant = 13;
 
 	/*
