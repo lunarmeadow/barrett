@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <SDL_render.h>
 #include <SDL_stdinc.h>
 #include <SDL_video.h>
 #include <stdarg.h>
@@ -28,6 +29,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ctype.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <time.h>
 #include "modexlib.h"
 #include "isr.h"
 #include "rt_actor.h"
@@ -109,6 +111,32 @@ static void GetIconMasks(Uint32* r, Uint32* g, Uint32* b, Uint32* a)
 	#endif
 }
 
+void FreeFramebuffer(void)
+{
+	if(sdl_texture != NULL)
+	{
+		SDL_DestroyTexture(sdl_texture);
+		sdl_texture = NULL;
+	}
+
+	if(sdl_surface != NULL)
+	{
+		SDL_FreeSurface(sdl_surface);
+		sdl_surface = NULL;
+	}
+}
+void AllocateFramebuffer(void)
+{
+	sdl_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888,
+									SDL_TEXTUREACCESS_STREAMING,
+								 FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT);
+
+	sdl_surface = SDL_CreateRGBSurface(0, FRAMEBUFFERWIDTH,
+									   FRAMEBUFFERHEIGHT, 8, 0, 0, 0, 0);
+
+	SDL_SetSurfaceRLE(sdl_surface, 1);
+}
+
 void GraphicsMode(void)
 {
 	Uint32 flags = 0;
@@ -130,14 +158,7 @@ void GraphicsMode(void)
 
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-	sdl_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888,
-									SDL_TEXTUREACCESS_STREAMING,
-									FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT);
-
-	sdl_surface = SDL_CreateRGBSurface(0, FRAMEBUFFERWIDTH,
-									   FRAMEBUFFERHEIGHT, 8, 0, 0, 0, 0);
-
-	SDL_SetSurfaceRLE(sdl_surface, 1);
+	AllocateFramebuffer();
 
 	Uint32 r,g,b,a = 0;
 
@@ -205,8 +226,6 @@ void WaitVBL(void)
 void VL_SetVGAPlaneMode(void)
 {
 	int i, offset;
-
-	GraphicsMode();
 
 	//
 	// set up lookup tables
@@ -309,6 +328,9 @@ int hudRescaleFactor = 1;
 
 void RenderSurface(void)
 {
+	if(sdl_surface == NULL)
+		return;
+
 	SDL_Texture* newTex = SDL_CreateTextureFromSurface(renderer, sdl_surface);
 
 	if (newTex == NULL)

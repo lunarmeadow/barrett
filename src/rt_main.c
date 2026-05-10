@@ -272,12 +272,6 @@ int main(int argc, char* argv[])
 		GetMenuInfo();
 	}
 
-	SetRottScreenRes(VIRTUALWIDTH, VIRTUALHEIGHT);
-
-	printf("main: framebuffer res %d x %d\nmain: target res %d x %d\n", FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT, VIRTUALWIDTH, VIRTUALHEIGHT);
-
-	GenerateSkyScalerTable();
-
 	//   if (modemgame==true)
 	//      {
 	//      SCREENSHOTS=true;
@@ -342,7 +336,13 @@ int main(int argc, char* argv[])
 	if (standalone == true)
 		ServerLoop();
 
-	VL_SetVGAPlaneMode();
+	GraphicsMode();
+	SetRottScreenRes(VIRTUALWIDTH, VIRTUALHEIGHT);
+
+	printf("main: framebuffer res %d x %d\nmain: target res %d x %d\n", FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT, VIRTUALWIDTH, VIRTUALHEIGHT);
+
+	GenerateSkyScalerTable();
+
 	VL_SetPalette(origpal);
 
 	if (mouseenabled)

@@ -67,6 +67,8 @@ void GetMonitorResolution()
 
 void SetRottScreenRes(int Width, int Height)
 {
+	FreeFramebuffer();
+
 	constexpr int FAST = 1;
 	constexpr int ACCURATE = 2;
 
@@ -114,7 +116,11 @@ void SetRottScreenRes(int Width, int Height)
 
 	iGLOBAL_SCREENBWIDE = FRAMEBUFFERWIDTH * (96 / 320);
 	iG_SCREENWIDTH = FRAMEBUFFERWIDTH * (96 / 320);
-	; // default screen width in bytes
+
+	AllocateFramebuffer();
+	VL_SetVGAPlaneMode();
+
+	// default screen width in bytes
 
 	// MinScreenWidth =  ((float)FRAMEBUFFERWIDTH * 0.01875);
 
