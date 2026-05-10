@@ -1200,22 +1200,13 @@ void SetUpControlPanel(void)
 	byte* b;
 	byte* s;
 
-	//   int Xres = 320;//org
-	//   int Yres = 200;//org
 	int Xres = 640;
 	int Yres = 400;
 
-	// dont work in 800x600 until we get a better screen schrinker
-	//   int Xres = FRAMEBUFFERWIDTH;//640;
-	//  int Yres = FRAMEBUFFERHEIGHT;//400;
-
-	Xres = 640;
-	Yres = 400;
-
-	if(aspectRatioCorrection == 1)
-		Yres = (int)Yres / 1.2f;
-	else if (aspectRatioCorrection == 2)
-	 	Xres = (int)Xres / 1.2f;
+	// if(aspectRatioCorrection == 1)
+	// 	Yres = (int)Yres / 1.2f;
+	// else if (aspectRatioCorrection == 2)
+	//  	Xres = (int)Xres / 1.2f;
 
 	// Save the current game screen
 
@@ -1235,33 +1226,26 @@ void SetUpControlPanel(void)
 
 	s = savedscreen;
 
-	if (FRAMEBUFFERWIDTH == 320)
+	// save game pic buffer is 160x100,
+	// walk framebuffer in those increments for image
+	int Xstep = FRAMEBUFFERWIDTH / 160;
+	int Ystep = FRAMEBUFFERHEIGHT / 100;
+	int rowByte = FRAMEBUFFERWIDTH * Ystep;
+
+	// find top-left offset to center screen contents
+	// bc previous operation has to round the step boundary
+	int Xoff = (FRAMEBUFFERWIDTH % 160) / 2;
+	int Yoff = (FRAMEBUFFERHEIGHT % 100) / 2;
+	b = (byte*)(bufferofs + (Xoff + (FRAMEBUFFERWIDTH * Yoff)));
+
+	for (i = 0; i < FRAMEBUFFERWIDTH; i += Xstep)
 	{
-		for (i = 0; i < Xres; i += 2)
+		b = (byte*)bufferofs + i;
+		for (j = 0; j < 100; j++, s++, b += rowByte)
 		{
-			b = (byte*)bufferofs + i;
-			for (j = 0; j < 100; j++, s++, b += (FRAMEBUFFERWIDTH << 1))
-				*s = *b;
+			*s = *b;
 		}
 	}
-	if (FRAMEBUFFERWIDTH >= 640)
-	{
-		for (i = 0; i < Xres; i += 4)
-		{
-			b = (byte*)bufferofs + i; // schrink screen to 1/2 size
-			for (j = 0; j < (Yres / 4);
-				 j++, s++, b += (FRAMEBUFFERWIDTH << 1) * 2)
-				*s = *b;
-		}
-	} /*
-	   if (FRAMEBUFFERWIDTH == 800) {
-		   for (i=0;i<Xres;i+=8)		{
-			   b=(byte *)bufferofs+i;//schrink screen to 1/3 size
-			   for (j=0;j<(Yres/8);j++,s++,b+=(FRAMEBUFFERWIDTH<<1)*3)
-				  *s=*b;
-		   }
-
-	   }*/
 
 	ScanForSavedGames();
 
