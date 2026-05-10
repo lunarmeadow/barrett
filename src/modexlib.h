@@ -64,6 +64,9 @@ extern bool graphicsmode;
 
 extern SDL_Surface* sdl_surface;
 
+void FreeFramebuffer(void);
+void AllocateFramebuffer(void);
+
 void GraphicsMode(void);
 void ChangeResolution(int, int);
 void SetTextMode(void);

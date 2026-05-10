@@ -24,6 +24,7 @@ extern int iGLOBAL_HEALTH_Y;
 extern int iGLOBAL_AMMO_X;
 extern int iGLOBAL_AMMO_Y;
 
+void SetRottScreenRes(int Width, int Height);
 void GetMonitorResolution(void);
 void EnableScreenStretch(void);
 void DisableScreenStretch(void);

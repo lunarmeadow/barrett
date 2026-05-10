@@ -127,7 +127,7 @@ void CheckCommandLineParameters(void);
 void PlayTurboGame(void);
 void Init_Tables(void);
 void CheckRemoteRidicule(int scancode);
-void SetRottScreenRes(int Width, int Height);
+// void SetRottScreenRes(int Width, int Height);
 
 extern void crash_print(int);
 extern int setup_homedir(void);
@@ -272,12 +272,6 @@ int main(int argc, char* argv[])
 		GetMenuInfo();
 	}
 
-	SetRottScreenRes(VIRTUALWIDTH, VIRTUALHEIGHT);
-
-	printf("main: framebuffer res %d x %d\nmain: target res %d x %d\n", FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT, VIRTUALWIDTH, VIRTUALHEIGHT);
-
-	GenerateSkyScalerTable();
-
 	//   if (modemgame==true)
 	//      {
 	//      SCREENSHOTS=true;
@@ -342,8 +336,8 @@ int main(int argc, char* argv[])
 	if (standalone == true)
 		ServerLoop();
 
-	VL_SetVGAPlaneMode();
-	VL_SetPalette(origpal);
+	GraphicsMode();
+	SetRottScreenRes(VIRTUALWIDTH, VIRTUALHEIGHT);
 
 	if (mouseenabled)
 	{
