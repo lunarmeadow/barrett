@@ -73,6 +73,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "rt_battl.h"
 #include "develop.h"
+#include "WinRott.h"
 
 //******************************************************************************
 //
@@ -4841,17 +4842,20 @@ void CP_ScreenResolution(void)
 
 	if (which >= 0)
 	{
-		ScreenWidthToWriteToCfg = AvailableResolutions[which].width;
-		ScreenHeightToWriteToCfg = AvailableResolutions[which].height;
-		HudScaleToWriteToCfg = AvailableResolutions[which].hudScale;
-		writeNewResIntoCfg = true;
+		SetRottScreenRes(AvailableResolutions[which].width,
+						 AvailableResolutions[which].height);
+
+		// FRAMEBUFFERWIDTH = AvailableResolutions[which].width;
+		// FRAMEBUFFERHEIGHT = AvailableResolutions[which].height;
+		// HudScaleToWriteToCfg = AvailableResolutions[which].hudScale;
+		writeNewResIntoCfg = false;
 	}
 
-	if(ScreenWidthToWriteToCfg > 1920 || ScreenHeightToWriteToCfg > 1080)
+	if(FRAMEBUFFERWIDTH > 1920 || FRAMEBUFFERHEIGHT > 1080)
 		CP_HighResMessage();
 	
-	if (writeNewResIntoCfg)
-		CP_RestartProgramMessage();
+	// if (writeNewResIntoCfg)
+	// 	CP_RestartProgramMessage();
 
 	DrawVisualsMenu();
 }

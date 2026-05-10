@@ -127,7 +127,7 @@ void CheckCommandLineParameters(void);
 void PlayTurboGame(void);
 void Init_Tables(void);
 void CheckRemoteRidicule(int scancode);
-void SetRottScreenRes(int Width, int Height);
+// void SetRottScreenRes(int Width, int Height);
 
 extern void crash_print(int);
 extern int setup_homedir(void);
@@ -338,12 +338,6 @@ int main(int argc, char* argv[])
 
 	GraphicsMode();
 	SetRottScreenRes(VIRTUALWIDTH, VIRTUALHEIGHT);
-
-	printf("main: framebuffer res %d x %d\nmain: target res %d x %d\n", FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT, VIRTUALWIDTH, VIRTUALHEIGHT);
-
-	GenerateSkyScalerTable();
-
-	VL_SetPalette(origpal);
 
 	if (mouseenabled)
 	{

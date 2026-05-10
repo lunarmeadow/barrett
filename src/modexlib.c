@@ -124,6 +124,12 @@ void FreeFramebuffer(void)
 		SDL_FreeSurface(sdl_surface);
 		sdl_surface = NULL;
 	}
+
+	if(unstretch_sdl_surface != NULL)
+	{
+		SDL_FreeSurface(unstretch_sdl_surface);
+		unstretch_sdl_surface = NULL;
+	}
 }
 void AllocateFramebuffer(void)
 {
@@ -133,6 +139,15 @@ void AllocateFramebuffer(void)
 
 	sdl_surface = SDL_CreateRGBSurface(0, FRAMEBUFFERWIDTH,
 									   FRAMEBUFFERHEIGHT, 8, 0, 0, 0, 0);
+
+	if (unstretch_sdl_surface == NULL)
+	{
+		/* should really be just 320x200, but there is code all over the
+		 *   places which crashes then */
+		unstretch_sdl_surface =
+		SDL_CreateRGBSurface(SDL_SWSURFACE, FRAMEBUFFERWIDTH,
+							 FRAMEBUFFERHEIGHT, 8, 0, 0, 0, 0);
+	}
 
 	SDL_SetSurfaceRLE(sdl_surface, 1);
 }
@@ -157,8 +172,6 @@ void GraphicsMode(void)
 	}
 
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-
-	AllocateFramebuffer();
 
 	Uint32 r,g,b,a = 0;
 
@@ -395,15 +408,6 @@ void EnableScreenStretch(void)
 {
 	if (FRAMEBUFFERWIDTH <= 320 || StretchScreen)
 		return;
-
-	if (unstretch_sdl_surface == NULL)
-	{
-		/* should really be just 320x200, but there is code all over the
-		   places which crashes then */
-		unstretch_sdl_surface =
-			SDL_CreateRGBSurface(SDL_SWSURFACE, FRAMEBUFFERWIDTH,
-								 FRAMEBUFFERHEIGHT, 8, 0, 0, 0, 0);
-	}
 
 	displayofs = (byte *)unstretch_sdl_surface->pixels +
 					(displayofs - (byte*)sdl_surface->pixels);

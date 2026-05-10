@@ -7,6 +7,7 @@
 #include "rt_def.h"
 #include "rt_util.h"
 #include "rt_view.h"
+#include "rt_draw.h"
 
 // typedef unsigned char byte;
 
@@ -65,8 +66,12 @@ void GetMonitorResolution()
 	MONITORHEIGHT = DM.h;
 }
 
+extern int hudRescaleFactor;
+
 void SetRottScreenRes(int Width, int Height)
 {
+	int maxRescale = (int)floor((float)FRAMEBUFFERWIDTH / 320);
+
 	FreeFramebuffer();
 
 	constexpr int FAST = 1;
@@ -87,15 +92,21 @@ void SetRottScreenRes(int Width, int Height)
 	{
 		case FAST:
 			// upscale from width x (height/1.2)
+			VIRTUALWIDTH = Width;
+			VIRTUALHEIGHT = Height;
 			FRAMEBUFFERWIDTH = Width;
 			FRAMEBUFFERHEIGHT = (int)round(Height / 1.2f);
 			break;
 		case ACCURATE:
 			// downscale from (width*1.2) x height
+			VIRTUALWIDTH = Width;
+			VIRTUALHEIGHT = Height;
 			FRAMEBUFFERWIDTH = (int)round(Width * 1.2f);
 			FRAMEBUFFERHEIGHT = Height;
 			break;
 		default: // none
+			VIRTUALWIDTH = Width;
+			VIRTUALHEIGHT = Height;
 			FRAMEBUFFERWIDTH = Width;
 			FRAMEBUFFERHEIGHT = Height;
 			break;
@@ -119,6 +130,25 @@ void SetRottScreenRes(int Width, int Height)
 
 	AllocateFramebuffer();
 	VL_SetVGAPlaneMode();
+	VL_SetPalette(origpal);
+	GenerateSkyScalerTable();
+
+	// hack hack hackky hack
+	if(StretchScreen)
+	{
+		DisableScreenStretch();
+		EnableScreenStretch();
+	}
+	else
+	{
+		EnableScreenStretch();
+		DisableScreenStretch();
+	}
+
+	printf("framebuffer res %d x %d\ntarget res %d x %d\n", FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT, VIRTUALWIDTH, VIRTUALHEIGHT);
+
+	if(hudRescaleFactor > maxRescale)
+		hudRescaleFactor = maxRescale;
 
 	// default screen width in bytes
 
