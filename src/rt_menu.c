@@ -4643,16 +4643,17 @@ void DoAdjustAspectRatio(void)
 {
 	int oldvalue = aspectRatioCorrection;
 
+	AspectSliderMenu(&aspectRatioCorrection, 44, 81, 194, "block2", NULL,
+			   "Asp. Ratio Correction", "Mode: ");
+
 	if(aspectRatioCorrection < 0)
 		aspectRatioCorrection = 0;
 	if(aspectRatioCorrection > 2)
 		aspectRatioCorrection = 0;
 
-	AspectSliderMenu(&aspectRatioCorrection, 44, 81, 194, "block2", NULL,
-			   "Asp. Ratio Correction", "Mode: ");
-
+	// reconfigure framebuffer with same resolution but ARC enabled
 	if(aspectRatioCorrection != oldvalue)
-		CP_RestartProgramMessage();
+		SetRottScreenRes(VIRTUALWIDTH, VIRTUALHEIGHT);
 	
 	DrawVisualsMenu();
 }
@@ -4845,10 +4846,10 @@ void CP_ScreenResolution(void)
 		SetRottScreenRes(AvailableResolutions[which].width,
 						 AvailableResolutions[which].height);
 
-		// FRAMEBUFFERWIDTH = AvailableResolutions[which].width;
-		// FRAMEBUFFERHEIGHT = AvailableResolutions[which].height;
-		// HudScaleToWriteToCfg = AvailableResolutions[which].hudScale;
-		writeNewResIntoCfg = false;
+		ScreenWidthToWriteToCfg = AvailableResolutions[which].width;
+		ScreenHeightToWriteToCfg = AvailableResolutions[which].height;
+		HudScaleToWriteToCfg = AvailableResolutions[which].hudScale;
+		writeNewResIntoCfg = true;
 	}
 
 	if(FRAMEBUFFERWIDTH > 1920 || FRAMEBUFFERHEIGHT > 1080)
