@@ -64,6 +64,8 @@ extern bool graphicsmode;
 
 extern SDL_Surface* sdl_surface;
 
+void FitWindowToScreen(void);
+
 void FreeFramebuffer(void);
 void AllocateFramebuffer(void);
 

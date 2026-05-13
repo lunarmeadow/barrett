@@ -145,6 +145,8 @@ void SetRottScreenRes(int Width, int Height)
 		DisableScreenStretch();
 	}
 
+	FitWindowToScreen();
+
 	printf("framebuffer res %d x %d\ntarget res %d x %d\n", FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT, VIRTUALWIDTH, VIRTUALHEIGHT);
 
 	if(hudRescaleFactor > maxRescale)

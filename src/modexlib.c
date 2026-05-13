@@ -152,6 +152,32 @@ void AllocateFramebuffer(void)
 	SDL_SetSurfaceRLE(sdl_surface, 1);
 }
 
+void FitWindowToScreen(void)
+{
+	SDL_Rect scrBounds;
+
+	SDL_GetDisplayUsableBounds(0, &scrBounds);
+
+	if (window == NULL)
+	{
+		Error("Could not find window to resize.\n");
+		exit(1);
+	}
+
+	int tempW = VIRTUALWIDTH;
+	int tempH = VIRTUALHEIGHT;
+
+	if(tempW > scrBounds.w)
+		tempW = scrBounds.w;
+
+	if(tempH > scrBounds.h - 96)
+		tempH = scrBounds.h - 96;
+
+	SDL_SetWindowSize(window, tempW, tempH);
+
+	SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, 0);
+}
+
 void GraphicsMode(void)
 {
 	Uint32 flags = 0;
@@ -161,15 +187,17 @@ void GraphicsMode(void)
 	if (sdl_fullscreen)
 		flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
 
-	window = SDL_CreateWindow("Barrett", SDL_WINDOWPOS_UNDEFINED,
-							  SDL_WINDOWPOS_UNDEFINED, FRAMEBUFFERWIDTH,
-							  FRAMEBUFFERHEIGHT, flags);
+	window = SDL_CreateWindow("Barrett", SDL_WINDOWPOS_CENTERED,
+							  SDL_WINDOWPOS_CENTERED, VIRTUALWIDTH,
+							  VIRTUALHEIGHT, flags | SDL_WINDOW_RESIZABLE);
 
 	if (window == NULL)
 	{
 		Error("Could not set video mode\n");
 		exit(1);
 	}
+
+	FitWindowToScreen();
 
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
