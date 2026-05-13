@@ -50,8 +50,6 @@ extern volatile int Keytail;
 extern volatile int Keyboard[MAXKEYBOARDSCAN]; // Keyboard status array
 extern volatile int Keystate[MAXKEYBOARDSCAN]; // Keyboard state array
 
-static int ticCount;
-
 int GetTicCount(void);
 int GetCachedTic(void);
 void SetCachedTic(int newTics);
