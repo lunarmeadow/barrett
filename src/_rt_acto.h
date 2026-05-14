@@ -252,7 +252,7 @@ typedef struct
 {
 	thingtype which;
 	byte tilex, tiley;
-	fixed x, y, z;
+	fixed_t x, y, z;
 } thing_point;
 
 //========================== Function Prototypes ==============================

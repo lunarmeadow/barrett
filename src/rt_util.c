@@ -129,8 +129,8 @@ int Find_3D_Distance(int ix, int iy, int iz)
 int atan2_appx(int dx, int dy)
 {
 	int absdx, absdy;
-	fixed angle;
-	fixed ratio;
+	fixed_t angle;
+	fixed_t ratio;
 
 	if (!(dx || dy))
 		return 0;

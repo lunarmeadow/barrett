@@ -68,7 +68,7 @@ int basemaxshade;
 int viewheight;
 int viewwidth;
 uint64_t heightnumerator;
-fixed scale;
+fixed_t scale;
 int screenofs;
 int centerx;
 int centery;
@@ -203,7 +203,7 @@ void SetViewDelta(void)
 	//  and sprite x calculations
 	//
 
-	scale = (fixed)((centerx / (float)160) * focallength);
+	scale = (fixed_t)((centerx / (float)160) * focallength);
 	//
 	// divide heightnumerator by a posts distance to get the posts height for
 	// the heightbuffer.  The pixel height is height>>HEIGHTFRACTION

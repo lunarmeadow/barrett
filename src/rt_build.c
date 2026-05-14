@@ -120,8 +120,8 @@ void GetPoint(int x1, int y1, int px, int py, int* screenx, int* height,
 			  int angle)
 {
 
-	fixed gxt, gyt, nx, ny;
-	fixed gxtt, gytt;
+	fixed_t gxt, gyt, nx, ny;
+	fixed_t gxtt, gytt;
 	int gx, gy;
 
 	//
