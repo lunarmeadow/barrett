@@ -618,7 +618,7 @@ void* SafeMalloc(long size)
 
 	if (zonememorystarted == false)
 		Error("Called SafeMalloc without starting zone memory\n");
-	ptr = Z_Malloc(size, PU_STATIC, NULL);
+	ptr = Z_TagMalloc(size, PU_STATIC);
 
 	if (!ptr)
 		Error("SafeMalloc failure for %lu bytes", size);

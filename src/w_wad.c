@@ -140,7 +140,7 @@ void W_AddFile(char* _filename)
 	//
 	// Fill in lumpinfo
 	//
-	Z_Realloc((void**)&lumpinfo, numlumps * sizeof(lumpinfo_t));
+	lumpinfo = Z_Realloc(lumpinfo, numlumps * sizeof(lumpinfo_t));
 	//        lumpinfo = realloc (lumpinfo, numlumps*sizeof(lumpinfo_t));
 	//        if (!lumpinfo)
 	//           Error("W_AddFile: Could not realloc %ld
@@ -408,7 +408,7 @@ void* W_CacheLumpNum(int lump, int tag, converter_t converter, int numrec)
 	if (!lumpcache[lump])
 	{
 		// read the lump in
-		Z_Malloc(W_LumpLength(lump), tag, &lumpcache[lump]);
+		Z_TagMalloc(W_LumpLength(lump), tag);
 		W_ReadLump(lump, lumpcache[lump]);
 		Debug("Invoking endian converter on %p, %i records\n", lumpcache[lump],
 			  numrec);

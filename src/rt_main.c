@@ -255,9 +255,8 @@ int main(int argc, char* argv[])
 
 	CheckCommandLineParameters();
 
-	// Start up Memory manager with a certain amount of reserved memory
-
-	Z_Init(50000, 1000000);
+	// Start up Zone Memory Manager
+	Z_Init();
 
 	IN_Startup();
 

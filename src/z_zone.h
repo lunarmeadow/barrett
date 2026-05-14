@@ -19,14 +19,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 //***************************************************************************
 //
-//    Z_Zone Memory management Constants
+//    Z_ZONE.C - Carmack's Memory manager for protected mode
 //
 //***************************************************************************
 
-#ifndef _z_zone_public
-#define _z_zone_public
+/* erysdren NOTE: i borrowed this from Yamagi Quake II */
 
-extern int lowmemory;
+#ifndef _Z_ZONE_H_
+#define _Z_ZONE_H_
+
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
 
 // tags < 100 are not overwritten until freed
 #define PU_STATIC	   1  // static entire execution time
@@ -49,35 +53,26 @@ extern int lowmemory;
 
 #define URGENTLEVELSTART PU_LEVEL
 
-//***************************************************************************
-//
-//    Z_ZONE.C - Carmack's Memory manager for protected mode
-//
-//***************************************************************************
+extern bool zonememorystarted;
+extern bool lowmemory;
 
-extern int zonememorystarted;
-
-void Z_Init(int size, int min); // Starts up Memory manager (size is in bytes),
-								// (min is minimum requirement)
-void Z_Free(void* ptr);			// Free a pointer in Z_Zone's domain
-void* Z_Malloc(int size, int tag,
-			   void* user); // Malloc You can pass a NULL user if the tag is <
-							// PU_PURGELEVEL
-void* Z_LevelMalloc(int size, int tag,
-					void* user);		  // Level Malloc for level structures
-void Z_FreeTags(int lowtag, int hightag); // Free a series of memory tags
-void Z_DumpHeap(int lowtag,
-				int hightag);		  // Dump the heap (for debugging purposes)
-void Z_CheckHeap(void);				  // Check the heap for corruption
-void Z_ChangeTag(void* ptr, int tag); // Change the tag of a memory item
-int Z_HeapSize(void);				  // Return the total heap size
-int Z_UsedHeap(void);				  // Return used portion of heap size
-int Z_AvailHeap(void); // Returns largest available contiguous block
-int Z_UsedStaticHeap(
-	void); // Returns amount of heap which is static ( < PURGELEVEL )
+void Z_Init(void);
 void Z_ShutDown(void);
-int Z_GetSize(void* ptr);
-int Z_UsedLevelHeap(void);
-void Z_Realloc(void** ptr, int newsize);
 
-#endif
+void Z_Free(void *ptr);
+void Z_FreeTags(unsigned short lowtag, unsigned short hightag);
+
+void *Z_Malloc(size_t size);           /* returns 0 filled memory */
+void *Z_TagMalloc(size_t size, unsigned short tag);
+void *Z_Realloc(void *ptr, size_t size);
+void *Z_TagRealloc(void *ptr, size_t size, unsigned short tag);
+
+void *Z_LevelMalloc(int size, int tag, void *user);
+void Z_ChangeTag(void *ptr, int tag);
+int Z_HeapSize(void);
+int Z_UsedHeap(void);
+int Z_UsedLevelHeap(void);
+
+char *Z_StrDup(const char *s);
+
+#endif /* _Z_ZONE_H_ */
