@@ -84,3 +84,5 @@ cmake_install.cmake
 
 userdata/
 *.DOC
+
+.kateproject.build

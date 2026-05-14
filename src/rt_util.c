@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -129,8 +129,8 @@ int Find_3D_Distance(int ix, int iy, int iz)
 int atan2_appx(int dx, int dy)
 {
 	int absdx, absdy;
-	fixed angle;
-	fixed ratio;
+	fixed_t angle;
+	fixed_t ratio;
 
 	if (!(dx || dy))
 		return 0;

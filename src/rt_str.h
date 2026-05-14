@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -26,6 +26,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _rt_str_public
 #define _rt_str_public
 
+#include "develop.h"
 #include "lumpy.h"
 
 //***************************************************************************
@@ -73,8 +74,7 @@ void US_ClippedPrint(int x, int y, const char* s);
 void VWB_DrawPropString(const char* string);
 void VW_MeasurePropString(const char* string, int* width, int* height);
 
-void US_MeasureStr(int* width, int* height, const char* s, ...)
-	__attribute__((format(printf, 3, 4)));
+void US_MeasureStr(int* width, int* height, const char* s, ...) ATTR_PRINTF(3, 4);
 
 void VW_DrawPropString(const char* string);
 

@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -78,6 +78,7 @@ static int oldsky = -1;
 
 // bna fixit skyerror by 800x600 clouds not big enough
 
+extern bool ludicrousskybox;
 void DrawSky(void)
 {
 
@@ -87,6 +88,7 @@ void DrawSky(void)
 	int height;
 	//   int height2;
 	int ang;
+	int normalang, ludicrousang;
 	int angle;
 	int ofs;
 
@@ -97,19 +99,26 @@ void DrawSky(void)
 	else
 		shadingtable = colormap + (1 << 12);
 
-	ofs = (((maxheight) - (player->z)) >> 4) +
-		  (centery * 200 / iGLOBAL_SCREENHEIGHT -
-		   ((viewheight * 200 / iGLOBAL_SCREENHEIGHT) >> 1));
+	int normalskyheight = ((viewheight * 200 / FRAMEBUFFERHEIGHT) >> 1);
+	int ludicrousheight = ((viewheight * 250 / FRAMEBUFFERHEIGHT) >> 1);
+
+	int normalparallax = 3;
+	int ludicrousparallax = 5;
+
+	// change height and scroll rate based on skybox mode
+	ofs = (((maxheight) - (player->z)) >> (ludicrousskybox ? ludicrousparallax : normalparallax)) +
+		  (centery * 200 / FRAMEBUFFERHEIGHT -
+		   (ludicrousskybox ? ludicrousheight : normalskyheight));
 
 	if (ofs > centerskypost)
 	{
 		ofs = centerskypost;
 	}
-	else if (((centerskypost - ofs) + viewheight * 200 / iGLOBAL_SCREENHEIGHT) >
+	else if (((centerskypost - ofs) + viewheight * 200 / FRAMEBUFFERHEIGHT) >
 			 1799)
 	{
 		ofs =
-			-(1799 - (centerskypost + viewheight * 200 / iGLOBAL_SCREENHEIGHT));
+			-(1799 - (centerskypost + viewheight * 200 / FRAMEBUFFERHEIGHT));
 	}
 	// ofs=centerskypost;
 	{
@@ -118,7 +127,16 @@ void DrawSky(void)
 			{
 				if ((height = posts[dest].ceilingclip) <= 0)
 					continue;
-				ang = (angle + pixelangle[dest]) & (FINEANGLES - 1);
+				
+				// this gets the angle for each column's projection arc essentially
+				// * 160 is half of 320, so this is sort of to create 
+				// a smooth angular gradient within the boundaries of the screen width,
+				// and keep the movement relatively steady.
+				// this is basically the same calculation as diminished lighting and fog,
+				// but it works well here. Reduces distortion at the edges.
+				ludicrousang = (angle + pixelangle[dest] - ((dest * 320) / FRAMEBUFFERWIDTH)) & (FINEANGLES - 1);
+				normalang = (angle + pixelangle[dest]) & (FINEANGLES - 1);
+				ang = ludicrousskybox ? ludicrousang : normalang;
 				src = skysegs[ang] - ofs;
 				DrawSkyPost((byte*)bufferofs + dest, src, height);
 			}
@@ -468,14 +486,14 @@ void SetFCLightLevel(int height)
 	}
 	if (fog)
 	{
-		i = ((height * 200 / iGLOBAL_SCREENHEIGHT) >> normalshade) + minshade;
+		i = ((height * 200 / FRAMEBUFFERHEIGHT) >> normalshade) + minshade;
 		if (i > maxshade)
 			i = maxshade;
 		shadingtable = colormap + (i << 8);
 	}
 	else
 	{
-		i = maxshade - ((height * 200 / iGLOBAL_SCREENHEIGHT) >> normalshade);
+		i = maxshade - ((height * 200 / FRAMEBUFFERHEIGHT) >> normalshade);
 		if (i < minshade)
 			i = minshade;
 		shadingtable = colormap + (i << 8);

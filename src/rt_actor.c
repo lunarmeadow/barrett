@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -1397,7 +1397,7 @@ void ConsiderAlternateActor(objtype* ob, classtype which)
 =
 ===================
 */
-
+extern bool halfmonkhp;
 void StandardEnemyInit(objtype* ob, int dir)
 {
 	int zoffset;
@@ -1409,6 +1409,11 @@ void StandardEnemyInit(objtype* ob, int dir)
 		ob->flags |= FL_HASAUTO;
 
 	ob->hitpoints = starthitpoints[gamestate.difficulty][ob->obclass];
+
+	// half monk hp toggle
+	if((ob->obclass == deathmonkobj || ob->obclass == dfiremonkobj) && halfmonkhp)
+		ob->hitpoints /= 2;
+
 	ob->dir = dir * 2;
 	ob->flags |= (FL_SHOOTABLE | FL_BLOCK);
 	ob->speed = ENEMYRUNSPEED;
@@ -1597,7 +1602,7 @@ void SpawnDisk(int tilex, int tiley, int type, bool master)
 			// new->flags |= FL_SYNCED;
 			zoffset = MAPSPOT(tilex, tiley, 2);
 			if ((zoffset & 0xff00) == 0xb000)
-				Set_NewZ_to_MapValue((fixed*)(&(new->temp2)), zoffset,
+				Set_NewZ_to_MapValue((fixed_t*)(&(new->temp2)), zoffset,
 									 "elev disk", tilex, tiley);
 			else
 				new->temp2 = 32;
@@ -1608,7 +1613,7 @@ void SpawnDisk(int tilex, int tiley, int type, bool master)
 			SpawnNewObj(tilex, tiley, &s_pathdisk, diskobj);
 			zoffset = MAPSPOT(tilex, tiley, 2);
 			if ((zoffset & 0xff00) == 0xb000)
-				Set_NewZ_to_MapValue((fixed*)(&(new->z)), zoffset, "path disk",
+				Set_NewZ_to_MapValue((fixed_t*)(&(new->z)), zoffset, "path disk",
 									 tilex, tiley);
 
 			new->dir = (type - 1) << 1;

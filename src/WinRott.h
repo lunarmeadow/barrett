@@ -7,8 +7,12 @@
 #define MAXSCREENWIDTH	3840
 #define MAXSCREENHEIGHT 2160 // max res is set to be 4k
 
-extern int iGLOBAL_SCREENWIDTH;	 // bna val 800
-extern int iGLOBAL_SCREENHEIGHT; // bna val 600
+extern int FRAMEBUFFERWIDTH;	 // bna val 800
+extern int FRAMEBUFFERHEIGHT; // bna val 600
+extern int VIRTUALWIDTH;	 // bna val 800
+extern int VIRTUALHEIGHT; // bna val 600
+extern int MONITORWIDTH;	 // bna val 800
+extern int MONITORHEIGHT; // bna val 600
 
 // extern int topBarCenterOffsetX;
 
@@ -20,16 +24,13 @@ extern int iGLOBAL_HEALTH_Y;
 extern int iGLOBAL_AMMO_X;
 extern int iGLOBAL_AMMO_Y;
 
-extern int iGLOBAL_FOCALWIDTH;
-extern float fGLOBAL_FPFOCALWIDTH;
-
+void SetRottScreenRes(int Width, int Height);
+void GetMonitorResolution(void);
 void EnableScreenStretch(void);
 void DisableScreenStretch(void);
 void WriteNewResolution(void);
-void RecalculateFocalWidth(void);
+void RecalculateFocalLength(void);
 /*
-#define FOCALWIDTH 160//160
-#define FPFOCALWIDTH 160.0//160.0
 
 
 

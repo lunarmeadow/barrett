@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "rt_def.h"
+#include "rt_cfg.h"
 #include "rt_view.h"
 #include "z_zone.h"
 #include "w_wad.h"
@@ -66,8 +67,8 @@ int baseminshade;
 int basemaxshade;
 int viewheight;
 int viewwidth;
-longword heightnumerator;
-fixed scale;
+uint64_t heightnumerator;
+fixed_t scale;
 int screenofs;
 int centerx;
 int centery;
@@ -84,7 +85,7 @@ byte* playermaps[MAXPLAYERCOLORS];
 short pixelangle[MAXSCREENWIDTH];
 byte gammatable[GAMMAENTRIES];
 int gammaindex;
-int focalwidth = 160;
+int focallength = 160;
 int yzangleconverter;
 byte uniformcolors[MAXPLAYERCOLORS] = {25,	222, 29, 206, 52, 6,
 									   155, 16,	 90, 129, 109};
@@ -112,32 +113,76 @@ static int lightningsoundtime = 0;
 static bool periodic = false;
 static int periodictime = 0;
 
-void SetViewDelta(void);
 void UpdatePeriodicLighting(void);
 
 /*
 ====================
 =
-= ResetFocalWidth
+= FOVToFocalLength
 =
 ====================
 */
-void ResetFocalWidth(void)
+
+extern int vfov;
+
+// https://wojtsterna.com/2024/01/09/field-of-view-horizontal-and-vertical-conversion/
+// https://stackoverflow.com/questions/18176215/how-to-select-focal-lengh-in-ray-tracing
+// this is the distance to the projection plane
+// we need to do our math in the original 320x200 viewport
+int FOVToFocalLength(int fov)
 {
-	focalwidth = iGLOBAL_FOCALWIDTH; // FOCALWIDTH;
+	// calculate horizontal fov from vertical fov
+	float hfov;
+	float f;
+	float aspectRatio = ((double)320 / 200);
+	float degToRad = M_PI / 180;
+
+	hfov = 2 * (atan((tan((double)(fov * degToRad) / 2)) * aspectRatio));
+
+	// printf("fov: %d, hfov: %f\n", fov, (hfov * 180 / M_PI));
+
+	// GooberMan mentioned in LE discord to divide by 1.1 to get true FOV
+	// because ROTT is strange
+	f = (((double)200 / 2) / (tan((double)hfov / 2))) / 1.1;
+
+	// printf("len: %f\n", f);
+
+	return (int)round(f);
+}
+
+/*
+====================
+=
+= ResetFocalLength
+=
+====================
+*/
+void ResetFocalLength(void)
+{
+	focallength = FOVToFocalLength(vfov);
 	SetViewDelta();
 }
 
 /*
 ====================
 =
-= ChangeFocalWidth
+= ChangeFocalLength
 =
 ====================
 */
-void ChangeFocalWidth(int amount)
+void ChangeFocalLength(int amount)
 {
-	focalwidth = iGLOBAL_FOCALWIDTH + amount; // FOCALWIDTH+amount;
+	int min = FOVToFocalLength(MAXFOV);
+	int max = FOVToFocalLength(MAXFOV);
+
+	focallength = FOVToFocalLength(vfov) - amount;
+
+	// clamp fov for shroom mode etc
+	if(focallength < min)
+		focallength = min;
+	if(focallength < max)
+		focallength = max;
+
 	SetViewDelta();
 }
 
@@ -151,19 +196,19 @@ void ChangeFocalWidth(int amount)
 
 void SetViewDelta(void)
 {
-	// iGLOBAL_SCREENHEIGHT
-	// iGLOBAL_SCREENWIDTH
+	// FRAMEBUFFERHEIGHT
+	// FRAMEBUFFERWIDTH
 	//
 	//  calculate scale value for vertical height calculations
 	//  and sprite x calculations
 	//
 
-	scale = (centerx * focalwidth) / (160);
+	scale = (fixed_t)((centerx / (float)160) * focallength);
 	//
 	// divide heightnumerator by a posts distance to get the posts height for
 	// the heightbuffer.  The pixel height is height>>HEIGHTFRACTION
 	//
-	heightnumerator = ((int)(((float)focalwidth / 10) * centerx * 4096) * 64);
+	heightnumerator = ((uint64_t)(((float)focallength / 10) * centerx * 4096) * 64);
 }
 
 /*
@@ -183,9 +228,6 @@ void CalcProjection(void)
 	byte* ptr;
 	int length;
 	int* pangle;
-
-	// Already being called in ResetFocalWidth
-	//    SetViewDelta();
 
 	//
 	// load in tables file
@@ -238,6 +280,19 @@ void SetViewSize(int size)
 	int screenx;
 	int screeny;
 	int topy;
+	int sW = FRAMEBUFFERWIDTH;
+	int sH = FRAMEBUFFERHEIGHT;
+
+	// scale screen boundaries for diff ARC modes
+	// VGA pixels are 1:1.2
+
+	// ARC mode 1 is fast, which affects height.
+	// as such height must be recalculated.
+	// this doesn't apply to ARC mode 2 which downscales width
+	int scaleConstant = 16;
+	if(aspectRatioCorrection == 1 && hudRescaleFactor != 1)
+		scaleConstant = 13;
+
 	/*
 	if (size>=10){
 
@@ -250,8 +305,8 @@ void SetViewSize(int size)
 	height = 0;
 	for (height = 0; height < 21;)
 	{
-		viewsizes[height++] = iGLOBAL_SCREENWIDTH;
-		viewsizes[height++] = iGLOBAL_SCREENHEIGHT;
+		viewsizes[height++] = sW;
+		viewsizes[height++] = sH;
 	}
 
 	if ((size < 0) || (size >= MAXVIEWSIZES))
@@ -267,7 +322,7 @@ void SetViewSize(int size)
 	viewwidth = viewsizes[size << 1];		 // must be divisable by 16
 	viewheight = viewsizes[(size << 1) + 1]; // must be even
 
-	maxheight = iGLOBAL_SCREENHEIGHT;
+	maxheight = sH;
 	topy = 0;
 
 	// Only keep the kills flag
@@ -284,8 +339,8 @@ void SetViewSize(int size)
 		StatusBar |= TOP_STATUS_BAR;
 
 		// Account for height of top status bar
-		maxheight -= 16 * hudRescaleFactor;
-		topy += 16 * hudRescaleFactor;
+		maxheight -= scaleConstant * hudRescaleFactor;
+		topy += scaleConstant * hudRescaleFactor;
 	}
 
 	//   if ( size == 7 ){maxheight -= 16;}//bna++
@@ -296,7 +351,7 @@ void SetViewSize(int size)
 		// Turn on health and ammo bar
 		StatusBar |= BOTTOM_STATUS_BAR;
 
-		maxheight -= 16 * hudRescaleFactor;
+		maxheight -= scaleConstant * hudRescaleFactor;
 	}
 	else if (size < 10)
 	{
@@ -306,10 +361,10 @@ void SetViewSize(int size)
 	//   SetTextMode (  );
 	//   viewheight=viewheight;
 	height = viewheight;
-	if (height > 168 * iGLOBAL_SCREENHEIGHT / 200)
+	if (height > 168 * sH / 200)
 	{
 		// Prevent weapon from being scaled too big
-		height = 168 * iGLOBAL_SCREENHEIGHT / 200;
+		height = 168 * sH / 200;
 	}
 
 	weaponscale = (height << 16) / 168; //( height << 16 ) = 170 * 65536
@@ -318,14 +373,12 @@ void SetViewSize(int size)
 	centery = viewheight >> 1;
 	centeryfrac = (centery << 16);
 
-	// 0xE82A = tan(30deg) * (65536 / 2*pi)
-	// scale it by ratio of focal width to default
-	// 320 seems to work better than 200, 300, and 360. can't find a better value atm.
-	// this could probably be further refined.
-	yzangleconverter = (int)((0xA000 * ((float)focalwidth / 160)) * ((float)viewheight / 200));
+	int anglescale = (int)(16384 * ((float)sW / sH) + 8192);
+
+	yzangleconverter = (int)((anglescale * ((float)focallength / 160)) * ((float)viewheight / 200));
 
 	// Center the view horizontally
-	screenx = (iGLOBAL_SCREENWIDTH - viewwidth) >> 1;
+	screenx = (sW - viewwidth) >> 1;
 
 	if (viewheight >= maxheight)
 	{
@@ -345,10 +398,7 @@ void SetViewSize(int size)
 	// calculate trace angles and projection constants
 	//
 
-	ResetFocalWidth();
-
-	// Already being called in ResetFocalWidth
-	//   SetViewDelta();
+	ResetFocalLength();
 
 	CalcProjection();
 }
@@ -390,8 +440,8 @@ void SetupScreen(bool flip)
 	{
 		shape = (pic_t*)W_CacheLumpName("backtile", PU_CACHE, Cvt_pic_t, 1);
 		// DrawTiledRegion( 0, 16, 320, 200 - 32, 0, 16, shape );
-		DrawTiledRegion(0, 16 * hudRescaleFactor, iGLOBAL_SCREENWIDTH,
-						iGLOBAL_SCREENHEIGHT - 16 * hudRescaleFactor, 0, 16,
+		DrawTiledRegion(0, 16 * hudRescaleFactor, FRAMEBUFFERWIDTH,
+						FRAMEBUFFERHEIGHT - 16 * hudRescaleFactor, 0, 16,
 						shape); // bna++
 	}
 

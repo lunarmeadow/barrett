@@ -66,8 +66,8 @@ Barrett is licensed under the terms of the GNU GPLv2 license.
 Copyright (C) 1994-1995 Apogee Software, Ltd.  
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port  
 Copyright (C) 2017-2018 Steven LeVesque  
-Copyright (C) 2025 lunarmeadow (she/her)  
-Copyright (C) 2025 erysdren (it/its)  
+Copyright (C) 2025-2026 lunarmeadow (she/her)  
+Copyright (C) 2025-2026 erysdren (it/its)  
 
 The full license text for the GPLv2 can be found within `COPYING` in the root directory of this project.  
 The full license text for Rise of the Triad: Dark War can be found within `ROTTLICENSE` in the root directory of this project.

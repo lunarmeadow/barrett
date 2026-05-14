@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -120,10 +120,10 @@ int skyScalers[MAXSCREENHEIGHT];
 // refresh variables
 //
 
-fixed viewx, viewy; // the focal point
+fixed_t viewx, viewy; // the focal point
 int viewangle;
 int c_startx, c_starty;
-fixed viewsin, viewcos;
+fixed_t viewsin, viewcos;
 int tics;
 
 //
@@ -153,7 +153,7 @@ static int nonbobpheight;
 
 static visobj_t* sortedvislist[MAXVISIBLE];
 
-static const fixed mindist = 0x1000;
+static const fixed_t mindist = 0x1000;
 
 static int weaponbobx, weaponboby;
 
@@ -198,7 +198,7 @@ void InterpolateWall(visobj_t* plane);
 // precompute (i * 200 / screenheight) to avoid expensive, constant floating point division for DrawSkyPost
 void GenerateSkyScalerTable(void)
 {
-	const int screenH = iGLOBAL_SCREENHEIGHT;
+	const int screenH = FRAMEBUFFERHEIGHT;
 
 	for(int i = 0; i < MAXSCREENHEIGHT; i++)
 	{
@@ -277,7 +277,7 @@ void BuildTables(void)
 	memcpy(&gammatable[0], ptr, length * sizeof(byte));
 	table = W_CacheLumpName("tables", PU_CACHE, CvtNull, 1);
 
-	costable = (fixed*)&(sintable[FINEANGLES / 4]);
+	costable = (fixed_t*)&(sintable[FINEANGLES / 4]);
 
 #if (SHAREWARE == 0)
 	netlump = W_GetNumForName("net1");
@@ -315,7 +315,7 @@ void BuildTables(void)
 bool TransformObject(int x, int y, int* dispx, int* dispheight)
 {
 
-	fixed gx, gy, gxt, gyt, nx, ny;
+	fixed_t gx, gy, gxt, gyt, nx, ny;
 
 	//
 	// translate point to view centered coordinates
@@ -365,8 +365,8 @@ void TransformPoint(int x, int y, int* screenx, int* height, int* texture,
 					int vertical)
 {
 
-	fixed gxt, gyt, nx, ny;
-	fixed gxtt, gytt;
+	fixed_t gxt, gyt, nx, ny;
+	fixed_t gxtt, gytt;
 	int gx, gy;
 	int vx, vy;
 	int svs, svc;
@@ -496,8 +496,8 @@ bool TransformSimplePoint(int x, int y, int* screenx, int* height,
 							 int* texture, int vertical)
 {
 
-	fixed gxt, gyt, nx, ny;
-	fixed gxtt, gytt;
+	fixed_t gxt, gyt, nx, ny;
+	fixed_t gxtt, gytt;
 	int gx, gy;
 
 	//
@@ -620,7 +620,7 @@ bool TransformPlane(int x1, int y1, int x2, int y2, visobj_t* plane)
 
 int CalcHeight(void)
 {
-	fixed gxt, gyt, nx;
+	fixed_t gxt, gyt, nx;
 	long gx, gy;
 
 
@@ -1307,13 +1307,13 @@ void DrawPlayerWeapon(void)
 			// was += delta, this sets it to zero when doom bobbing is enabled (disables 3D motion)
 			weaponscale += doombobbing == false ? delta : 0;
 			ScaleWeapon(xdisp - weaponbobx,
-						ydisp + weaponboby + locplayerstate->weaponheight,
+						ydisp + weaponboby + 1 + locplayerstate->weaponheight,
 						shapenum);
 			
 			// was -= delta, this sets it to zero when doom bobbing is enabled (disables 3D motion)
 			weaponscale -= doombobbing == false ? delta : 0;
 			ScaleWeapon(weaponbobx - 80,
-						ydisp + weaponboby + locplayerstate->weaponheight,
+						ydisp + weaponboby + 1 + locplayerstate->weaponheight,
 						altshape);
 			weaponscale = temp;
 		}
@@ -1326,7 +1326,7 @@ void DrawPlayerWeapon(void)
 			delta = FixedMul((weaponbobx << 9), weaponscale);
 			weaponscale -= doombobbing == false ? delta : 0;
 			ScaleWeapon(xdisp + weaponbobx,
-						ydisp + weaponboby + locplayerstate->weaponheight,
+						ydisp + 1 + weaponboby + locplayerstate->weaponheight,
 						shapenum);
 			weaponscale = temp;
 		}
@@ -1429,7 +1429,7 @@ void SetSpriteLightLevel(int x, int y, visobj_t* sprite, int dir,
 
 	if (fog)
 	{
-		i = ((sprite->viewheight * 200 / iGLOBAL_SCREENHEIGHT) >> normalshade) +
+		i = ((sprite->viewheight * 200 / FRAMEBUFFERHEIGHT) >> normalshade) +
 			minshade;
 		if (i > maxshade)
 			i = maxshade;
@@ -1445,14 +1445,14 @@ void SetSpriteLightLevel(int x, int y, visobj_t* sprite, int dir,
 				intercept = (y >> 11) & 0x1c;
 
 			lv = (((LightSourceAt(x >> 16, y >> 16) >> intercept) & 0xf) >> 1);
-			i = maxshade - ((sprite->viewheight * 200 / iGLOBAL_SCREENHEIGHT) >> normalshade) - lv;
+			i = maxshade - ((sprite->viewheight * 200 / FRAMEBUFFERHEIGHT) >> normalshade) - lv;
 			if (i < minshade)
 				i = minshade;
 			sprite->colormap = colormap + (i << 8);
 		}
 		else
 		{
-			i = maxshade - ((sprite->viewheight * 200 / iGLOBAL_SCREENHEIGHT) >> normalshade);
+			i = maxshade - ((sprite->viewheight * 200 / FRAMEBUFFERHEIGHT) >> normalshade);
 			if (i < minshade)
 				i = minshade;
 			sprite->colormap = colormap + (i << 8);
@@ -1493,7 +1493,7 @@ void SetColorLightLevel(int x, int y, visobj_t* sprite, int dir, int color,
 
 	if (fog)
 	{
-		i = ((height * 200 / iGLOBAL_SCREENHEIGHT) >> normalshade) + minshade;
+		i = ((height * 200 / FRAMEBUFFERHEIGHT) >> normalshade) + minshade;
 		if (i > maxshade)
 			i = maxshade;
 		sprite->colormap = map + (i << 8);
@@ -1593,7 +1593,7 @@ void SetWallLightLevel(wallcast_t* post)
 	}
 	if (fog)
 	{
-		i = ((post->wallheight * 200 / iGLOBAL_SCREENHEIGHT) >> normalshade) +
+		i = ((post->wallheight * 200 / FRAMEBUFFERHEIGHT) >> normalshade) +
 			minshade - lv + la;
 		if (i > maxshade + la)
 			i = maxshade + la;
@@ -1601,7 +1601,7 @@ void SetWallLightLevel(wallcast_t* post)
 	}
 	else
 	{
-		i = maxshade - ((post->wallheight * 200 / iGLOBAL_SCREENHEIGHT) >> normalshade) - lv + la;
+		i = maxshade - ((post->wallheight * 200 / FRAMEBUFFERHEIGHT) >> normalshade) - lv + la;
 		if (i >= maxshade)
 			i = maxshade;
 		if (i < minshade + la)
@@ -2043,7 +2043,7 @@ void WallRefresh(void)
 							 sintable[(GetCachedTic() << 5) & (FINEANGLES - 1)],
 							 (16 + 4))) &
 						(FINEANGLES - 1);
-			ChangeFocalWidth(FixedMulShift(
+			ChangeFocalLength(FixedMulShift(
 				40, sintable[(GetCachedTic() << 5) & (FINEANGLES - 1)], 16));
 		}
 		else
@@ -2340,17 +2340,19 @@ void InterpolateDoor(visobj_t* plane)
 				{
 					sprtopoffset -= (dc_invscale << 6) * (levelheight - 1);
 					bottomscreen = sprtopoffset + (dc_invscale * nominalheight);
-					dc_yl = (sprtopoffset + SFRACUNIT - 1) >> SFRACBITS;
-					dc_yh = ((bottomscreen - 1) >> SFRACBITS) + 1;
+					dc_yl = (sprtopoffset + SFRACUNIT) >> SFRACBITS;
+					dc_yh = ((bottomscreen + (dc_invscale>>6)) >> SFRACBITS) + 1;
+					ylcmp = (sprtopoffset + (dc_invscale>>6) + SFRACUNIT) >> SFRACBITS;
+					yhcmp = ((bottomscreen - (dc_invscale>>6)) >> SFRACBITS) + 1;
 					if (dc_yl >= viewheight)
 						continue;
 					else if (dc_yl < 0)
 						dc_yl = 0;
 					if (dc_yh > viewheight)
-						dc_yh = viewheight;
+						dc_yh = viewheight - 1;
 
 					dc_source = shape2 + ((texture << 6) & 0xfc0);
-					R_DrawWallColumn(buf);
+					R_DrawUpperDoorColumn(buf);
 				}
 			}
 
@@ -2467,22 +2469,37 @@ void InterpolateMaskedWall(visobj_t* plane)
 					texture = 63;
 
 				SetLightLevel(height >> DHEIGHTFRACTION);
-				if (drawbottom == true)
+
+				// apply sparkle patch to unstacked walls, apply special patch for stacked 
+				if (drawbottom && !(drawmiddle || drawtop))
+				{
 					ScaleTransparentPost(p->collumnofs[texture] + shape, buf,
 										 (p->translevel + 8));
+				}
+				else if (drawbottom && (drawmiddle || drawtop))
+				{
+					ScaleTransparentTallPost(p->collumnofs[texture] + shape, buf,
+										 (p->translevel + 8));
+				}
 				for (j = 0; j < levelheight - 2; j++)
 				{
 					sprtopoffset -= (dc_invscale << 6);
 					dc_texturemid += (1 << 22);
 					if (drawmiddle == true)
-						ScaleMaskedPost(p2->collumnofs[texture] + shape2, buf);
+						ScaleMaskedTallPost(p2->collumnofs[texture] + shape2, buf);
 				}
 				if (levelheight > 1)
 				{
 					sprtopoffset -= (dc_invscale << 6);
 					dc_texturemid += (1 << 22);
-					if (drawtop == true)
+					if (drawtop && !(drawbottom || drawmiddle))
+					{
 						ScaleMaskedPost(p3->collumnofs[texture] + shape3, buf);
+					}
+					if (drawtop && (drawbottom || drawmiddle))
+					{
+						ScaleMaskedTallPost(p3->collumnofs[texture] + shape3, buf);
+					}
 				}
 			}
 			top += topinc;
@@ -2594,12 +2611,17 @@ void ThreeDRefresh(void)
 			DrawScreenSprite(SCREENEYE->targettilex, SCREENEYE->targettiley,
 							 SCREENEYE->state->condition + GIBEYE1 +
 								 shapestart);
+
+		// DrawPlayScreen(false);
+		// DrawStats();
+		// DrawTime(false);
+
 		UpdateClientControls();
 
 		if (player->flags & FL_GASMASK)
 			DrawScreenSizedSprite(gmasklump);
 
-		if (SHOW_PLAYER_STATS())
+		if(SHOW_PLAYER_STATS())
 		{
 			DrawStats();
 		}
@@ -2648,6 +2670,7 @@ void ThreeDRefresh(void)
 		DrawPlayerLocation();
 
 	FlipPage();
+
 	gamestate.frame++;
 
 	player = tempptr;
@@ -2707,18 +2730,18 @@ void DrawScaledScreen(int x, int y, int step, byte* src)
 	int xsize;
 	int ysize;
 
-	xsize = (iGLOBAL_SCREENWIDTH << 16) / step;
-	if (xsize > iGLOBAL_SCREENWIDTH)
-		xsize = iGLOBAL_SCREENWIDTH;
-	ysize = (iGLOBAL_SCREENHEIGHT << 16) / step;
-	if (ysize > iGLOBAL_SCREENHEIGHT)
-		ysize = iGLOBAL_SCREENHEIGHT;
+	xsize = (FRAMEBUFFERWIDTH << 16) / step;
+	if (xsize > FRAMEBUFFERWIDTH)
+		xsize = FRAMEBUFFERWIDTH;
+	ysize = (FRAMEBUFFERHEIGHT << 16) / step;
+	if (ysize > FRAMEBUFFERHEIGHT)
+		ysize = FRAMEBUFFERHEIGHT;
 
 	{
 		yfrac = 0;
 		for (j = y; j < y + ysize; j++)
 		{
-			p = src + (iGLOBAL_SCREENWIDTH * (yfrac >> 16));
+			p = src + (FRAMEBUFFERWIDTH * (yfrac >> 16));
 			buf = (byte*)bufferofs + ylookup[j] + x;
 			xfrac = 0;
 			yfrac += step;
@@ -2760,7 +2783,7 @@ void DoLoadGameSequence(void)
 	dy = (-y) / time;
 	ds = -((s - 0x1000000) / time);
 
-	destscreen = SafeMalloc(iGLOBAL_SCREENWIDTH * iGLOBAL_SCREENHEIGHT);
+	destscreen = SafeMalloc(FRAMEBUFFERWIDTH * FRAMEBUFFERHEIGHT);
 	SetupScreen(false);
 	ThreeDRefresh();
 
@@ -2792,7 +2815,7 @@ void DoLoadGameSequence(void)
 	CalcTics();
 	// bna++ section
 	shape = (pic_t*)W_CacheLumpName("backtile", PU_CACHE, Cvt_pic_t, 1);
-	DrawTiledRegion(0, 16, iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT - 32, 0,
+	DrawTiledRegion(0, 16, FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT - 32, 0,
 					16, shape); // bna++
 	DrawPlayScreen(false);
 	DisableScreenStretch();
@@ -2826,32 +2849,32 @@ void StartupRotateBuffer(int masked)
 	//   RotatedImage=SafeMalloc(131072);org
 	// RotatedImage=SafeMalloc(131072*8);
 
-	// int amountToAlloc = ((iGLOBAL_SCREENWIDTH * iGLOBAL_SCREENHEIGHT)*2) +
+	// int amountToAlloc = ((FRAMEBUFFERWIDTH * FRAMEBUFFERHEIGHT)*2) +
 	// 3072; //this replaces 131072
 
 	RotatedImage = SafeMalloc(131072);
 
 	/*
-		if (iGLOBAL_SCREENWIDTH == 320) {
+		if (FRAMEBUFFERWIDTH == 320) {
 			RotatedImage=SafeMalloc(131072);
-		} else if (iGLOBAL_SCREENWIDTH == 640) {
+		} else if (FRAMEBUFFERWIDTH == 640) {
 			RotatedImage=SafeMalloc(131072*4);
-		} else if (iGLOBAL_SCREENWIDTH == 800) {
+		} else if (FRAMEBUFFERWIDTH == 800) {
 			RotatedImage=SafeMalloc(131072*8);
 		}
-		else if (iGLOBAL_SCREENWIDTH == 1024)
+		else if (FRAMEBUFFERWIDTH == 1024)
 		{
 			RotatedImage=SafeMalloc(131072*14);
 		}
-		else if (iGLOBAL_SCREENWIDTH == 1280)
+		else if (FRAMEBUFFERWIDTH == 1280)
 		{
 			RotatedImage=SafeMalloc(131072*20);
 		}
-		else if (iGLOBAL_SCREENWIDTH == 1400)
+		else if (FRAMEBUFFERWIDTH == 1400)
 		{
 			RotatedImage=SafeMalloc(131072*20);
 		}
-		else if (iGLOBAL_SCREENWIDTH == 1920)
+		else if (FRAMEBUFFERWIDTH == 1920)
 		{
 			RotatedImage=SafeMalloc(131072*50);
 		}
@@ -2863,48 +2886,48 @@ void StartupRotateBuffer(int masked)
 	else
 		memset(RotatedImage, 0xff, 131072);
 	/*
-			if (iGLOBAL_SCREENWIDTH == 320) {
+			if (FRAMEBUFFERWIDTH == 320) {
 				memset(RotatedImage,0,131072);
-			} else if (iGLOBAL_SCREENWIDTH == 640) {
+			} else if (FRAMEBUFFERWIDTH == 640) {
 				memset(RotatedImage,0,131072*4);
-			} else if (iGLOBAL_SCREENWIDTH == 800) {
+			} else if (FRAMEBUFFERWIDTH == 800) {
 				//memset(RotatedImage,0,131072);//org
 				memset(RotatedImage,0,131072*8);
-			}else if (iGLOBAL_SCREENWIDTH == 1024) {
+			}else if (FRAMEBUFFERWIDTH == 1024) {
 				memset(RotatedImage,0,131072*14);
 			}
-			else if (iGLOBAL_SCREENWIDTH == 1280)
+			else if (FRAMEBUFFERWIDTH == 1280)
 			{
 				memset(RotatedImage, 0, 131072*20);
 			}
-			else if (iGLOBAL_SCREENWIDTH == 1400)
+			else if (FRAMEBUFFERWIDTH == 1400)
 			{
 				memset(RotatedImage, 0, 131072*20);
 			}
-			else if (iGLOBAL_SCREENWIDTH == 1920)
+			else if (FRAMEBUFFERWIDTH == 1920)
 			{
 				memset(RotatedImage, 0, 131072*50);
 			}
 		} else {
-			if (iGLOBAL_SCREENWIDTH == 320) {
+			if (FRAMEBUFFERWIDTH == 320) {
 				memset(RotatedImage,0xff,131072);
-			} else if (iGLOBAL_SCREENWIDTH == 640) {
+			} else if (FRAMEBUFFERWIDTH == 640) {
 				memset(RotatedImage,0xff,131072*4);
-			} else if (iGLOBAL_SCREENWIDTH == 800) {
+			} else if (FRAMEBUFFERWIDTH == 800) {
 				memset(RotatedImage,0xff,131072*8);
 			}
-			else if (iGLOBAL_SCREENWIDTH == 1024) {
+			else if (FRAMEBUFFERWIDTH == 1024) {
 				memset(RotatedImage,0xff,131072*14);
 			}
-			else if (iGLOBAL_SCREENWIDTH == 1280)
+			else if (FRAMEBUFFERWIDTH == 1280)
 			{
 				memset(RotatedImage, 0xff, 131072*20);
 			}
-			else if (iGLOBAL_SCREENWIDTH == 1400)
+			else if (FRAMEBUFFERWIDTH == 1400)
 			{
 				memset(RotatedImage, 0xff, 131072*20);
 			}
-			else if (iGLOBAL_SCREENWIDTH == 1920)
+			else if (FRAMEBUFFERWIDTH == 1920)
 			{
 				memset(RotatedImage, 0xff, 131072*50);
 			}
@@ -2913,16 +2936,16 @@ void StartupRotateBuffer(int masked)
 	// memset(RotatedImage,0xff,131072);//org
 	// memset(RotatedImage,0xff,131072*8);
 
-	if ((masked == false) && (iGLOBAL_SCREENWIDTH >= 800))
+	if ((masked == false) && (FRAMEBUFFERWIDTH >= 800))
 	{
 		DisableScreenStretch();
 		// SetTextMode (  );
 
 		k = (28 * 512); // 14336;
 		// k=((0+28)<<10);//28672
-		for (a = 0; a < iGLOBAL_SCREENHEIGHT; a++)
+		for (a = 0; a < FRAMEBUFFERHEIGHT; a++)
 		{
-			for (b = 0; b < iGLOBAL_SCREENWIDTH; b++)
+			for (b = 0; b < FRAMEBUFFERWIDTH; b++)
 			{
 				//*(RotatedImage+99+((a+28)<<9)+b)   =   *((byte
 				//*)bufferofs+(a*linewidth)+b);
@@ -2935,13 +2958,13 @@ void StartupRotateBuffer(int masked)
 			// k+=512*2;
 		}
 	}
-	else if ((masked == false) && (iGLOBAL_SCREENWIDTH == 640))
+	else if ((masked == false) && (FRAMEBUFFERWIDTH == 640))
 	{
 		DisableScreenStretch();
 		k = (28 * 512); // 14336;
-		for (a = 0; a < iGLOBAL_SCREENHEIGHT; a++)
+		for (a = 0; a < FRAMEBUFFERHEIGHT; a++)
 		{
-			for (b = 0; b < iGLOBAL_SCREENWIDTH; b++)
+			for (b = 0; b < FRAMEBUFFERWIDTH; b++)
 			{
 				k = ((a + 28) << 10);
 				*(RotatedImage + (k) + b) =
@@ -2949,7 +2972,7 @@ void StartupRotateBuffer(int masked)
 			}
 		}
 	}
-	else if ((masked == true) || (iGLOBAL_SCREENWIDTH == 320))
+	else if ((masked == true) || (FRAMEBUFFERWIDTH == 320))
 	{
 		for (a = 0; a < 200; a++)
 		{
@@ -2999,8 +3022,8 @@ void ScaleAndRotateBuffer(int startangle, int endangle, int startscale,
 	//    int Xh = 160;//org
 	//    int Yh = 100;//org
 
-	int Xh = iGLOBAL_SCREENWIDTH / 2;
-	int Yh = iGLOBAL_SCREENHEIGHT / 2;
+	int Xh = FRAMEBUFFERWIDTH / 2;
+	int Yh = FRAMEBUFFERHEIGHT / 2;
 	//  Xh = 259;
 	//  Yh = 109;
 
@@ -3048,7 +3071,7 @@ void ScaleAndRotateBuffer(int startangle, int endangle, int startscale,
 	{ // bna++
 		pic_t* shape;
 		shape = (pic_t*)W_CacheLumpName("backtile", PU_CACHE, Cvt_pic_t, 1);
-		DrawTiledRegion(0, 16, iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT - 32,
+		DrawTiledRegion(0, 16, FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT - 32,
 						0, 16, shape); // bna++
 		DisableScreenStretch();		   // dont strech when we go BACK TO GAME
 		DrawPlayScreen(true);		   // repaint ammo and life stat
@@ -3122,7 +3145,7 @@ void RotateScreenScaleFloat(float startAngle, float endAngle, float startScale,
 
 		// printf("factor: %f \n", factor);
 
-		DoScreenRotateScale(iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT, newTex,
+		DoScreenRotateScale(FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT, newTex,
 							angle, factor);
 
 		scale += (scalestep);
@@ -3139,7 +3162,7 @@ void RotateScreenScaleFloat(float startAngle, float endAngle, float startScale,
 	if (fadeOut == true)
 		VL_FadeOutScaledScreen(0, 255, 0, 0, 0, VBLCOUNTER >> 1, endScale);
 
-	// DoScreenRotateScale(iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT, newTex,
+	// DoScreenRotateScale(FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT, newTex,
 	// 0, 1.0);
 
 	SDL_DestroyTexture(newTex);
@@ -3212,7 +3235,7 @@ GetRenderer(), sdl_surface);
 
 		//printf("factor: %f \n", factor);
 
-		DoScreenRotateScale(iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT, newTex,
+		DoScreenRotateScale(FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT, newTex,
 angle, factor);
 
 		scale+=(scalestep);
@@ -3230,7 +3253,7 @@ angle, factor);
 	if(fadeOut == true)
 		VL_FadeOutScaledScreen (0, 255, 0,0,0,VBLCOUNTER>>1, abs(factor));
 
-	//DoScreenRotateScale(iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT, newTex,
+	//DoScreenRotateScale(FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT, newTex,
 0, 1.0);
 
 	SDL_DestroyTexture(newTex);
@@ -3257,8 +3280,8 @@ void DrawRotatedScreen(int cx, int cy, byte* destscreen, int angle, int scale,
 	// int Xres = 320;//old value
 	// int Yres = 200;//old val
 
-	int Xr = iGLOBAL_SCREENWIDTH;	 // 640;
-	int Yr = (iGLOBAL_SCREENHEIGHT); // 400; //bna aaaa fix
+	int Xr = FRAMEBUFFERWIDTH;	 // 640;
+	int Yr = (FRAMEBUFFERHEIGHT); // 400; //bna aaaa fix
 
 	//	   SetTextMode (  );
 	c = FixedMulShift(scale, costable[angle], 11);
@@ -3267,27 +3290,27 @@ void DrawRotatedScreen(int cx, int cy, byte* destscreen, int angle, int scale,
 	//   c = c/2; //these values are to rotate degres or?
 	//   s = s/2;
 	//   xst & xct= start center values ;
-	if ((iGLOBAL_SCREENWIDTH == 320) || (masked == true))
+	if ((FRAMEBUFFERWIDTH == 320) || (masked == true))
 	{
 		xst = (((-cx) * s) + (128 << 16)) - (cy * c);
 		xct = (((-cx) * c) + (256 << 16) + (1 << 18) - (1 << 16)) + (cy * s);
 	}
-	else if ((iGLOBAL_SCREENWIDTH == 640) && (masked == false))
+	else if ((FRAMEBUFFERWIDTH == 640) && (masked == false))
 	{
 		xst = (((-cx) * s) + ((268) << 16)) - (cy * c);
 		xct = (((-cx) * c) + ((317) << 16) + (1 << 18) - (1 << 16)) + (cy * s);
 	} // y=268;x=317
-	else if ((iGLOBAL_SCREENWIDTH == 800) && (masked == false))
+	else if ((FRAMEBUFFERWIDTH == 800) && (masked == false))
 	{
 		xst = (((-cx) * s) + ((328) << 16)) - (cy * c);
 		xct = (((-cx) * c) + ((397) << 16) + (1 << 18) - (1 << 16)) + (cy * s);
 	} // 328 397
-	else if ((iGLOBAL_SCREENWIDTH == 1024) && (masked == false))
+	else if ((FRAMEBUFFERWIDTH == 1024) && (masked == false))
 	{
 		xst = (((-cx) * s) + ((410) << 16)) - (cy * c); // 1024/768=1.3333
 		xct = (((-cx) * c) + ((500) << 16) + (1 << 18) - (1 << 16)) + (cy * s);
 	} // 388 397
-	else if ((iGLOBAL_SCREENWIDTH >= 1152) && (masked == false))
+	else if ((FRAMEBUFFERWIDTH >= 1152) && (masked == false))
 	{
 		xst = (((-cx) * s) + ((432) << 16)) - (cy * c);
 		xct = (((-cx) * c) + ((576) << 16) + (1 << 18) - (1 << 16)) + (cy * s);
@@ -3296,9 +3319,9 @@ void DrawRotatedScreen(int cx, int cy, byte* destscreen, int angle, int scale,
 	mr_xstep = s;
 	mr_ystep = c;
 
-	if ((iGLOBAL_SCREENWIDTH >= 800) && (masked == 0))
+	if ((FRAMEBUFFERWIDTH >= 800) && (masked == 0))
 	{
-		screen = destscreen + iGLOBAL_SCREENWIDTH; // bna aaaa fix
+		screen = destscreen + FRAMEBUFFERWIDTH; // bna aaaa fix
 	}
 	else
 	{
@@ -3509,11 +3532,11 @@ void RotationFunSDL(void)
 		IN_UpdateKeyboard();
 		// printf("PRE SCALE \n");
 
-		DoScreenRotateScale(iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT,
+		DoScreenRotateScale(FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT,
 							currScreen, angle, scale);
 
 		// printf("POST SCALE \n");
-		// DrawRotatedScreen(iGLOBAL_SCREENWIDTH/2,iGLOBAL_SCREENHEIGHT/2,(byte
+		// DrawRotatedScreen(FRAMEBUFFERWIDTH/2,FRAMEBUFFERHEIGHT/2,(byte
 		// *)bufferofs,angle,scale,0); FlipPage();
 		CalcTics();
 		INL_GetMouseDelta(&x, &y);
@@ -3524,17 +3547,17 @@ void RotationFunSDL(void)
 			if (scale > 0)
 			{
 				scale -= 0.01;
-				// printf("new width:  %f \n", (float)iGLOBAL_SCREENWIDTH *
+				// printf("new width:  %f \n", (float)FRAMEBUFFERWIDTH *
 				// scale); printf("new height: %f \n",
-				// (float)iGLOBAL_SCREENHEIGHT * scale); printf("scale: %f \n",
+				// (float)FRAMEBUFFERHEIGHT * scale); printf("scale: %f \n",
 				// scale);
 			}
 		}
 		else if (buttons & (1 << 1))
 		{
 			scale += 0.01;
-			// printf("new width:  %f \n", (float)iGLOBAL_SCREENWIDTH * scale);
-			// printf("new height: %f \n", (float)iGLOBAL_SCREENHEIGHT * scale);
+			// printf("new width:  %f \n", (float)FRAMEBUFFERWIDTH * scale);
+			// printf("new height: %f \n", (float)FRAMEBUFFERHEIGHT * scale);
 			// printf("scale: %f \n", scale);
 		}
 	}
@@ -3571,7 +3594,7 @@ void RotationFun(void)
 	{
 		IN_UpdateKeyboard();
 
-		DrawRotatedScreen(iGLOBAL_SCREENWIDTH / 2, iGLOBAL_SCREENHEIGHT / 2,
+		DrawRotatedScreen(FRAMEBUFFERWIDTH / 2, FRAMEBUFFERHEIGHT / 2,
 						  (byte*)bufferofs, angle, scale, 0);
 		FlipPage();
 		CalcTics();
@@ -3651,17 +3674,17 @@ void StartupScreenSaver(void)
 	ScreenSaver = (screensaver_t*)SafeMalloc(sizeof(screensaver_t));
 	ScreenSaver->phase = 0;
 	ScreenSaver->pausetime = PAUSETIME;
-	if (iGLOBAL_SCREENWIDTH == 320)
+	if (FRAMEBUFFERWIDTH == 320)
 	{
 		ScreenSaver->pausex = 120;
 		ScreenSaver->pausey = 84;
 	}
-	else if (iGLOBAL_SCREENWIDTH == 640)
+	else if (FRAMEBUFFERWIDTH == 640)
 	{
 		ScreenSaver->pausex = 240;
 		ScreenSaver->pausey = 201;
 	}
-	else if (iGLOBAL_SCREENWIDTH == 800)
+	else if (FRAMEBUFFERWIDTH == 800)
 	{
 		ScreenSaver->pausex = 300;
 		ScreenSaver->pausey = 252;
@@ -3720,9 +3743,9 @@ void UpdateScreenSaver(void)
 		ScreenSaver->dx = abs(ScreenSaver->dx);
 		ScreenSaver->dy += (RandomNumber("Rotate", 0) >> 6) - 2;
 	}
-	else if (ScreenSaver->x > iGLOBAL_SCREENWIDTH - SPINSIZE)
+	else if (ScreenSaver->x > FRAMEBUFFERWIDTH - SPINSIZE)
 	{
-		ScreenSaver->x = iGLOBAL_SCREENWIDTH - SPINSIZE;
+		ScreenSaver->x = FRAMEBUFFERWIDTH - SPINSIZE;
 		ScreenSaver->dx = -(abs(ScreenSaver->dx));
 		ScreenSaver->dy += (RandomNumber("Rotate", 0) >> 6) - 2;
 	}
@@ -3732,9 +3755,9 @@ void UpdateScreenSaver(void)
 		ScreenSaver->dy = abs(ScreenSaver->dy);
 		ScreenSaver->dx += (RandomNumber("Rotate", 0) >> 6) - 2;
 	}
-	else if (ScreenSaver->y > iGLOBAL_SCREENHEIGHT - SPINSIZE)
+	else if (ScreenSaver->y > FRAMEBUFFERHEIGHT - SPINSIZE)
 	{
-		ScreenSaver->y = iGLOBAL_SCREENHEIGHT - SPINSIZE;
+		ScreenSaver->y = FRAMEBUFFERHEIGHT - SPINSIZE;
 		ScreenSaver->dy = -(abs(ScreenSaver->dy));
 		ScreenSaver->dx += (RandomNumber("Rotate", 0) >> 6) - 2;
 	}
@@ -3752,17 +3775,17 @@ void UpdateScreenSaver(void)
 	if (ScreenSaver->pausetime <= 0)
 	{
 		ScreenSaver->pausetime = PAUSETIME;
-		if (iGLOBAL_SCREENWIDTH == 320)
+		if (FRAMEBUFFERWIDTH == 320)
 		{
 			ScreenSaver->pausex = RandomNumber("pausex", 0) % 240;
 			ScreenSaver->pausey = RandomNumber("pausey", 0) % 168;
 		}
-		else if (iGLOBAL_SCREENWIDTH == 640)
+		else if (FRAMEBUFFERWIDTH == 640)
 		{
 			ScreenSaver->pausex = RandomNumber("pausex", 0) % 480;
 			ScreenSaver->pausey = RandomNumber("pausey", 0) % 403;
 		}
-		else if (iGLOBAL_SCREENWIDTH == 800)
+		else if (FRAMEBUFFERWIDTH == 800)
 		{
 			ScreenSaver->pausex = RandomNumber("pausex", 0) % 600;
 			ScreenSaver->pausey = RandomNumber("pausey", 0) % 504;
@@ -5542,7 +5565,7 @@ void DrawRotRow(int count, byte* dest, byte* src)
 	ecx = mr_yfrac;
 	edx = mr_xfrac;
 
-	if ((iGLOBAL_SCREENWIDTH == 320) || (iG_masked == true))
+	if ((FRAMEBUFFERWIDTH == 320) || (iG_masked == true))
 	{
 		while (count--)
 		{
@@ -5562,7 +5585,7 @@ void DrawRotRow(int count, byte* dest, byte* src)
 			ecx += mr_ystep;
 		}
 	}
-	else if (iGLOBAL_SCREENWIDTH == 640)
+	else if (FRAMEBUFFERWIDTH == 640)
 	{
 		while (count--)
 		{
@@ -5582,12 +5605,12 @@ void DrawRotRow(int count, byte* dest, byte* src)
 			ecx += mr_ystep;
 		}
 	}
-	else if (iGLOBAL_SCREENWIDTH == 800)
+	else if (FRAMEBUFFERWIDTH == 800)
 	{
 		srctmp = src;
 		desttmp = dest;
 
-		desttmp -= (iGLOBAL_SCREENWIDTH * 1);
+		desttmp -= (FRAMEBUFFERWIDTH * 1);
 
 		ecx = mr_yfrac;
 		edx = mr_xfrac;
@@ -5626,12 +5649,12 @@ void DrawRotRow(int count, byte* dest, byte* src)
 			ecx += mr_ystep;
 		}
 	}
-	else if (iGLOBAL_SCREENWIDTH >= 1024)
+	else if (FRAMEBUFFERWIDTH >= 1024)
 	{
 		srctmp = src;
 		desttmp = dest;
 
-		desttmp -= (iGLOBAL_SCREENWIDTH * 1);
+		desttmp -= (FRAMEBUFFERWIDTH * 1);
 
 		/*
 				ecx = mr_yfrac;
@@ -5660,7 +5683,7 @@ void DrawRotRow(int count, byte* dest, byte* src)
 		srctmp = src;
 		desttmp = dest;
 
-		desttmp -= (iGLOBAL_SCREENWIDTH * 1);
+		desttmp -= (FRAMEBUFFERWIDTH * 1);
 
 		/*
 				ecx = mr_yfrac;
@@ -5755,7 +5778,7 @@ void RefreshClear(void)
 
 	if (start > 0)
 	{
-		VL_Bar(0, 0, iGLOBAL_SCREENWIDTH, start, CEILINGCOLOR);
+		VL_Bar(0, 0, FRAMEBUFFERWIDTH, start, CEILINGCOLOR);
 	}
 	else
 	{
@@ -5767,6 +5790,6 @@ void RefreshClear(void)
 	start = min(viewheight - start, viewheight);
 	if (start > 0)
 	{
-		VL_Bar(0, base, iGLOBAL_SCREENWIDTH, start, FLOORCOLOR);
+		VL_Bar(0, base, FRAMEBUFFERWIDTH, start, FLOORCOLOR);
 	}
 }

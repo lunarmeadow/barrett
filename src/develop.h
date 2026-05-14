@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -19,6 +19,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #ifndef _develop_public
 #define _develop_public
+
+#include <stdbool.h>
+#include <stdint.h>
 
 #define NOMEMCHECK
 #define WEAPONCHEAT 1
@@ -40,5 +43,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // okay?
 
 #define TEDLAUNCH 0
+
+#if defined(__GNUC__) || defined(__clang__)
+#define ATTR_PRINTF(FMT, VARGS) __attribute__((format(printf, FMT , VARGS)))
+#define ATTR_NORETURN  __attribute__((noreturn))
+#else
+#define ATTR_PRINTF(FMT, VARGS)
+#define ATTR_NORETURN __declspec(noreturn)
+#endif
 
 #endif

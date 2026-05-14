@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -312,10 +312,19 @@ bool SliderMenu(int* number, int upperbound, int lowerbound, int erasex,
 				   char* right);
 bool ColourSliderMenu(int* number, int erasex,
 				   int erasey, int erasew, char* blockname,
-				   void (*routine)(int w), char* title, char* label);			
+				   void (*routine)(int w), char* title, char* label);	
+
+bool AspectSliderMenu(int* number, int erasex,
+				   int erasey, int erasew, char* blockname,
+				   void (*routine)(int w), char* title, char* label);
+
 bool BoundSliderMenu(int* number, int upperbound, int lowerbound, int erasex,
 				   int erasey, int erasew, int numadjust, char* blockname,
 				   void (*routine)(int w), char* title, char* label, char* unit);
+
+bool ConditionalLimitSliderMenu(int* number, int upperbound, int lowerbound, int condLimit, int erasex,
+								int erasey, int erasew, int numadjust, char* blockname,
+								void (*routine)(int w), char* title, char* label, char* unit);
 
 void DrawF1Help(void);
 void CP_F1Help(void);

@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <SDL_render.h>
 #include <SDL_stdinc.h>
 #include <SDL_video.h>
 #include <stdarg.h>
@@ -28,6 +29,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ctype.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <time.h>
 #include "modexlib.h"
 #include "isr.h"
 #include "rt_actor.h"
@@ -109,24 +111,85 @@ static void GetIconMasks(Uint32* r, Uint32* g, Uint32* b, Uint32* a)
 	#endif
 }
 
+void FreeFramebuffer(void)
+{
+	if(sdl_texture != NULL)
+	{
+		SDL_DestroyTexture(sdl_texture);
+		sdl_texture = NULL;
+	}
+
+	if(sdl_surface != NULL)
+	{
+		SDL_FreeSurface(sdl_surface);
+		sdl_surface = NULL;
+	}
+
+	if(unstretch_sdl_surface != NULL)
+	{
+		SDL_FreeSurface(unstretch_sdl_surface);
+		unstretch_sdl_surface = NULL;
+	}
+}
+void AllocateFramebuffer(void)
+{
+	sdl_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888,
+									SDL_TEXTUREACCESS_STREAMING,
+								 FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT);
+
+	sdl_surface = SDL_CreateRGBSurface(0, FRAMEBUFFERWIDTH,
+									   FRAMEBUFFERHEIGHT, 8, 0, 0, 0, 0);
+
+	if (unstretch_sdl_surface == NULL)
+	{
+		/* should really be just 320x200, but there is code all over the
+		 *   places which crashes then */
+		unstretch_sdl_surface =
+		SDL_CreateRGBSurface(SDL_SWSURFACE, FRAMEBUFFERWIDTH,
+							 FRAMEBUFFERHEIGHT, 8, 0, 0, 0, 0);
+	}
+
+	SDL_SetSurfaceRLE(sdl_surface, 1);
+}
+
+void FitWindowToScreen(void)
+{
+	SDL_Rect scrBounds;
+
+	SDL_GetDisplayUsableBounds(0, &scrBounds);
+
+	if (window == NULL)
+	{
+		Error("Could not find window to resize.\n");
+		exit(1);
+	}
+
+	int tempW = VIRTUALWIDTH;
+	int tempH = VIRTUALHEIGHT;
+
+	if(tempW > scrBounds.w)
+		tempW = scrBounds.w;
+
+	if(tempH > scrBounds.h - 96)
+		tempH = scrBounds.h - 96;
+
+	SDL_SetWindowSize(window, tempW, tempH);
+
+	SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, 0);
+}
+
 void GraphicsMode(void)
 {
 	Uint32 flags = 0;
 
-	if (SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
-	{
-		Error("Could not initialize SDL\n");
-	}
-
 	// SDL_SetRelativeMouseMode(SDL_TRUE);
 
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 	if (sdl_fullscreen)
 		flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
 
-	window = SDL_CreateWindow("Barrett", SDL_WINDOWPOS_UNDEFINED,
-							  SDL_WINDOWPOS_UNDEFINED, iGLOBAL_SCREENWIDTH,
-							  iGLOBAL_SCREENHEIGHT, flags);
+	window = SDL_CreateWindow("Barrett", SDL_WINDOWPOS_CENTERED,
+							  SDL_WINDOWPOS_CENTERED, VIRTUALWIDTH,
+							  VIRTUALHEIGHT, flags | SDL_WINDOW_RESIZABLE);
 
 	if (window == NULL)
 	{
@@ -134,19 +197,9 @@ void GraphicsMode(void)
 		exit(1);
 	}
 
+	FitWindowToScreen();
+
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-
-	sdl_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888,
-									SDL_TEXTUREACCESS_STREAMING,
-									iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT);
-
-	sdl_surface = SDL_CreateRGBSurface(0, iGLOBAL_SCREENWIDTH,
-									   iGLOBAL_SCREENHEIGHT, 8, 0, 0, 0, 0);
-
-	SDL_SetSurfaceRLE(sdl_surface, 1);
-
-	SDL_RenderSetLogicalSize(renderer, iGLOBAL_SCREENWIDTH,
-							 iGLOBAL_SCREENHEIGHT);
 
 	Uint32 r,g,b,a = 0;
 
@@ -215,24 +268,22 @@ void VL_SetVGAPlaneMode(void)
 {
 	int i, offset;
 
-	GraphicsMode();
-
 	//
 	// set up lookup tables
 	//
 	// bna--   linewidth = 320;
-	linewidth = iGLOBAL_SCREENWIDTH;
+	linewidth = FRAMEBUFFERWIDTH;
 
 	offset = 0;
 
-	for (i = 0; i < iGLOBAL_SCREENHEIGHT; i++)
+	for (i = 0; i < FRAMEBUFFERHEIGHT; i++)
 	{
 		ylookup[i] = offset;
 		offset += linewidth;
 	}
 
 	//    screensize=MAXSCREENHEIGHT*MAXSCREENWIDTH;
-	screensize = iGLOBAL_SCREENHEIGHT * iGLOBAL_SCREENWIDTH;
+	screensize = FRAMEBUFFERHEIGHT * FRAMEBUFFERWIDTH;
 
 	page1start = sdl_surface->pixels;
 	page2start = sdl_surface->pixels;
@@ -240,16 +291,16 @@ void VL_SetVGAPlaneMode(void)
 	displayofs = page1start;
 	bufferofs = page2start;
 
-	iG_X_center = iGLOBAL_SCREENWIDTH / 2;
-	iG_Y_center = (iGLOBAL_SCREENHEIGHT / 2) + 10; //+10 = move aim down a bit
+	iG_X_center = FRAMEBUFFERWIDTH / 2;
+	iG_Y_center = (FRAMEBUFFERHEIGHT / 2); //+10 = move aim down a bit
 
 	iG_buf_center =
 		(char*)(bufferofs +
 				(screensize /
-				 2)); //(iG_Y_center*iGLOBAL_SCREENWIDTH);//+iG_X_center;
+				 2)); //(iG_Y_center*FRAMEBUFFERWIDTH);//+iG_X_center;
 
-	bufofsTopLimit = (char*)(bufferofs + screensize - iGLOBAL_SCREENWIDTH);
-	bufofsBottomLimit = (char*)(bufferofs + iGLOBAL_SCREENWIDTH);
+	bufofsTopLimit = (char*)(bufferofs + screensize - FRAMEBUFFERWIDTH);
+	bufofsBottomLimit = (char*)(bufferofs + FRAMEBUFFERWIDTH);
 
 	// start stretched
 	EnableScreenStretch();
@@ -296,7 +347,7 @@ void VL_ClearBuffer(byte* buf, byte color)
 void VL_ClearVideo(byte color)
 {
 	memset(sdl_surface->pixels, color,
-		   iGLOBAL_SCREENWIDTH * iGLOBAL_SCREENHEIGHT);
+		   FRAMEBUFFERWIDTH * FRAMEBUFFERHEIGHT);
 }
 
 void RescaleAreaOfTexture(SDL_Renderer* render, SDL_Texture* source,
@@ -318,6 +369,9 @@ int hudRescaleFactor = 1;
 
 void RenderSurface(void)
 {
+	if(sdl_surface == NULL)
+		return;
+
 	SDL_Texture* newTex = SDL_CreateTextureFromSurface(renderer, sdl_surface);
 
 	if (newTex == NULL)
@@ -335,21 +389,25 @@ void RenderSurface(void)
 		if (SHOW_TOP_STATUS_BAR())
 			RescaleAreaOfTexture(
 				renderer, newTex,
-				(SDL_Rect){(iGLOBAL_SCREENWIDTH - 320) >> 1, 0, 320, 16},
-				(SDL_Rect){(iGLOBAL_SCREENWIDTH - (320 * hudRescaleFactor)) >>
-							   1,
-						   0, 320 * hudRescaleFactor,
-						   16 * hudRescaleFactor}); // Status Bar
+				(SDL_Rect){(FRAMEBUFFERWIDTH - 320) >> 1,
+							0,
+							320,
+							16},
+				(SDL_Rect){(VIRTUALWIDTH - (320 * hudRescaleFactor)) >> 1,
+						    0,
+							320 * hudRescaleFactor,
+						    16 * hudRescaleFactor}); // Status Bar
 		if (SHOW_BOTTOM_STATUS_BAR())
 			RescaleAreaOfTexture(
 				renderer, newTex,
-				(SDL_Rect){(iGLOBAL_SCREENWIDTH - 320) >> 1,
-						   iGLOBAL_SCREENHEIGHT - 16, 320, 16},
-				(SDL_Rect){(iGLOBAL_SCREENWIDTH - (320 * hudRescaleFactor)) >>
-							   1,
-						   iGLOBAL_SCREENHEIGHT - 16 * hudRescaleFactor,
-						   320 * hudRescaleFactor,
-						   16 * hudRescaleFactor}); // Bottom Bar
+				(SDL_Rect){(FRAMEBUFFERWIDTH - 320) >> 1,
+						    FRAMEBUFFERHEIGHT - 16,
+							320,
+							16},
+				(SDL_Rect){(VIRTUALWIDTH - (320 * hudRescaleFactor)) >> 1,
+						    VIRTUALHEIGHT - (16 * hudRescaleFactor),
+							320 * hudRescaleFactor,
+						    16 * hudRescaleFactor}); // Bottom Bar
 	}
 
 	SDL_RenderPresent(renderer);
@@ -376,17 +434,8 @@ void VH_UpdateScreen(void)
 
 void EnableScreenStretch(void)
 {
-	if (iGLOBAL_SCREENWIDTH <= 320 || StretchScreen)
+	if (FRAMEBUFFERWIDTH <= 320 || StretchScreen)
 		return;
-
-	if (unstretch_sdl_surface == NULL)
-	{
-		/* should really be just 320x200, but there is code all over the
-		   places which crashes then */
-		unstretch_sdl_surface =
-			SDL_CreateRGBSurface(SDL_SWSURFACE, iGLOBAL_SCREENWIDTH,
-								 iGLOBAL_SCREENHEIGHT, 8, 0, 0, 0, 0);
-	}
 
 	displayofs = (byte *)unstretch_sdl_surface->pixels +
 					(displayofs - (byte*)sdl_surface->pixels);
@@ -399,7 +448,7 @@ void EnableScreenStretch(void)
 
 void DisableScreenStretch(void)
 {
-	if (iGLOBAL_SCREENWIDTH <= 320 || !StretchScreen)
+	if (FRAMEBUFFERWIDTH <= 320 || !StretchScreen)
 		return;
 
 	displayofs = (byte*)sdl_surface->pixels +
@@ -409,8 +458,8 @@ void DisableScreenStretch(void)
 	page2start = sdl_surface->pixels;
 	page3start = sdl_surface->pixels;
 	StretchScreen = 0;
-	SDL_RenderSetLogicalSize(renderer, iGLOBAL_SCREENWIDTH,
-							 iGLOBAL_SCREENHEIGHT);
+	SDL_RenderSetLogicalSize(renderer, VIRTUALWIDTH,
+							 VIRTUALHEIGHT);
 	// SDL_RenderSetLogicalSize(renderer, 320, 200);
 }
 
@@ -437,8 +486,8 @@ static void StretchMemPicture()
 
 	dest.x = 0;
 	dest.y = 0;
-	dest.w = iGLOBAL_SCREENWIDTH;
-	dest.h = iGLOBAL_SCREENHEIGHT;
+	dest.w = FRAMEBUFFERWIDTH;
+	dest.h = FRAMEBUFFERHEIGHT;
 	SDL_SoftStretch(unstretch_sdl_surface, &src, sdl_surface, &dest);
 	SDL_RenderSetLogicalSize(renderer, 320,
 							 240); // help keep aspect ratio of menus so that
@@ -485,7 +534,7 @@ void DrawCenterAim(void)
 	// increase locality of globals, such as placing in register or nearby memory
 	const int xcenter = iG_X_center;
 	const int ycenter = iG_Y_center;
-	const int screenW = iGLOBAL_SCREENWIDTH;
+	const int screenW = FRAMEBUFFERWIDTH;
 	const char* backbufferTop = bufofsTopLimit;
 	const char* backbufferBottom = bufofsBottomLimit;
 	const playertype* ply = locplayerstate;
@@ -637,7 +686,7 @@ void DrawCenterAim(void)
 					// loop and draw lines horizontally offset along thickness
 					for(int xc = start; xc < thickness; xc++)
 					{
-						// int xcoord = xc != 0 ? iGLOBAL_SCREENWIDTH * xc : 0;
+						// int xcoord = xc != 0 ? FRAMEBUFFERWIDTH * xc : 0;
 
 						tempc = colour;
 
@@ -749,9 +798,9 @@ void DoScreenRotateScale(int w, int h, SDL_Texture* tex, float angle,
 	// if (output.h < MinScreenHeight)
 	// output.h = MinScreenHeight;
 
-	output.x = (iGLOBAL_SCREENWIDTH - output.w) >> 1;
+	output.x = (FRAMEBUFFERWIDTH - output.w) >> 1;
 
-	output.y = (iGLOBAL_SCREENHEIGHT - output.h) >> 1;
+	output.y = (FRAMEBUFFERHEIGHT - output.h) >> 1;
 
 	SDL_RenderCopyEx(renderer, tex, NULL, &output, angle, NULL, SDL_FLIP_NONE);
 

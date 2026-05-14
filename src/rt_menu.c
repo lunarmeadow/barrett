@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -31,7 +31,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <string.h>
 #include <ctype.h>
 
+#if PLATFORM_UNIX
 #include <unistd.h>
+#endif
+
 #include "SDL.h"
 
 #include <sys/types.h>
@@ -71,6 +74,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "rt_battl.h"
 #include "develop.h"
+#include "WinRott.h"
 
 //******************************************************************************
 //
@@ -545,9 +549,9 @@ CP_MenuNames ExtOptionsNames[] = {
 	"MOUSELOOK", "INVERSE MOUSE",		 "ALLOW Y AXIS MOUSE", "CROSSHAIR",
 	"AUTOAIM MISSILE WEPS", "ENABLE AUTOAIM",	   "USE OPL MUSIC"};
 
-CP_MenuNames ExtGameOptionsNames[] = {"LOW MEMORY MODE", "WEAPON RECOLOURS", "DOOM BOBBING", "NO LOW HP SOUND", "LUDICROUS AUDIO"}; // erysdren added
+CP_MenuNames ExtGameOptionsNames[] = {"LOW MEMORY MODE", "WEAPON RECOLOURS", "DOOM BOBBING", "NO LOW HP SOUND", "HALF MONK HEALTH", "LUDICROUS SKYBOX", "LUDICROUS AUDIO"}; // erysdren added
 
-CP_MenuNames VisualOptionsNames[] = {"SCREEN RESOLUTION", "ADJUST FOCAL WIDTH",
+CP_MenuNames VisualOptionsNames[] = {"SCREEN RESOLUTION", "ASPECT CORRECTION", "FIELD-OF-VIEW",
 									 "HUD SCALING", "DISPLAY OPTIONS", "CROSSHAIR OPTIONS"};
 
 CP_MenuNames CrosshairOptionsNames[] = {"COLOUR", "PARAMETERS",
@@ -566,13 +570,13 @@ typedef struct
 } ValidResolution;
 
 ValidResolution AvailableResolutions[] = {
-	{320, 200, NULL, 1},   {640, 400, NULL, 2},	  {640, 480, NULL, 2},
-	{800, 600, NULL, 2},   {1024, 768, NULL, 2},  {1152, 864, NULL, 2},
-	{1280, 720, NULL, 2},  {1280, 768, NULL, 2},  {1280, 800, NULL, 2},
-	{1280, 960, NULL, 2},  {1280, 1024, NULL, 2}, {1400, 1050, NULL, 2},
-	{1440, 900, NULL, 2},  {1600, 900, NULL, 2},  {1680, 1050, NULL, 2},
-	{1920, 1080, NULL, 2}, {2560, 1080, NULL, 2}, {2560, 1440, NULL, 2},
-	{3840, 2160, NULL, 2},
+	{640, 400, "16:10", 2},	  {640, 480, "4:3", 2},
+	{800, 600, "4:3", 2},   {1024, 768, "4:3", 2},  {1152, 864, "4:3", 2},
+	{1280, 720, "16:9", 2},  {1280, 768, "5:3", 2},  {1280, 800, "16:10", 2},
+	{1280, 960, "4:3", 2},  {1280, 1024, "5:4", 2}, {1400, 1050, "4:3", 2},
+	{1440, 900, "16:10", 2},  {1600, 900, "16:9", 2},  {1680, 1050, "16:10", 2},
+	{1920, 1080, "16:9", 2}, {2560, 1080, "21:9", 2}, {2560, 1440, "16:9", 2},
+	{3840, 2160, "16:9", 2},
 };
 
 CP_MenuNames* ScreenResolutions = NULL;
@@ -589,7 +593,7 @@ CP_itemtype DisplayOptionsItems[] = {
 	{1, "", 'F', NULL}, {1, "", 'B', NULL}, {1, "", 'B', NULL}};
 
 CP_iteminfo VisualOptionsItems = {
-	20, MENU_Y, 5, 0, 43, VisualOptionsNames, mn_largefont};
+	20, MENU_Y, 6, 0, 43, VisualOptionsNames, mn_largefont};
 
 CP_iteminfo ScreenResolutionItems; // This gets filled in at run time
 
@@ -597,7 +601,7 @@ CP_iteminfo ExtOptionsItems = {20, MENU_Y,			7,			 0,
 							   43, ExtOptionsNames, mn_largefont};
 
 CP_iteminfo ExtGameOptionsItems = {
-	20, MENU_Y, 5, 0, 43, ExtGameOptionsNames, mn_largefont}; // LT added
+(??)	20, MENU_Y, 7, 0, 43, ExtGameOptionsNames, mn_largefont}; // LT added
 
 CP_iteminfo DisplayOptionsMenu = {
 	20, MENU_Y, 3, 0, 43, DisplayOptionsNames, mn_largefont}; // LT added
@@ -621,9 +625,13 @@ CP_itemtype CrosshairParamsMenu[] = {
 	{1, "", 'S', NULL},}; // ashley added
 
 void CP_ScreenResolution(void);
+void CP_RestartProgramMessage(void);
+void CP_HighResMessage(void);
 
 void CP_DisplayOptions(void);
 void DoAdjustHudScale(void);
+void DoAdjustFOV(void);
+void DoAdjustAspectRatio(void);
 
 void DoAdjustCrosshairColour(void);
 void DoAdjustCrosshairGap(void);
@@ -635,7 +643,8 @@ void CP_CrosshairParameters(void);
 void DrawCrosshairOptionsButtons(void);
 
 CP_itemtype VisualsOptionsMenu[] = {{1, "", 'S', (menuptr)CP_ScreenResolution},
-									{1, "", 'F', (menuptr)DoAdjustFocalWidth},
+									{1, "", 'F', (menuptr)DoAdjustAspectRatio},
+									{1, "", 'F', (menuptr)DoAdjustFOV},
 									{1, "", 'H', (menuptr)DoAdjustHudScale},
 									{1, "", 'D', (menuptr)CP_DisplayOptions},
 									{1, "", 'C', (menuptr)CP_CrosshairMenu}};
@@ -662,6 +671,8 @@ CP_itemtype ExtGameMenu[] = {
 	{1, "", 'B', NULL},
 	{1, "", 'D', NULL},
 	{1, "", 'H', NULL},
+	{1, "", 'M', NULL},
+	{1, "", 'S', NULL},
 	{1, "", 'A', NULL},
 };
 
@@ -1191,17 +1202,13 @@ void SetUpControlPanel(void)
 	byte* b;
 	byte* s;
 
-	//   int Xres = 320;//org
-	//   int Yres = 200;//org
 	int Xres = 640;
 	int Yres = 400;
 
-	// dont work in 800x600 until we get a better screen schrinker
-	//   int Xres = iGLOBAL_SCREENWIDTH;//640;
-	//  int Yres = iGLOBAL_SCREENHEIGHT;//400;
-
-	Xres = 640;
-	Yres = 400;
+	// if(aspectRatioCorrection == 1)
+	// 	Yres = (int)Yres / 1.2f;
+	// else if (aspectRatioCorrection == 2)
+	//  	Xres = (int)Xres / 1.2f;
 
 	// Save the current game screen
 
@@ -1221,33 +1228,26 @@ void SetUpControlPanel(void)
 
 	s = savedscreen;
 
-	if (iGLOBAL_SCREENWIDTH == 320)
+	// save game pic buffer is 160x100,
+	// walk framebuffer in those increments for image
+	int Xstep = FRAMEBUFFERWIDTH / 160;
+	int Ystep = FRAMEBUFFERHEIGHT / 100;
+	int rowByte = FRAMEBUFFERWIDTH * Ystep;
+
+	// find top-left offset to center screen contents
+	// bc previous operation has to round the step boundary
+	int Xoff = (FRAMEBUFFERWIDTH % 160) / 2;
+	int Yoff = (FRAMEBUFFERHEIGHT % 100) / 2;
+	b = (byte*)(bufferofs + (Xoff + (FRAMEBUFFERWIDTH * Yoff)));
+
+	for (i = 0; i < FRAMEBUFFERWIDTH; i += Xstep)
 	{
-		for (i = 0; i < Xres; i += 2)
+		b = (byte*)bufferofs + i;
+		for (j = 0; j < 100; j++, s++, b += rowByte)
 		{
-			b = (byte*)bufferofs + i;
-			for (j = 0; j < 100; j++, s++, b += (iGLOBAL_SCREENWIDTH << 1))
-				*s = *b;
+			*s = *b;
 		}
 	}
-	if (iGLOBAL_SCREENWIDTH >= 640)
-	{
-		for (i = 0; i < Xres; i += 4)
-		{
-			b = (byte*)bufferofs + i; // schrink screen to 1/2 size
-			for (j = 0; j < (Yres / 4);
-				 j++, s++, b += (iGLOBAL_SCREENWIDTH << 1) * 2)
-				*s = *b;
-		}
-	} /*
-	   if (iGLOBAL_SCREENWIDTH == 800) {
-		   for (i=0;i<Xres;i+=8)		{
-			   b=(byte *)bufferofs+i;//schrink screen to 1/3 size
-			   for (j=0;j<(Yres/8);j++,s++,b+=(iGLOBAL_SCREENWIDTH<<1)*3)
-				  *s=*b;
-		   }
-
-	   }*/
 
 	ScanForSavedGames();
 
@@ -1356,7 +1356,7 @@ void CleanUpControlPanel(void)
 
 	// change the focal width if modified
 
-	RecalculateFocalWidth();
+	RecalculateFocalLength();
 
 	INL_GetJoyDelta(joystickport, &joyx, &joyy);
 
@@ -2942,7 +2942,7 @@ void QuickSaveGame(void)
 	for (i = 0; i < 320; i += 2)
 	{
 		b = (byte*)bufferofs + i;
-		for (j = 0; j < 100; j++, s++, b += (iGLOBAL_SCREENWIDTH << 1))
+		for (j = 0; j < 100; j++, s++, b += (FRAMEBUFFERWIDTH << 1))
 			*s = *b;
 	}
 
@@ -4625,20 +4625,47 @@ void CP_CrosshairMenu(void)
 	DrawVisualsMenu();
 }
 
-extern int FocalWidthOffset;
-
-void DoAdjustFocalWidth(void)
+void DoAdjustAspectRatio(void)
 {
-	SliderMenu(&FocalWidthOffset, 96, 0, 44, 81, 194, 4, "block2", NULL,
-			   "Adjust Focal Width", "Default", "You Crazy");
+	int oldvalue = aspectRatioCorrection;
+
+	AspectSliderMenu(&aspectRatioCorrection, 44, 81, 194, "block2", NULL,
+			   "Asp. Ratio Correction", "Mode: ");
+
+	if(aspectRatioCorrection < 0)
+		aspectRatioCorrection = 0;
+	if(aspectRatioCorrection > 2)
+		aspectRatioCorrection = 0;
+
+	// reconfigure framebuffer with same resolution but ARC enabled
+	if(aspectRatioCorrection != oldvalue)
+		SetRottScreenRes(VIRTUALWIDTH, VIRTUALHEIGHT);
+	
+	DrawVisualsMenu();
+}
+
+extern int vfov;
+
+void DoAdjustFOV(void)
+{
+	if(vfov < MINFOV)
+		vfov = MINFOV;
+	if(vfov > MAXFOV)
+		vfov = MAXFOV;
+	
+	BoundSliderMenu(&vfov, MAXFOV, MINFOV, 44, 81, 194, 5, "block2", NULL, "Set FOV", "FOV: ", " deg");
 	DrawVisualsMenu();
 }
 
 extern int hudRescaleFactor;
+
 void DoAdjustHudScale(void)
 {
-	SliderMenu(&hudRescaleFactor, 10, 0, 44, 81, 194, 1, "block2", NULL,
-			   "Adjust Hud Scaling", "Small", "Large");
+	int maxRescale = (int)floor((float)FRAMEBUFFERWIDTH / 320);
+	ConditionalLimitSliderMenu(&hudRescaleFactor, 12, 1, maxRescale, 44, 81, 194, 1, "block2", NULL, "Adjust HUD Scaling", "Factor: ", "x");
+
+	// SliderMenu(&hudRescaleFactor, 10, 0, 44, 81, 194, 1, "block2", NULL,
+	// 		   "Adjust Hud Scaling", "Small", "Large");
 	DrawVisualsMenu();
 }
 
@@ -4677,6 +4704,30 @@ void DoAdjustCrosshairLength(void)
 	DrawCrosshairMenu();
 }
 
+int ResCompare(const void* a, const void* b)
+{
+    // get validresolution objects out for comparison
+    const ValidResolution *rA = (const ValidResolution *)a;
+    const ValidResolution *rB = (const ValidResolution *)b;
+
+    // get fields
+    float w1 = rA->width;
+    float h1 = rA->height;
+    float w2 = rB->width;
+    float h2 = rB->height;
+
+    // get ratios
+    float r1 = w1 / h1;
+    float r2 = w2 / h2;
+
+    // compare and return
+    if(r1 > r2)
+        return 1;
+    else if(r2 < r1)
+        return -1;
+    else
+        return 0;
+}
 
 void DrawScreenResolutionMenu(void)
 {
@@ -4694,6 +4745,8 @@ void DrawScreenResolutionMenu(void)
 		int nbrResolutions =
 			sizeof(AvailableResolutions) / sizeof(AvailableResolutions[0]);
 
+		qsort(AvailableResolutions, nbrResolutions, sizeof(ValidResolution), ResCompare);
+		
 		ScreenResolutions = malloc(nbrResolutions * sizeof(CP_MenuNames));
 		ScreenResolutionMenu = malloc(nbrResolutions * sizeof(CP_itemtype));
 
@@ -4727,8 +4780,8 @@ void DrawScreenResolutionMenu(void)
 	{
 		ScreenResolutionMenu[i].active = CP_Active;
 
-		if (AvailableResolutions[i].width == iGLOBAL_SCREENWIDTH &&
-			AvailableResolutions[i].height == iGLOBAL_SCREENHEIGHT)
+		if (AvailableResolutions[i].width == FRAMEBUFFERWIDTH &&
+			AvailableResolutions[i].height == FRAMEBUFFERHEIGHT)
 		{
 			position = i;
 		}
@@ -4744,11 +4797,19 @@ void DrawScreenResolutionMenu(void)
 }
 
 void CP_RestartProgramMessage(void)
-
 {
 	CP_ErrorMsg(
 		"Note:",
 		"Changes will not be applied until the application is restarted. "
+		"Hit any key to continue.",
+		mn_smallfont);
+}
+
+void CP_HighResMessage(void)
+{
+	CP_ErrorMsg(
+		"Note:",
+		"Resolutions above 1920x1080 may have poor performance and/or graphical artifacting. "
 		"Hit any key to continue.",
 		mn_smallfont);
 }
@@ -4768,14 +4829,20 @@ void CP_ScreenResolution(void)
 
 	if (which >= 0)
 	{
+		SetRottScreenRes(AvailableResolutions[which].width,
+						 AvailableResolutions[which].height);
+
 		ScreenWidthToWriteToCfg = AvailableResolutions[which].width;
 		ScreenHeightToWriteToCfg = AvailableResolutions[which].height;
 		HudScaleToWriteToCfg = AvailableResolutions[which].hudScale;
 		writeNewResIntoCfg = true;
 	}
 
-	if (writeNewResIntoCfg)
-		CP_RestartProgramMessage();
+	if(FRAMEBUFFERWIDTH > 1920 || FRAMEBUFFERHEIGHT > 1080)
+		CP_HighResMessage();
+	
+	// if (writeNewResIntoCfg)
+	// 	CP_RestartProgramMessage();
 
 	DrawVisualsMenu();
 }
@@ -5201,6 +5268,8 @@ static char* ExtGameOptionsDesc[sizeof(ExtGameOptionsItems)] = {
 	"Removes the blue tinting from weapon sprites. (EXPERIMENTAL)",
 	"Implements DOOM's 2D weapon and view bobbing algorithm.",
 	"Disable the incessant orchestral hits on low health.",
+	"Monks have 50% of their original health pool.",
+	"Enhanced parallax, less distortion, raised higher.",
 	"Use the alternate audio from Ludicrous Edition."
 };
 
@@ -5249,6 +5318,18 @@ void DrawExtGameOptionsButtons(void)
 				}
 				break;
 			case 4:
+				if (halfmonkhp == 1)
+				{
+					on = 1;
+				}
+				break;
+			case 5:
+				if (ludicrousskybox == 1)
+				{
+					on = 1;
+				}
+				break;
+			case 6:
 				if (ludicrousaudio == 1)
 				{
 					on = 1;
@@ -5345,6 +5426,14 @@ void CP_ExtGameOptionsMenu(void)
 			DrawExtGameOptionsButtons();
 			break;
 		case 4:
+			halfmonkhp ^= 1;
+			DrawExtGameOptionsButtons();
+			break;
+		case 5:
+			ludicrousskybox ^= 1;
+			DrawExtGameOptionsButtons();
+			break;
+		case 6:
 			ludicrousaudio ^= 1;
 			DrawExtGameOptionsButtons();
 			break;
@@ -6096,6 +6185,182 @@ bool BoundSliderMenu(int* number, int upperbound, int lowerbound, int erasex,
 	return (returnval);
 }
 
+bool ConditionalLimitSliderMenu(int* number, int upperbound, int lowerbound, int condLimit, int erasex,
+					 int erasey, int erasew, int numadjust, char* blockname,
+					 void (*routine)(int w), char* title, char* label, char* unit)
+
+{
+	ControlInfo ci;
+	Direction lastdir;
+	patch_t* shape;
+	char boundstr[64];
+	bool returnval;
+	bool moved;
+	unsigned long scale;
+	int exit;
+	int range;
+	int timer;
+	int width;
+	int height;
+	int blkx;
+	int eraseh;
+	int block;
+
+	SetAlternateMenuBuf();
+	ClearMenuBuf();
+	SetMenuTitle(title);
+
+	newfont1 = (font_t*)W_CacheLumpName("newfnt1", PU_CACHE, Cvt_font_t, 1);
+	CurrentFont = newfont1;
+	PrintX = 28;
+	PrintY = 62;
+
+	itoa(*number, boundstr, 10);
+
+	VW_MeasurePropString(label, &width, &height);
+	EraseMenuBufRegion(PrintX, PrintY, width, height);
+	DrawMenuBufPropString(PrintX, PrintY, label);
+
+	VW_MeasurePropString(boundstr, &width, &height);
+	EraseMenuBufRegion(PrintX, PrintY, width, height);
+	DrawMenuBufPropString(PrintX, PrintY, boundstr);
+
+	VW_MeasurePropString(unit, &width, &height);
+	EraseMenuBufRegion(PrintX, PrintY, width << 1, height);
+	DrawMenuBufPropString(PrintX, PrintY, unit);
+
+	block = W_GetNumForName(blockname);
+	shape = (patch_t*)W_CacheLumpNum(block, PU_CACHE, Cvt_patch_t, 1);
+	blkx = erasex - shape->leftoffset;
+	eraseh = shape->height;
+	scale = (erasew + shape->leftoffset - shape->width) << 16;
+	range = upperbound - lowerbound;
+
+	DrawSTMenuBuf(erasex - 1, erasey - 1, erasew + 1, eraseh + 1, false);
+
+	DrawMenuBufItem(blkx + ((((*number - lowerbound) * scale) / range) >> 16),
+					erasey, block);
+
+	DisplayInfo(1);
+	FlipMenuBuf();
+
+	exit = 0;
+	moved = false;
+	timer = GetTicCount();
+	lastdir = dir_None;
+
+	do
+	{
+		RefreshMenuBuf(0);
+
+		ReadAnyControl(&ci);
+		if (((GetTicCount() - timer) > 5) || (ci.dir != lastdir))
+		{
+			timer = GetTicCount();
+
+			switch (ci.dir)
+			{
+				case dir_North:
+				case dir_West:
+					if (*number > lowerbound)
+					{
+						*number = *number - numadjust;
+
+						if (*number < lowerbound)
+						{
+							*number = lowerbound;
+						}
+
+						moved = true;
+					}
+					break;
+
+				case dir_South:
+				case dir_East:
+					if (*number < upperbound)
+					{
+						*number = *number + numadjust;
+
+						if(*number > condLimit)
+						{
+							MN_PlayMenuSnd(SD_NOPESND);
+							*number = condLimit;
+						}
+
+						if (*number > upperbound)
+						{
+							*number = upperbound;
+						}
+
+						moved = true;
+					}
+					break;
+				default:;
+			}
+
+			lastdir = ci.dir;
+		}
+
+		if (moved)
+		{
+			moved = false;
+
+			EraseMenuBufRegion(erasex, erasey, erasew, eraseh);
+
+			itoa(*number, boundstr, 10);
+
+			PrintX = 28;
+			PrintY = 62;
+
+			VW_MeasurePropString(label, &width, &height);
+			EraseMenuBufRegion(PrintX, PrintY, width, height);
+			DrawMenuBufPropString(PrintX, PrintY, label);
+
+			VW_MeasurePropString(boundstr, &width, &height);
+			EraseMenuBufRegion(PrintX, PrintY, width, height);
+			DrawMenuBufPropString(PrintX, PrintY, boundstr);
+
+			VW_MeasurePropString(unit, &width, &height);
+			EraseMenuBufRegion(PrintX, PrintY, width << 1, height);
+			DrawMenuBufPropString(PrintX, PrintY, unit);
+
+			DrawMenuBufItem(
+				blkx + ((((*number - lowerbound) * scale) / range) >> 16),
+							erasey, block);
+
+			if (routine)
+			{
+				routine(*number);
+			}
+
+			MN_PlayMenuSnd(SD_MOVECURSORSND);
+		}
+
+		if (ci.button0 || Keyboard[sc_Space] || Keyboard[sc_Enter])
+		{
+			exit = 1;
+		}
+		else if (ci.button1 || Keyboard[sc_Escape])
+		{
+			exit = 2;
+		}
+	} while (!exit);
+
+	if (exit == 2)
+	{
+		MN_PlayMenuSnd(SD_ESCPRESSEDSND);
+		returnval = false;
+	}
+	else
+	{
+		MN_PlayMenuSnd(SD_SELECTSND);
+		returnval = true;
+	}
+
+	WaitKeyUp();
+	return (returnval);
+}
+
 const char *colourNames[16] = {
 	"BLACK",
 	"BLUE",
@@ -6236,6 +6501,167 @@ bool ColourSliderMenu(int* number, int erasex,
 			EraseMenuBufRegion(strx, stry, strw, strh);
 			VW_MeasurePropString(colourNames[*number], &strw, &strh);
 			DrawMenuBufPropString(strx, stry, colourNames[*number]);
+			
+			if (routine)
+			{
+				routine(*number);
+			}
+
+			MN_PlayMenuSnd(SD_MOVECURSORSND);
+		}
+
+		if (ci.button0 || Keyboard[sc_Space] || Keyboard[sc_Enter])
+		{
+			exit = 1;
+		}
+		else if (ci.button1 || Keyboard[sc_Escape])
+		{
+			exit = 2;
+		}
+	} while (!exit);
+
+	if (exit == 2)
+	{
+		MN_PlayMenuSnd(SD_ESCPRESSEDSND);
+		returnval = false;
+	}
+	else
+	{
+		MN_PlayMenuSnd(SD_SELECTSND);
+		returnval = true;
+	}
+
+	WaitKeyUp();
+	return (returnval);
+}
+
+const char *aspectCorrection[3] = {
+	"NONE",
+	"FAST",
+	"ACCURATE",
+};
+
+bool AspectSliderMenu(int* number, int erasex,
+				   int erasey, int erasew, char* blockname,
+				   void (*routine)(int w), char* title, char* label)
+
+{
+	ControlInfo ci;
+	Direction lastdir;
+	patch_t* shape;
+	bool returnval;
+	bool moved;
+	unsigned long scale;
+	int exit;
+	int range;
+	int timer;
+	int width;
+	int height;
+	int strx, stry, strw, strh;
+	int blkx;
+	int eraseh;
+	int block;
+
+	int numadjust = 1;
+	int upperbound = (sizeof(aspectCorrection) / sizeof(aspectCorrection[0])) - 1;
+	int lowerbound = 0;
+
+	SetAlternateMenuBuf();
+	ClearMenuBuf();
+	SetMenuTitle(title);
+
+	newfont1 = (font_t*)W_CacheLumpName("newfnt1", PU_CACHE, Cvt_font_t, 1);
+	CurrentFont = newfont1;
+	PrintX = 28;
+	PrintY = 62;
+	DrawMenuBufPropString(PrintX, PrintY, label);
+
+	VW_MeasurePropString(aspectCorrection[*number], &strw, &strh);
+
+	strx = PrintX + 8;
+	stry = PrintY;
+
+	DrawMenuBufPropString(strx, stry, aspectCorrection[*number]);
+
+	block = W_GetNumForName(blockname);
+	shape = (patch_t*)W_CacheLumpNum(block, PU_CACHE, Cvt_patch_t, 1);
+	blkx = erasex - shape->leftoffset;
+	eraseh = shape->height;
+	scale = (erasew + shape->leftoffset - shape->width) << 16;
+	range = upperbound - lowerbound;
+
+	DrawSTMenuBuf(erasex - 1, erasey - 1, erasew + 1, eraseh + 1, false);
+
+	DrawMenuBufItem(blkx + ((((*number - lowerbound) * scale) / range) >> 16),
+					erasey, block);
+
+	DisplayInfo(1);
+	FlipMenuBuf();
+
+	exit = 0;
+	moved = false;
+	timer = GetTicCount();
+	lastdir = dir_None;
+
+	do
+	{
+		RefreshMenuBuf(0);
+
+		ReadAnyControl(&ci);
+		if (((GetTicCount() - timer) > 5) || (ci.dir != lastdir))
+		{
+			timer = GetTicCount();
+
+			switch (ci.dir)
+			{
+			case dir_North:
+			case dir_West:
+				if (*number > lowerbound)
+				{
+					*number = *number - numadjust;
+
+					if (*number < lowerbound)
+					{
+						*number = lowerbound;
+					}
+
+					moved = true;
+				}
+				break;
+
+			case dir_South:
+			case dir_East:
+				if (*number < upperbound)
+				{
+					*number = *number + numadjust;
+
+					if (*number > upperbound)
+					{
+						*number = upperbound;
+					}
+
+					moved = true;
+				}
+				break;
+			default:;
+			}
+
+			lastdir = ci.dir;
+		}
+
+		if (moved)
+		{
+			moved = false;
+
+			EraseMenuBufRegion(erasex, erasey, erasew, eraseh);
+
+			DrawMenuBufItem(
+				blkx + ((((*number - lowerbound) * scale) / range) >> 16),
+				erasey, block);
+
+			EraseMenuBufRegion(strx, stry, strw, strh);
+			VW_MeasurePropString(aspectCorrection[*number], &strw, &strh);
+			DrawMenuBufPropString(strx, stry, aspectCorrection[*number]);
 			
 			if (routine)
 			{

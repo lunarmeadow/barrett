@@ -4,7 +4,7 @@
 #include <ctype.h>
 
 // mingw uses a different mkdir function
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(_MSC_VER)
     #include <direct.h>
 #endif
 
@@ -93,7 +93,7 @@ int setup_homedir(void)
 	/* try to create the root directory */
 	snprintf(ApogeePath, sizeof(ApogeePath), "%s/userdata/", fetchCWD);
 
-	#if defined(__MINGW32__)
+	#if defined(__MINGW32__) || defined(_MSC_VER)
 		err = _mkdir(ApogeePath);
 	#else
 		err = mkdir(ApogeePath, S_IRWXU);
@@ -145,6 +145,7 @@ int CountDigits(const int number)
 	return lenResult;
 }
 
+#ifndef _MSC_VER
 char* strlwr(char* s)
 {
 	char* p = s;
@@ -204,6 +205,7 @@ char* ltoa(long value, char* string, int radix)
 
 	return string;
 }
+#endif
 
 /* from Dan Olson */
 void put_dos2ansi(byte attrib)
@@ -250,7 +252,7 @@ void DisplayTextSplash(byte* text, int l)
 	printf("\033[m");
 }
 
-#if !defined(__CYGWIN__) && !defined(__MINGW32__) && !defined(__ANDROID__)
+#if !defined(__CYGWIN__) && !defined(__MINGW32__) && !defined(__ANDROID__) && !defined(_MSC_VER)
 #include <execinfo.h>
 
 void print_stack(int level)

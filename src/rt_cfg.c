@@ -31,6 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <string.h>
 #include <ctype.h>
 
+#include "modexlib.h"
 #include "rt_def.h"
 
 #include "rt_cfg.h"
@@ -77,8 +78,10 @@ bool usemouselook = 0;
 bool useoplmusic = 0;
 bool blackwpns = 0;
 bool doombobbing = 0;
+bool halfmonkhp = 1;
 bool disablelowhpsnd = 1;
 bool ludicrousaudio = 0;
+bool ludicrousskybox = 1;
 int inverse_mouse = 1; // set  to -1 to invert mouse
 bool sdl_fullscreen = 1;
 bool borderWindow = 0;
@@ -86,7 +89,28 @@ bool borderlessWindow = 0;
 bool autoAimMissileWeps = 0;
 bool autoAim = 1;
 bool allowMovementWithMouseYAxis = 1;
-int FocalWidthOffset = 0;
+int vfov = 90;
+
+/* 
+	Different levels for aspect ratio correction
+
+	Fast applies 1.2x vertical stretch over a width x (height/1.2) framebuffer
+
+	e.g. 1920x1080 renders at 1920x900 and 1920x1080 is logical size
+
+	Accurate applies 1.2x horizontal squash over a (width/1.2) x height framebuffer
+
+	e.g. 1920x1080 renders at 2304x1080 and 1920x1080 is logical size
+
+	Fast reduces framebuffer size so makes the game faster
+
+	Accurate increases framebuffer size so makes the game slower. 
+
+	0 = none, 1 = fast, 2 = accurate;
+*/
+
+int aspectRatioCorrection = 1;
+
 int ScreenHeightToWriteToCfg = 0;
 int HudScaleToWriteToCfg = 0;
 int ScreenWidthToWriteToCfg = 0;
@@ -426,9 +450,6 @@ bool ParseConfigFile(void)
 		// Read in AutoAimMissileWeps
 		ReadBool("AutoAimMissileWeps", &autoAimMissileWeps);
 
-		// Read in scaleOffset
-		ReadInt("FocalWidthOffset", &FocalWidthOffset);
-
 		// Read in MouseEnabled
 		ReadBool("MouseEnabled", &mouseenabled);
 
@@ -437,6 +458,21 @@ bool ParseConfigFile(void)
 
 		// Read in UseOPLMusic
 		ReadBool("UseOPLMusic", &useoplmusic);
+
+		// you get the idea
+		ReadBool("LowHPSound", &disablelowhpsnd);
+
+		ReadBool("HalfMonkHP", &halfmonkhp);
+
+		ReadBool("DoomBobbing", &doombobbing);
+
+		ReadBool("WeaponColor", &blackwpns);
+
+		ReadBool("LudicrousSkybox", &ludicrousskybox);
+    
+		ReadInt("VerticalFOV", &vfov);
+
+		ReadInt("AspectCorrection", &aspectRatioCorrection);
 
 		ReadInt("InverseMouse", &inverse_mouse);
 
@@ -495,8 +531,8 @@ bool ParseConfigFile(void)
 		ReadBool("BorderlessWindow", &borderlessWindow);
 
 		// Read in resolution
-		ReadInt("ScreenWidth", &iGLOBAL_SCREENWIDTH);
-		ReadInt("ScreenHeight", &iGLOBAL_SCREENHEIGHT);
+		ReadInt("ScreenWidth", &VIRTUALWIDTH);
+		ReadInt("ScreenHeight", &VIRTUALHEIGHT);
 
 		// Read in ViewSize
 		ReadInt("ViewSize", &viewsize);
@@ -1628,11 +1664,6 @@ void WriteConfig(void)
 						  "at targets. (ROTT default)\n");
 	WriteParameter(file, "AutoAimMissileWeps    ", autoAimMissileWeps);
 
-	// Write out scaleOffset
-	SafeWriteString(file, "\n;\n");
-	SafeWriteString(file, "; Field Of View offset\n");
-	WriteParameter(file, "FocalWidthOffset     ", FocalWidthOffset);
-
 	// Write out MouseEnabled
 
 	SafeWriteString(file, "\n;\n");
@@ -1652,6 +1683,46 @@ void WriteConfig(void)
 	SafeWriteString(file, "; 0 - UseOPLMusic Disabled\n");
 	WriteParameter(file, "UseOPLMusic      ", useoplmusic);
 
+	// Write out lowhpsound
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - LowHPSound  Disabled\n");
+	SafeWriteString(file, "; 0 - LowHPSound  Enabled\n");
+	WriteParameter(file, "LowHPSound       ", disablelowhpsnd);
+
+	// Write out halfmonkhp
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - HalfMonkHP  Enabled\n");
+	SafeWriteString(file, "; 0 - HalfMonkHP  Disabled\n");
+	WriteParameter(file, "HalfMonkHP       ", halfmonkhp);
+
+	// Write out doombobbing
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - DoomBobbing Enabled\n");
+	SafeWriteString(file, "; 0 - DoomBobbing Disabled\n");
+	WriteParameter(file, "DoomBobbing      ", doombobbing);
+
+	// Write out weapon recolours
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - WeaponColor Enabled\n");
+	SafeWriteString(file, "; 0 - WeaponColor Disabled\n");
+	WriteParameter(file, "WeaponColor      ", blackwpns);
+
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - LudicrousSkybox Enabled\n");
+	SafeWriteString(file, "; 0 - LudicrousSkybox Disabled\n");
+	WriteParameter(file, "LudicrousSkybox  ", ludicrousskybox);
+  
+	// Write out VerticalFov
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 60-150 VFOV \n");
+	WriteParameter(file, "VerticalFOV      ", vfov);
+
+	// Write out AspectRatioCorrection
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - No Aspect Correct\n");
+	SafeWriteString(file, "; 1 - Fast Aspect Correct\n");
+	SafeWriteString(file, "; 2 - Accurate Aspect Correct\n");
+	WriteParameter(file, "AspectCorrection ", aspectRatioCorrection);
 
 	// Write out InverseMouse
 	SafeWriteString(file, "\n;\n");
@@ -1777,8 +1848,8 @@ void WriteConfig(void)
 	SafeWriteString(file, "; Screen Resolution, supported resolutions: \n");
 	SafeWriteString(file, "; 320x200, 640x480 and 800x600\n");
 
-	// WriteParameter(file,"ScreenWidth      ",iGLOBAL_SCREENWIDTH);
-	// WriteParameter(file,"ScreenHeight     ",iGLOBAL_SCREENHEIGHT);
+	// WriteParameter(file,"ScreenWidth      ",FRAMEBUFFERWIDTH);
+	// WriteParameter(file,"ScreenHeight     ",FRAMEBUFFERHEIGHT);
 
 	if (writeNewResIntoCfg)
 	{
@@ -1787,8 +1858,8 @@ void WriteConfig(void)
 	}
 	else
 	{
-		WriteParameter(file, "ScreenWidth      ", iGLOBAL_SCREENWIDTH);
-		WriteParameter(file, "ScreenHeight     ", iGLOBAL_SCREENHEIGHT);
+		WriteParameter(file, "ScreenWidth      ", MONITORWIDTH);
+		WriteParameter(file, "ScreenHeight     ", MONITORHEIGHT);
 	}
 
 	// Write out ViewSize
