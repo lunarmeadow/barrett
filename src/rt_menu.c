@@ -601,7 +601,7 @@ CP_iteminfo ExtOptionsItems = {20, MENU_Y,			7,			 0,
 							   43, ExtOptionsNames, mn_largefont};
 
 CP_iteminfo ExtGameOptionsItems = {
-(??)	20, MENU_Y, 7, 0, 43, ExtGameOptionsNames, mn_largefont}; // LT added
+		20, MENU_Y, 7, 0, 43, ExtGameOptionsNames, mn_largefont}; // LT added
 
 CP_iteminfo DisplayOptionsMenu = {
 	20, MENU_Y, 3, 0, 43, DisplayOptionsNames, mn_largefont}; // LT added
