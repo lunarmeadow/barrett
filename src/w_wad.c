@@ -408,7 +408,7 @@ void* W_CacheLumpNum(int lump, int tag, converter_t converter, int numrec)
 	if (!lumpcache[lump])
 	{
 		// read the lump in
-		Z_TagMalloc(W_LumpLength(lump), tag);
+		lumpcache[lump] = Z_TagMalloc(W_LumpLength(lump), tag);
 		W_ReadLump(lump, lumpcache[lump]);
 		Debug("Invoking endian converter on %p, %i records\n", lumpcache[lump],
 			  numrec);
