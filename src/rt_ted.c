@@ -1503,7 +1503,7 @@ void ReadROTTMap(char* filename, int mapnum)
 		lseek(filehandle, pos, SEEK_SET);
 		SafeRead(filehandle, buffer, compressed);
 
-		mapplanes[plane] = Z_Malloc(expanded, PU_LEVEL, &mapplanes[plane]);
+		mapplanes[plane] = Z_Malloc(expanded, PU_LEVEL, (void **)&mapplanes[plane]);
 
 		//
 		// unRLEW, skipping expanded length
@@ -1866,7 +1866,7 @@ void LoadTedMap(const char* extension, int mapnum)
 		buffer = SafeMalloc(compressed);
 		SafeRead(maphandle, buffer, compressed);
 
-		mapplanes[plane] = Z_Malloc(expanded, PU_LEVEL, &mapplanes[plane]);
+		mapplanes[plane] = Z_Malloc(expanded, PU_LEVEL, (void **)&mapplanes[plane]);
 
 		//
 		// unRLEW, skipping expanded length
