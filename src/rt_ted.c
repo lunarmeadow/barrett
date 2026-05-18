@@ -1503,7 +1503,7 @@ void ReadROTTMap(char* filename, int mapnum)
 		lseek(filehandle, pos, SEEK_SET);
 		SafeRead(filehandle, buffer, compressed);
 
-		mapplanes[plane] = Z_Malloc(expanded, PU_LEVEL, &mapplanes[plane]);
+		mapplanes[plane] = Z_Malloc(expanded, PU_LEVEL, (void **)&mapplanes[plane]);
 
 		//
 		// unRLEW, skipping expanded length
@@ -1866,7 +1866,7 @@ void LoadTedMap(const char* extension, int mapnum)
 		buffer = SafeMalloc(compressed);
 		SafeRead(maphandle, buffer, compressed);
 
-		mapplanes[plane] = Z_Malloc(expanded, PU_LEVEL, &mapplanes[plane]);
+		mapplanes[plane] = Z_Malloc(expanded, PU_LEVEL, (void **)&mapplanes[plane]);
 
 		//
 		// unRLEW, skipping expanded length
@@ -2065,7 +2065,7 @@ void SetupWalls(void)
 */
 word GetNearestAreaNumber(int tilex, int tiley)
 {
-	int up, dn, lt, rt;
+	int up = 0, dn = 0, lt = 0, rt = 0;
 	int tile;
 
 	tile = MAPSPOT(tilex, tiley, 0) - AREATILE;
@@ -2073,10 +2073,14 @@ word GetNearestAreaNumber(int tilex, int tiley)
 	if ((tile <= NUMAREAS) && (tile > 0))
 		return (tile + AREATILE);
 
-	up = MAPSPOT(tilex, tiley - 1, 0) - AREATILE;
-	dn = MAPSPOT(tilex, tiley + 1, 0) - AREATILE;
-	lt = MAPSPOT(tilex - 1, tiley, 0) - AREATILE;
-	rt = MAPSPOT(tilex + 1, tiley, 0) - AREATILE;
+	if (tiley > 0)
+		up = MAPSPOT(tilex, tiley - 1, 0) - AREATILE;
+	if (tiley < MAPSIZE - 1)
+		dn = MAPSPOT(tilex, tiley + 1, 0) - AREATILE;
+	if (tilex > 0)
+		lt = MAPSPOT(tilex - 1, tiley, 0) - AREATILE;
+	if (tilex < MAPSIZE - 1)
+		rt = MAPSPOT(tilex + 1, tiley, 0) - AREATILE;
 
 	up = ((up > 0) && (up <= NUMAREAS));
 	dn = ((dn > 0) && (dn <= NUMAREAS));

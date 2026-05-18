@@ -59,14 +59,10 @@ typedef struct
 	char name[16];
 } map_t;
 
-#define ActorIsPushWall(xx, yy)                                                \
-	((actorat[xx][yy]) && (((objtype*)actorat[xx][yy])->which == PWALL))
-#define ActorIsWall(xx, yy)                                                    \
-	((actorat[xx][yy]) && (((objtype*)actorat[xx][yy])->which == WALL))
-#define ActorIsSpring(xx, yy)                                                  \
-	((actorat[xx][yy]) && (((objtype*)actorat[xx][yy])->obclass == springobj))
-#define StaticUndefined(xx, yy)                                                \
-	((sprites[xx][yy]) && (((statobj_t*)sprites[xx][yy])->z < -64))
+#define ActorIsPushWall(xx, yy) ((actorat[xx][yy]) && (((objtype*)actorat[xx][yy])->which == PWALL))
+#define ActorIsWall(xx, yy) ((actorat[xx][yy]) && (((objtype*)actorat[xx][yy])->which == WALL))
+#define ActorIsSpring(xx,yy) ((actorat[xx][yy])&&(((objtype *)actorat[xx][yy])->which!=DOOR)&&(((objtype *)actorat[xx][yy])->obclass==springobj) )
+#define StaticUndefined(xx, yy) ((sprites[xx][yy]) && (((statobj_t*)sprites[xx][yy])->z < -64))
 
 #define PRECACHEASTRINGX 141
 #define PRECACHEASTRINGY 8

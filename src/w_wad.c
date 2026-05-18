@@ -38,14 +38,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // GLOBALS
 //=============
 
-int numlumps;
-void** lumpcache;
+int numlumps = 0;
+void** lumpcache = NULL;
 
 //=============
 // STATICS
 //=============
 
-static lumpinfo_t* lumpinfo; // location of each lump on disk
+static lumpinfo_t* lumpinfo = NULL; // location of each lump on disk
 
 /*
 ============================================================================
@@ -140,7 +140,7 @@ void W_AddFile(char* _filename)
 	//
 	// Fill in lumpinfo
 	//
-	Z_Realloc((void**)&lumpinfo, numlumps * sizeof(lumpinfo_t));
+	lumpinfo = realloc(lumpinfo, numlumps * sizeof(lumpinfo_t));
 	//        lumpinfo = realloc (lumpinfo, numlumps*sizeof(lumpinfo_t));
 	//        if (!lumpinfo)
 	//           Error("W_AddFile: Could not realloc %ld
@@ -159,6 +159,21 @@ void W_AddFile(char* _filename)
 
 	if (fileinfo)
 		free(fileinfo);
+}
+
+/*
+====================
+=
+= W_Shutdown
+=
+====================
+*/
+
+void W_Shutdown(void)
+{
+	if (lumpinfo)
+		free(lumpinfo);
+	lumpinfo = NULL;
 }
 
 /*
@@ -186,7 +201,7 @@ void W_InitMultipleFiles(char** filenames)
 	// open all the files, load headers, and count lumps
 	//
 	numlumps = 0;
-	lumpinfo = SafeMalloc(5); // will be realloced as lumps are added
+	lumpinfo = NULL;
 
 	for (; *filenames; filenames++)
 		W_AddFile(*filenames);
