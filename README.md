@@ -10,7 +10,7 @@ Libraries:
 
 `SDL2_mixer.dll` (https://www.libsdl.org/projects/SDL_mixer/)
 
-Arch Linux users require the `soundfont-fluid` package in order to get sound. As demonstrated in this issue here: https://github.com/LTCHIPS/rottexpr/issues/20
+
 
 Game Files:
 
@@ -39,6 +39,27 @@ HUNTBGIN.WAD
 ```
 
 Place all those files in the same directory as the barrett executable.
+
+## Music
+
+Linux users are required to supply their own soundfont, and their distributions FluidR3 is the default fallback.
+Soundfonts are searched for in `userdata/barrett.sf2` in the game's root folder, as well as these locations:
+
+
+`/usr/share/soundfonts/default.sf2`
+
+
+`/usr/share/sounds/sf2/default-GM.sf2`
+
+
+`/usr/share/sounds/sf2/FluidR3_GM.sf2`
+
+
+For Arch Linux, the `soundfont-fluid` package provides this fallback.
+Additionally, in the Ext User Options menu, OPL emulation can be enabled.
+OPL emulation can be configured through `userdata/opl.ini`.
+
+Windows users are currently limited to using the default Windows MIDI subsystem, and can not use soundfonts due to the limitations of SDL_mixer.
 
 ## Building
 
