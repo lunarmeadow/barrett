@@ -10,6 +10,8 @@ Libraries:
 
 `SDL2_mixer.dll` (https://www.libsdl.org/projects/SDL_mixer/)
 
+Arch Linux users require the `soundfont-fluid` package in order to get sound. As demonstrated in this issue here: https://github.com/LTCHIPS/rottexpr/issues/20
+
 Game Files:
 
 ```
