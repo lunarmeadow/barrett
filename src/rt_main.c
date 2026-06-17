@@ -1624,6 +1624,7 @@ void ShutDown(void)
 	IN_Shutdown();
 	ShutdownSoftError();
 	Z_ShutDown();
+	W_Shutdown();
 	//   _settextcursor (0x0607);
 }
 

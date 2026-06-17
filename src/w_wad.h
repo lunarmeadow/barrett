@@ -45,6 +45,8 @@ void* W_CacheLumpNum(int lump, int tag, converter_t converter, int numrecs);
 void* W_CacheLumpName(char* name, int tag, converter_t converter, int numrecs);
 // Cache in the named lump with the appropriate memory tag
 
+void W_Shutdown(void);
+
 extern int numlumps;
 extern void** lumpcache;
 

@@ -1268,7 +1268,7 @@ void R_DrawTallColumn(byte* buf)
 	if(sparkleMask && scalecount--)
 	{
 		// move pixel back over by 1/64th
-		*dest = colormap[texture[((frac + (dc_invscale >> 6)) >> SFRACBITS)]];
+		*dest = colormap[texture[((frac + (dc_invscale >> 6)) >> SFRACBITS) & 63]];
 
 		dest += screenW;
 		
@@ -1279,7 +1279,7 @@ void R_DrawTallColumn(byte* buf)
 
 	while (scalecount--)
 	{
-		*dest = colormap[texture[(frac >> SFRACBITS)]];
+		*dest = colormap[texture[(frac >> SFRACBITS) & 63]];
 
 		dest += screenW;
 		

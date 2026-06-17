@@ -325,24 +325,14 @@ void DrawCinematicBackground(cine_bgevent* back)
 	if (height != FRAMEBUFFERHEIGHT)
 		DrawClearBuffer();
 
-	plane = 0;
+	buf = (byte*)bufferofs + ylookup[back->yoffset];
+	offset = (back->currentoffset >> FRACTIONBITS);
 
+	for (i = 0; i < FRAMEBUFFERWIDTH; i++, offset++, buf++)
 	{
-		buf = (byte*)bufferofs + ylookup[back->yoffset];
-		offset = (back->currentoffset >> FRACTIONBITS) + plane;
-
-		for (i = 0; i < FRAMEBUFFERWIDTH; i++, offset++, buf++)
-		{
-			if (offset >= back->backdropwidth)
-				src = &(pic->data) +
-					  ((offset - back->backdropwidth) * (pic->height));
-			else if (offset < 0)
-				src = &(pic->data) +
-					  ((offset + back->backdropwidth) * (pic->height));
-			else
-				src = &(pic->data) + (offset * (pic->height));
-			DrawFilmPost(buf, src, height);
-		}
+		offset %= back->backdropwidth;
+		src = &(pic->data) + (offset * (pic->height));
+		DrawFilmPost(buf, src, height);
 	}
 }
 
