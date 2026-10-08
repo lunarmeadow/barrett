@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 // W_wad.c
 
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
@@ -431,8 +432,22 @@ void W_ReadLump(int lump, void* dest)
 				printf("W_ReadLump: Warning! Beta wall entry %.8s isn't using indexed colour!\n", l->name);
 
 			spng_decode_image(pngCtx, dest, pngDecodeLen, SPNG_FMT_PNG, 0);
+			
+			// transpose texture matrix into row order as renderer expects
+			uint8_t* imgData = (uint8_t*)dest;
+			uint8_t* origSrc = malloc(4096);
+			memcpy(origSrc, imgData, 4096);
+
+			for(int r = 0; r < 64; r++)
+			{
+				for(int c = 0; c < 64; c++)
+				{
+					imgData[r * 64 + c] = origSrc[c * 64 + r];
+				}
+			}
 
 			free(pngBuffer);
+			free(origSrc);
 			spng_ctx_free(pngCtx);
 		}
 		else

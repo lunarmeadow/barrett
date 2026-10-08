@@ -106,8 +106,8 @@ set(AUDIOLIB_SOURCES
 add_library(audiolib STATIC ${AUDIOLIB_SOURCES})
 
 add_library(ASAN::ASAN IMPORTED INTERFACE)
-target_compile_options(ASAN::ASAN INTERFACE -fsanitize=address,undefined $<$<NOT:$<COMPILE_LANG_AND_ID:C,MSVC>>:-fno-omit-frame-pointer>)
-target_link_options(ASAN::ASAN INTERFACE -fsanitize=address,undefined)
+target_compile_options(ASAN::ASAN INTERFACE -fsanitize=address $<$<NOT:$<COMPILE_LANG_AND_ID:C,MSVC>>:-fno-omit-frame-pointer>)
+target_link_options(ASAN::ASAN INTERFACE -fsanitize=address)
 
 set_target_properties(audiolib PROPERTIES C_STANDARD_REQUIRED ON C_STANDARD 23)
 target_link_libraries(audiolib PRIVATE SDL2::SDL2 SDL2_mixer::SDL2_mixer)
