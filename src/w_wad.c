@@ -434,11 +434,29 @@ void W_ReadLump(int lump, void* dest)
 				printf("W_ReadLump: Warning! Beta wall entry %.8s isn't using indexed colour!\n", l->name);
 
 			spng_decode_image(pngCtx, dest, pngDecodeLen, SPNG_FMT_PNG, 0);
-			
+
 			// transpose texture matrix into row order as renderer expects
 			uint8_t* imgData = (uint8_t*)dest;
 			uint8_t* origSrc = malloc(4096);
 			memcpy(origSrc, imgData, 4096);
+
+			// remap grayscale to indexed
+			if (pngHdr.color_type == SPNG_COLOR_TYPE_GRAYSCALE)
+			{
+				int x, y;
+				uint8_t pal[768];
+				printf("Remapping %s from grayscale to indexed colour...", l->name);
+				GetPalette(pal);
+				for (y = 0; y < 64; y++)
+				{
+					for (x = 0; x < 64; x++)
+					{
+						uint8_t px = origSrc[y * 64 + x];
+						origSrc[y * 64 + x] = BestColor(px, px, px, pal);
+					}
+				}
+				printf("done.\n");
+			}
 
 			for(int r = 0; r < 64; r++)
 			{
