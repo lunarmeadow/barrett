@@ -72,7 +72,7 @@ int iG_masked;
 
 byte* shadingtable;
 
-word tilemap[MAPSIZE][MAPSIZE]; // wall values only
+uint32_t tilemap[MAPSIZE][MAPSIZE]; // wall values only
 byte spotvis[MAPSIZE][MAPSIZE];
 byte mapseen[MAPSIZE][MAPSIZE];
 unsigned long* lights;

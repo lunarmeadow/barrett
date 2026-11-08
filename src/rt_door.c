@@ -3185,7 +3185,7 @@ void SpawnPushWall(int tilex, int tiley, int lock, int texture, int dir,
 	}
 	else
 	{
-		tilemap[tilex][tiley] = texture | 0x800;
+		tilemap[tilex][tiley] = texture | 0x10000;
 		if ((loadedgame == false) && (type == 0))
 			gamestate.secrettotal++;
 	}

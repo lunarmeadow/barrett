@@ -160,7 +160,7 @@ void HitWall(int curx, int vertical, int xtile, int ytile)
 		}
 		else if (posts[curx].lump & 0x1000)
 			posts[curx].lump = animwalls[posts[curx].lump & 0x3ff].texture;
-		else if (posts[curx].lump & 0x800)
+		else if (posts[curx].lump & 0x10000)
 		{
 			posts[curx].lump &= 0x3ff;
 			posts[curx].posttype = 2;
@@ -216,7 +216,7 @@ void HitWall(int curx, int vertical, int xtile, int ytile)
 		}
 		else if (posts[curx].lump & 0x1000)
 			posts[curx].lump = animwalls[posts[curx].lump & 0x3ff].texture;
-		else if (posts[curx].lump & 0x800)
+		else if (posts[curx].lump & 0x10000)
 		{
 			posts[curx].lump &= 0x3ff;
 			posts[curx].posttype = 2;
