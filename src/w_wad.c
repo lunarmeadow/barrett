@@ -85,6 +85,8 @@ void W_AddFile(char* _filename)
 	char filename[MAX_PATH];
 	char buf[MAX_PATH + 100]; // bna++
 
+	mz_zip_zero_struct(&zip);
+
 	strncpy(filename, _filename, sizeof(filename));
 	filename[sizeof(filename) - 1] = '\0';
 	FixFilePath(filename);
@@ -131,7 +133,7 @@ void W_AddFile(char* _filename)
 
 		// open archive as zip
 		if (!mz_zip_reader_init_cfile(&zip, handle, 0, 0))
-			Error("Failed to open %s as zip file!\n", filename);
+			Error("Failed to open %s as zip file: %s!\n", filename, mz_zip_get_error_string(zip.m_last_error));
 
 		// manually add WALBs
 		fileinfo_ptr = fileinfo = malloc((ARRAY_COUNT(betaWalls) + 1) * sizeof(wadLump_t));
