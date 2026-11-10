@@ -233,16 +233,16 @@ void FindEGAColors(void)
 byte BestColor(int r, int g, int b, byte* palette)
 {
 	int i;
-	long dr, dg, db;
-	long bestdistortion, distortion;
+	int32_t dr, dg, db;
+	int32_t bestdistortion, distortion;
 	int bestcolor;
 	byte* pal;
 
 	//
 	// let any color go to 0 as a last resort
 	//
-	bestdistortion = ((long)WeightR * r * r + (long)WeightG * g * g +
-					  (long)WeightB * b * b) *
+	bestdistortion = ((int32_t)WeightR * r * r + (int32_t)WeightG * g * g +
+					  (int32_t)WeightB * b * b) *
 					 2;
 	bestcolor = 0;
 
@@ -575,29 +575,29 @@ int SafeOpenRead(char* _filename)
 	return handle;
 }
 
-void SafeRead(int handle, void* buffer, long count)
+void SafeRead(int handle, void* buffer, int32_t count)
 {
-	unsigned iocount;
+	uint32_t iocount;
 
 	while (count)
 	{
 		iocount = count > 0x8000 ? 0x8000 : count;
 		if (read(handle, buffer, iocount) != (int)iocount)
-			Error("File read failure reading %ld bytes", count);
+			Error("File read failure reading %d bytes", count);
 		buffer = (void*)((byte*)buffer + iocount);
 		count -= iocount;
 	}
 }
 
-void SafeWrite(int handle, void* buffer, long count)
+void SafeWrite(int handle, void* buffer, int32_t count)
 {
-	unsigned iocount;
+	uint32_t iocount;
 
 	while (count)
 	{
 		iocount = count > 0x8000 ? 0x8000 : count;
 		if (write(handle, buffer, iocount) != (int)iocount)
-			Error("File write failure writing %ld bytes", count);
+			Error("File write failure writing %d bytes", count);
 		buffer = (void*)((byte*)buffer + iocount);
 		count -= iocount;
 	}
@@ -612,7 +612,7 @@ void SafeWriteString(int handle, char* buffer)
 		Error("File write string failure writing %s\n", buffer);
 }
 
-void* SafeMalloc(long size)
+void* SafeMalloc(int32_t size)
 {
 	void* ptr;
 
@@ -621,12 +621,12 @@ void* SafeMalloc(long size)
 	ptr = Z_Malloc(size, PU_STATIC, NULL);
 
 	if (!ptr)
-		Error("SafeMalloc failure for %lu bytes", size);
+		Error("SafeMalloc failure for %d bytes", size);
 
 	return ptr;
 }
 
-void* SafeLevelMalloc(long size)
+void* SafeLevelMalloc(int32_t size)
 {
 	void* ptr;
 
@@ -635,7 +635,7 @@ void* SafeLevelMalloc(long size)
 	ptr = Z_LevelMalloc(size, PU_STATIC, NULL);
 
 	if (!ptr)
-		Error("SafeLevelMalloc failure for %lu bytes", size);
+		Error("SafeLevelMalloc failure for %d bytes", size);
 
 	return ptr;
 }
@@ -656,10 +656,10 @@ void SafeFree(void* ptr)
 ==============
 */
 
-long LoadFile(char* filename, void** bufferptr)
+int32_t LoadFile(char* filename, void** bufferptr)
 {
 	int handle;
-	long length;
+	int32_t length;
 
 	handle = SafeOpenRead(filename);
 	length = filelength(handle);
@@ -677,7 +677,7 @@ long LoadFile(char* filename, void** bufferptr)
 ==============
 */
 
-void SaveFile(char* filename, void* buffer, long count)
+void SaveFile(char* filename, void* buffer, int32_t count)
 {
 	int handle;
 
@@ -766,7 +766,7 @@ void FixFilePath(char* filename)
 #if PLATFORM_WIN32
 int _dos_findfirst(char* filename, int x, struct find_t* f)
 {
-	long rc = _findfirst(filename, &f->data);
+	int32_t rc = _findfirst(filename, &f->data);
 	f->handle = rc;
 	if (rc != -1)
 	{
@@ -987,10 +987,10 @@ void ExtractFileBase(char* path, char* dest)
 ==============
 */
 
-long ParseHex(char* hex)
+int32_t ParseHex(char* hex)
 {
 	char* str;
-	long num;
+	int32_t num;
 
 	num = 0;
 	str = hex;
@@ -1012,7 +1012,7 @@ long ParseHex(char* hex)
 	return num;
 }
 
-long ParseNum(char* str)
+int32_t ParseNum(char* str)
 {
 	if (str[0] == '$')
 		return ParseHex(str + 1);

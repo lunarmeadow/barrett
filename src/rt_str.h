@@ -67,8 +67,8 @@ void US_SetPrintRoutines(void (*measure)(const char*, int*, int*, font_t*),
 						 void (*print)(const char*));
 void US_Print(const char* s);
 void US_BufPrint(const char* s);
-void US_PrintUnsigned(unsigned long int n);
-void US_PrintSigned(long int n);
+void US_PrintUnsigned(uint32_t n);
+void US_PrintSigned(int32_t n);
 void USL_PrintInCenter(const char* s, SDL_Rect *r);
 void US_PrintCentered(const char* s);
 void US_CPrintLine(const char* s);

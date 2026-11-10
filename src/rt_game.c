@@ -1188,7 +1188,7 @@ void DrawScore(bool bufferofsonly)
 //
 //******************************************************************************
 
-void GivePoints(long points)
+void GivePoints(int32_t points)
 {
 	gamestate.score += points;
 
@@ -2722,7 +2722,7 @@ void DrawHighScores(void)
 //
 //******************************************************************************
 
-void CheckHighScore(long score, word other, bool INMENU)
+void CheckHighScore(int32_t score, word other, bool INMENU)
 {
 	word i, j;
 	int n;
@@ -4078,7 +4078,7 @@ bool ZoomDeathOkay(void)
 extern bool dopefish;
 void Died(void)
 {
-	long dx, dy;
+	int32_t dx, dy;
 	int iangle, curangle, clockwise, change;
 	int da;
 	int rate;
@@ -4477,10 +4477,10 @@ void DoLoadGameAction(void)
 //
 //******************************************************************************
 
-long DoCheckSum(byte* source, int size, long csum)
+int32_t DoCheckSum(byte* source, int size, int32_t csum)
 {
 	int i;
-	long checksum;
+	int32_t checksum;
 
 	checksum = csum;
 
@@ -4497,13 +4497,13 @@ long DoCheckSum(byte* source, int size, long csum)
 //******************************************************************************
 
 #define SAVECHECKSUMSIZE (10000)
-long CalculateSaveGameCheckSum(char* filename)
+int32_t CalculateSaveGameCheckSum(char* filename)
 {
 	int handle;
 	int lengthleft;
 	int length;
 	byte* altbuffer;
-	long checksum;
+	int32_t checksum;
 
 	altbuffer = SafeMalloc(SAVECHECKSUMSIZE);
 

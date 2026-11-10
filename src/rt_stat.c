@@ -1223,8 +1223,8 @@ void SpawnStatic(int tilex, int tiley, int mtype, int zoffset)
 		temp->whichstat = statcount++;
 		temp->tilex = tilex;
 		temp->tiley = tiley;
-		temp->x = ((long)tilex << TILESHIFT) + 0x8000;
-		temp->y = ((long)tiley << TILESHIFT) + 0x8000;
+		temp->x = ((int32_t)tilex << TILESHIFT) + 0x8000;
+		temp->y = ((int32_t)tiley << TILESHIFT) + 0x8000;
 		temp->areanumber = MAPSPOT(tilex, tiley, 0) - AREATILE;
 		temp->linked_to = -1;
 		if ((temp->areanumber <= 0) || (temp->areanumber > NUMAREAS))

@@ -471,7 +471,7 @@ void US_BufPrint(const char* string)
 //
 //******************************************************************************
 
-void US_PrintUnsigned(unsigned long int n)
+void US_PrintUnsigned(uint32_t n)
 {
 	char buffer[32];
 
@@ -484,7 +484,7 @@ void US_PrintUnsigned(unsigned long int n)
 //
 //******************************************************************************
 
-void US_PrintSigned(long int n)
+void US_PrintSigned(int32_t n)
 {
 	char buffer[32];
 

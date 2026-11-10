@@ -75,7 +75,7 @@ extern fix32_t viewsin, viewcos;
 extern visobj_t vislist[MAXVISIBLE];
 extern visobj_t *visptr, *visstep, *farthest;
 
-extern long xintercept, yintercept;
+extern int32_t xintercept, yintercept;
 extern byte mapseen[MAPSIZE][MAPSIZE];
 extern uint32_t* lights;
 

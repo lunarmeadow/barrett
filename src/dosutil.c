@@ -32,7 +32,7 @@ int _argc;
 char** _argv;
 
 #if PLATFORM_UNIX
-long filelength(int handle)
+int32_t filelength(int handle)
 {
 	struct stat buf;
 
@@ -42,18 +42,18 @@ long filelength(int handle)
 		exit(EXIT_FAILURE);
 	}
 
-	return buf.st_size;
+	return (int32_t)buf.st_size;
 }
 
-char* ultoa(unsigned long value, char* string, int radix)
+char* ultoa(uint32_t value, char* string, int radix)
 {
 	switch (radix)
 	{
 	case 10:
-		sprintf(string, "%lu", value);
+		sprintf(string, "%u", value);
 		break;
 	case 16:
-		sprintf(string, "%lux", value);
+		sprintf(string, "%ux", value);
 		break;
 	default:
 		break;
@@ -179,15 +179,15 @@ char* itoa(int value, char* string, int radix)
 	return string;
 }
 
-char* ltoa(long value, char* string, int radix)
+char* ltoa(int32_t value, char* string, int radix)
 {
 	switch (radix)
 	{
 	case 10:
-		sprintf(string, "%ld", value);
+		sprintf(string, "%d", value);
 		break;
 	case 16:
-		sprintf(string, "%lx", value);
+		sprintf(string, "%x", value);
 		break;
 	default:
 		break;

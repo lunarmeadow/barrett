@@ -71,21 +71,21 @@ int CheckParm(char* check);
 int SafeOpenWrite(char* filename);
 int SafeOpenAppend(char* filename);
 int SafeOpenRead(char* filename);
-void SafeRead(int handle, void* buffer, long count);
-void SafeWrite(int handle, void* buffer, long count);
+void SafeRead(int handle, void* buffer, int32_t count);
+void SafeWrite(int handle, void* buffer, int32_t count);
 void SafeWriteString(int handle, char* buffer);
-void* SafeMalloc(long size);
-void* SafeLevelMalloc(long size);
+void* SafeMalloc(int32_t size);
+void* SafeLevelMalloc(int32_t size);
 void SafeFree(void* ptr);
-long LoadFile(char* filename, void** bufferptr);
-void SaveFile(char* filename, void* buffer, long count);
+int32_t LoadFile(char* filename, void** bufferptr);
+void SaveFile(char* filename, void* buffer, int32_t count);
 void GetPathFromEnvironment(char* fullname, const char* envname,
 							const char* filename);
 void DefaultExtension(char* path, char* extension);
 void DefaultPath(char* path, char* basepath);
 void ExtractFileBase(char* path, char* dest);
-long ParseHex(char* hex);
-long ParseNum(char* str);
+int32_t ParseHex(char* hex);
+int32_t ParseNum(char* str);
 short MotoShort(short l);
 short IntelShort(short l);
 int MotoLong(int l);
@@ -128,7 +128,7 @@ void FixFilePath(char* filename);
 #include <io.h>
 struct find_t
 {
-	long handle;
+	int32_t handle;
 	struct _finddata_t data;
 	char name[MAX_PATH];
 };

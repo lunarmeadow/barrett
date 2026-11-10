@@ -1803,7 +1803,7 @@ void DoorOpening(int door)
 {
 	int area1, area2;
 	word* map;
-	long position;
+	int32_t position;
 	int tilex, tiley;
 
 	position = doorobjlist[door]->position;
@@ -1873,7 +1873,7 @@ void DoorClosing(int door)
 {
 	int area1, area2;
 	word* map;
-	long position;
+	int32_t position;
 	int tilex, tiley;
 	doorobj_t* dptr;
 

@@ -11951,7 +11951,7 @@ void SelectPathDir(objtype* ob)
 
 bool CheckSight(objtype* ob, void* atwhat)
 {
-	long deltax, deltay;
+	int32_t deltax, deltay;
 	objtype* what;
 	//
 	// don't bother tracing a line if the area isn't connected to the player's

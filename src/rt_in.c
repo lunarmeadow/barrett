@@ -1034,9 +1034,9 @@ void IN_Ack(void)
 //
 //******************************************************************************
 
-bool IN_UserInput(long delay)
+bool IN_UserInput(int32_t delay)
 {
-	long lasttime;
+	int32_t lasttime;
 
 	lasttime = GetCachedTic();
 

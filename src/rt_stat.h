@@ -153,7 +153,7 @@ typedef struct statstruct
 	short int whichstat;
 	short int areanumber;
 
-	long linked_to;
+	intptr_t linked_to;
 	struct statstruct* statnext;
 	struct statstruct* statprev;
 	struct statstruct* nextactive;
@@ -169,7 +169,7 @@ typedef struct respstruct
 	int spawnz;
 	struct respstruct* next;
 	struct respstruct* prev;
-	long linked_to;
+	intptr_t linked_to;
 } respawn_t;
 
 typedef struct

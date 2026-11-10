@@ -131,7 +131,7 @@ int tics;
 // ray tracing variables
 //
 
-long xintercept, yintercept;
+int32_t xintercept, yintercept;
 
 int doublestep = 0;
 int hp_startfrac;
@@ -623,7 +623,7 @@ bool TransformPlane(int x1, int y1, int x2, int y2, visobj_t* plane)
 int CalcHeight(void)
 {
 	fix32_t gxt, gyt, nx;
-	long gx, gy;
+	int32_t gx, gy;
 
 
 	gx = xintercept - viewx;
