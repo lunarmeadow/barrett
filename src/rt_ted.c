@@ -1268,7 +1268,7 @@ void PreCache(void)
 ======================
 */
 
-void CA_RLEWexpand(word* source, word* dest, long length, unsigned rlewtag)
+void CA_RLEWexpand(word* source, word* dest, int32_t length, unsigned rlewtag)
 {
 	word value, count, i;
 	word* end;
@@ -1443,9 +1443,9 @@ void ReadROTTMap(char* filename, int mapnum)
 {
 	RTLMAP RTLMap;
 	int filehandle;
-	long pos;
-	long compressed;
-	long expanded;
+	int32_t pos;
+	int32_t compressed;
+	int32_t expanded;
 	int plane;
 	byte* buffer;
 	size_t mapsoffset;
@@ -1790,9 +1790,9 @@ void GetMapInfo(mapfileinfo_t* mapinfo)
 void LoadTedMap(const char* extension, int mapnum)
 
 {
-	long pos;
-	long compressed;
-	long expanded;
+	int32_t pos;
+	int32_t compressed;
+	int32_t expanded;
 	int plane;
 	int i;
 	int maphandle;

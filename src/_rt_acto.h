@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _rt_actor_private
 #define _rt_actor_private
 
+#include "rt_def.h"
 #define MAXGIBS			 600
 #define HAAPT			 24
 #define VAAPT			 24
@@ -236,15 +237,15 @@ typedef struct sat
 	int temp1, temp2, temp3;
 	int whateverindex, targetindex;
 
-	short ticcount;
-	short shapeoffset;
-	short stateindex;
-	short dirchoosetime;
+	int16_t ticcount;
+	int16_t shapeoffset;
+	int16_t stateindex;
+	int16_t dirchoosetime;
 
 	byte areanumber;
 	byte obclass;
-	signed char door_to_open;
-	signed char dir;
+	int8_t door_to_open;
+	int8_t dir;
 
 } saved_actor_t;
 

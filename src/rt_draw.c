@@ -74,7 +74,7 @@ byte* shadingtable;
 word tilemap[MAPSIZE][MAPSIZE]; // wall values only
 byte spotvis[MAPSIZE][MAPSIZE];
 byte mapseen[MAPSIZE][MAPSIZE];
-unsigned long* lights;
+uint32_t* lights;
 
 int wstart;
 
@@ -109,7 +109,7 @@ const int dirangle16[16] = {0,
 // math tables
 //
 
-short tantable[FINEANGLES];
+int16_t tantable[FINEANGLES];
 int sintable[FINEANGLES + FINEANGLEQUAD + 1],
 	*costable = sintable + (FINEANGLES / 4);
 
@@ -131,7 +131,7 @@ int tics;
 // ray tracing variables
 //
 
-long xintercept, yintercept;
+int32_t xintercept, yintercept;
 
 int doublestep = 0;
 int hp_startfrac;
@@ -260,9 +260,9 @@ void BuildTables(void)
 	//
 	// get tangent table
 	//
-	memcpy(tantable, ptr, length * sizeof(short));
+	memcpy(tantable, ptr, length * sizeof(int16_t));
 	SwapIntelShortArray(tantable, length);
-	ptr += (length) * sizeof(short);
+	ptr += (length) * sizeof(int16_t);
 
 	//
 	// get size of gamma table
@@ -623,7 +623,7 @@ bool TransformPlane(int x1, int y1, int x2, int y2, visobj_t* plane)
 int CalcHeight(void)
 {
 	fix32_t gxt, gyt, nx;
-	long gx, gy;
+	int32_t gx, gy;
 
 
 	gx = xintercept - viewx;

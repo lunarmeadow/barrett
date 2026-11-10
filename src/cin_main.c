@@ -135,7 +135,7 @@ void ParseCinematicScript(void)
 
 void CacheScriptFile(char* filename)
 {
-	long size;
+	int32_t size;
 	int lump;
 
 	lump = W_GetNumForName(filename);

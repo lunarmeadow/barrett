@@ -144,7 +144,7 @@ extern bool borderlessWindow;
 extern void ComSetTime(void);
 extern void VH_UpdateScreen(void);
 extern void RottConsole(void);
-extern void ReadDelay(long delay);
+extern void ReadDelay(int32_t delay);
 extern void RecordDemoQuery(void);
 
 extern int CountDigits(const int number);

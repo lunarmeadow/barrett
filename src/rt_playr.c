@@ -492,8 +492,8 @@ void SetupPlayerobj(int tilex, int tiley, int dir, objtype* ob)
 	actorat[tilex][tiley] = ob;
 	ob->areanumber = MAPSPOT(tilex, tiley, 0) - AREATILE;
 	MakeLastInArea(ob);
-	ob->x = ((long)tilex << TILESHIFT) + TILEGLOBAL / 2;
-	ob->y = ((long)tiley << TILESHIFT) + TILEGLOBAL / 2;
+	ob->x = ((int32_t)tilex << TILESHIFT) + TILEGLOBAL / 2;
+	ob->y = ((int32_t)tiley << TILESHIFT) + TILEGLOBAL / 2;
 	ob->z = PlatformHeight(tilex, tiley);
 	if ((ob->z == -10) || DiskAt(tilex, tiley))
 		ob->z = 0;

@@ -236,13 +236,13 @@ void ReadBool(const char* s1, bool* val)
 //
 //******************************************************************************
 
-void ReadUnsigned(const char* s1, unsigned long* val)
+void ReadUnsigned(const char* s1, uint32_t* val)
 {
 	int temp;
 
 	temp = (int)(*val);
 	ReadInt(s1, &temp);
-	*val = (unsigned)temp;
+	*val = (uint32_t)temp;
 }
 
 //******************************************************************************

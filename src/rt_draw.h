@@ -56,7 +56,7 @@ extern int fandc;
 //
 // math tables
 //
-extern short tantable[FINEANGLES];
+extern int16_t tantable[FINEANGLES];
 extern fix32_t sintable[FINEANGLES + FINEANGLEQUAD + 1];
 extern fix32_t* costable;
 
@@ -75,9 +75,9 @@ extern fix32_t viewsin, viewcos;
 extern visobj_t vislist[MAXVISIBLE];
 extern visobj_t *visptr, *visstep, *farthest;
 
-extern long xintercept, yintercept;
+extern int32_t xintercept, yintercept;
 extern byte mapseen[MAPSIZE][MAPSIZE];
-extern unsigned long* lights;
+extern uint32_t* lights;
 
 extern int hp_startfrac;
 extern int hp_srcstep;
@@ -96,7 +96,7 @@ extern int firstcoloffset;
 
 #define LightSourceAt(x, y) (*(lights + ((x) << 7) + (y)))
 #define SetLight(x, y, level)                                                  \
-	(LightSourceAt((x), (y)) |= (unsigned long)(level))
+	(LightSourceAt((x), (y)) |= (uint32_t)(level))
 
 //=========================== functions =============================
 

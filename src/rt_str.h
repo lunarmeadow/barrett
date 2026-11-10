@@ -67,8 +67,8 @@ void US_SetPrintRoutines(void (*measure)(const char*, int*, int*, font_t*),
 						 void (*print)(const char*));
 void US_Print(const char* s);
 void US_BufPrint(const char* s);
-void US_PrintUnsigned(unsigned long int n);
-void US_PrintSigned(long int n);
+void US_PrintUnsigned(uint32_t n);
+void US_PrintSigned(int32_t n);
 void USL_PrintInCenter(const char* s, SDL_Rect *r);
 void US_PrintCentered(const char* s);
 void US_CPrintLine(const char* s);
@@ -95,9 +95,9 @@ void US_CenterWindow(int w, int h);
 // Intensity font rtns
 //
 
-void DrawIString(unsigned short int x, unsigned short int y, const char* string,
+void DrawIString(uint16_t x, uint16_t y, const char* string,
 				 int flags);
-void DrawIntensityString(unsigned short int x, unsigned short int y,
+void DrawIntensityString(uint16_t x, uint16_t y,
 						 const char* string, int color);
 void VW_MeasureIntensityPropString(const char* string, int* width, int* height);
 byte GetIntensityColor(byte pix);

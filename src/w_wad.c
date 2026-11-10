@@ -110,7 +110,7 @@ void W_AddFile(char* _filename)
 			printf("    Adding single file %s.\n", filename);
 		fileinfo_ptr = &singleinfo;
 		singleinfo.filepos = 0;
-		singleinfo.size = LONG(filelength(handle));
+		singleinfo.size = LONG(safe_filelength(handle));
 		ExtractFileBase(filename, singleinfo.name);
 		numlumps++;
 	}

@@ -165,7 +165,7 @@ char IN_WaitForASCII(void);
 void IN_StartAck(void);
 bool IN_CheckAck(void);
 void IN_Ack(void);
-bool IN_UserInput(long delay);
+bool IN_UserInput(int32_t delay);
 void IN_GetJoyAbs(word joy, word* xp, word* yp);
 void INL_GetJoyDelta(word joy, int* dx, int* dy);
 word INL_GetJoyButtons(word joy);
