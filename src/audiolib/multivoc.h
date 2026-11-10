@@ -82,8 +82,6 @@ void MV_SetReverbDelay(int delay);
 int MV_SetMixMode(int numchannels, int samplebits);
 int MV_StartPlayback(void);
 void MV_StopPlayback(void);
-int MV_StartRecording(int MixRate, void (*function)(char* ptr, int length));
-void MV_StopRecord(void);
 int MV_StartDemandFeedPlayback(void (*function)(char** ptr,
 												unsigned long* length),
 							   int rate, int pitchoffset, int vol, int left,
@@ -118,7 +116,5 @@ void MV_SetReverseStereo(int setting);
 int MV_GetReverseStereo(void);
 int MV_Init(int MixRate, int Voices, int numchannels, int samplebits);
 int MV_Shutdown(void);
-void MV_UnlockMemory(void);
-int MV_LockMemory(void);
 
 #endif

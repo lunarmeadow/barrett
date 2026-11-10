@@ -75,11 +75,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 bool ludicrousgibs = false;
 
-short colheight[15];
+int16_t colheight[15];
 
 byte deathshapeoffset[8] = {0, 7, 7, 8, 8, 9, 8, 7};
 
-unsigned long MAXFUNCTION, MINFUNCTION, MAXSTATE, MINSTATE;
+uintptr_t MAXFUNCTION, MINFUNCTION, MAXSTATE, MINSTATE;
 
 objtype* PLAYER0MISSILE;
 objtype* SCREENEYE;
@@ -92,7 +92,7 @@ int objcount;
 
 byte RANDOMACTORTYPE[10];
 
-_2Dpoint SNAKEPATH[512];
+vec2i_t SNAKEPATH[512];
 actor_misc_flags mstruct, *MISCVARS = &mstruct;
 int angletodir[ANGLES];
 objtype* new;
@@ -491,7 +491,7 @@ void SaveActors(byte** buffer, int* size)
 		dummy.door_to_open = temp->door_to_open;
 		dummy.targetx = temp->targettilex;
 		dummy.targety = temp->targettiley;
-		dummy.dir = (signed char)temp->dir;
+		dummy.dir = (int8_t)temp->dir;
 		dummy.angle = temp->angle;
 		dummy.yzangle = temp->yzangle;
 		dummy.speed = temp->speed;
@@ -558,7 +558,7 @@ void LoadActors(byte* buffer, int size)
 	int numactors, i, playerindex;
 	saved_actor_t dummy;
 	objtype* temp;
-	short *targetindices, *whateverindices;
+	int16_t *targetindices, *whateverindices;
 
 	InitActorList();
 
@@ -575,8 +575,8 @@ void LoadActors(byte* buffer, int size)
 	numactors = size / sizeof(saved_actor_t);
 
 	objlist = (objtype**)SafeMalloc(numactors * sizeof(objtype*));
-	targetindices = (short*)SafeMalloc(numactors * sizeof(short));
-	whateverindices = (short*)SafeMalloc(numactors * sizeof(short));
+	targetindices = (int16_t*)SafeMalloc(numactors * sizeof(int16_t));
+	whateverindices = (int16_t*)SafeMalloc(numactors * sizeof(int16_t));
 
 	for (i = 0; i < numactors; i++)
 	{
@@ -1602,7 +1602,7 @@ void SpawnDisk(int tilex, int tiley, int type, bool master)
 			// new->flags |= FL_SYNCED;
 			zoffset = MAPSPOT(tilex, tiley, 2);
 			if ((zoffset & 0xff00) == 0xb000)
-				Set_NewZ_to_MapValue((fixed_t*)(&(new->temp2)), zoffset,
+				Set_NewZ_to_MapValue((fix32_t*)(&(new->temp2)), zoffset,
 									 "elev disk", tilex, tiley);
 			else
 				new->temp2 = 32;
@@ -1613,7 +1613,7 @@ void SpawnDisk(int tilex, int tiley, int type, bool master)
 			SpawnNewObj(tilex, tiley, &s_pathdisk, diskobj);
 			zoffset = MAPSPOT(tilex, tiley, 2);
 			if ((zoffset & 0xff00) == 0xb000)
-				Set_NewZ_to_MapValue((fixed_t*)(&(new->z)), zoffset, "path disk",
+				Set_NewZ_to_MapValue((fix32_t*)(&(new->z)), zoffset, "path disk",
 									 tilex, tiley);
 
 			new->dir = (type - 1) << 1;
@@ -4258,7 +4258,7 @@ void T_PlayDead(objtype* ob)
 	}
 }
 
-void AdjustAngle(int maxadjust, short int* currangle, int targetangle)
+void AdjustAngle(int maxadjust, int16_t* currangle, int targetangle)
 {
 	int dangle, i, magangle;
 
@@ -7682,7 +7682,7 @@ hiding_status HoleStatus(objtype* ob)
 	int i, tx, ty, dist, noneleft, invisible, curr, min;
 	thing_point dummy, *dptr = &dummy;
 	objtype* tactor;
-	_2Dpoint* tdptr;
+	vec2i_t* tdptr;
 
 	min = 0x7fffffff;
 	noneleft = 1;
@@ -11951,7 +11951,7 @@ void SelectPathDir(objtype* ob)
 
 bool CheckSight(objtype* ob, void* atwhat)
 {
-	long deltax, deltay;
+	int32_t deltax, deltay;
 	objtype* what;
 	//
 	// don't bother tracing a line if the area isn't connected to the player's

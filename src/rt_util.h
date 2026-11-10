@@ -71,29 +71,29 @@ int CheckParm(char* check);
 int SafeOpenWrite(char* filename);
 int SafeOpenAppend(char* filename);
 int SafeOpenRead(char* filename);
-void SafeRead(int handle, void* buffer, long count);
-void SafeWrite(int handle, void* buffer, long count);
+void SafeRead(int handle, void* buffer, int32_t count);
+void SafeWrite(int handle, void* buffer, int32_t count);
 void SafeWriteString(int handle, char* buffer);
-void* SafeMalloc(long size);
-void* SafeLevelMalloc(long size);
+void* SafeMalloc(int32_t size);
+void* SafeLevelMalloc(int32_t size);
 void SafeFree(void* ptr);
-long LoadFile(char* filename, void** bufferptr);
-void SaveFile(char* filename, void* buffer, long count);
+int32_t LoadFile(char* filename, void** bufferptr);
+void SaveFile(char* filename, void* buffer, int32_t count);
 void GetPathFromEnvironment(char* fullname, const char* envname,
 							const char* filename);
 void DefaultExtension(char* path, char* extension);
 void DefaultPath(char* path, char* basepath);
 void ExtractFileBase(char* path, char* dest);
-long ParseHex(char* hex);
-long ParseNum(char* str);
-short MotoShort(short l);
-short IntelShort(short l);
+int32_t ParseHex(char* hex);
+int32_t ParseNum(char* str);
+int16_t MotoShort(int16_t l);
+int16_t IntelShort(int16_t l);
 int MotoLong(int l);
 int IntelLong(int l);
 void SwapIntelLong(int* l);
-void SwapIntelShort(short* s);
+void SwapIntelShort(int16_t* s);
 void SwapIntelLongArray(int* l, int num);
-void SwapIntelShortArray(short* s, int num);
+void SwapIntelShortArray(int16_t* s, int num);
 int US_CheckParm(char* parm, char** strings);
 byte BestColor(int r, int g, int b, byte* palette);
 int atan2_appx(int, int);
@@ -128,7 +128,7 @@ void FixFilePath(char* filename);
 #include <io.h>
 struct find_t
 {
-	long handle;
+	int32_t handle;
 	struct _finddata_t data;
 	char name[MAX_PATH];
 };
@@ -151,10 +151,10 @@ int _dos_findnext(struct find_t* f);
 
 struct dosdate_t
 {
-	unsigned char day;
-	unsigned char month;
-	unsigned int year;
-	unsigned char dayofweek;
+	uint8_t day;
+	uint8_t month;
+	uint32_t year;
+	uint8_t dayofweek;
 };
 
 void _dos_getdate(struct dosdate_t* date);

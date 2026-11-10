@@ -74,7 +74,7 @@ byte* shadingtable;
 word tilemap[MAPSIZE][MAPSIZE]; // wall values only
 byte spotvis[MAPSIZE][MAPSIZE];
 byte mapseen[MAPSIZE][MAPSIZE];
-unsigned long* lights;
+uint32_t* lights;
 
 int wstart;
 
@@ -109,7 +109,7 @@ const int dirangle16[16] = {0,
 // math tables
 //
 
-short tantable[FINEANGLES];
+int16_t tantable[FINEANGLES];
 int sintable[FINEANGLES + FINEANGLEQUAD + 1],
 	*costable = sintable + (FINEANGLES / 4);
 
@@ -121,17 +121,17 @@ int skyScalers[MAXSCREENHEIGHT];
 // refresh variables
 //
 
-fixed_t viewx, viewy; // the focal point
+fix32_t viewx, viewy; // the focal point
 int viewangle;
 int c_startx, c_starty;
-fixed_t viewsin, viewcos;
+fix32_t viewsin, viewcos;
 int tics;
 
 //
 // ray tracing variables
 //
 
-long xintercept, yintercept;
+int32_t xintercept, yintercept;
 
 int doublestep = 0;
 int hp_startfrac;
@@ -154,7 +154,7 @@ static int nonbobpheight;
 
 static visobj_t* sortedvislist[MAXVISIBLE];
 
-static const fixed_t mindist = 0x1000;
+static const fix32_t mindist = 0x1000;
 
 static int weaponbobx, weaponboby;
 
@@ -260,9 +260,9 @@ void BuildTables(void)
 	//
 	// get tangent table
 	//
-	memcpy(tantable, ptr, length * sizeof(short));
+	memcpy(tantable, ptr, length * sizeof(int16_t));
 	SwapIntelShortArray(tantable, length);
-	ptr += (length) * sizeof(short);
+	ptr += (length) * sizeof(int16_t);
 
 	//
 	// get size of gamma table
@@ -278,7 +278,7 @@ void BuildTables(void)
 	memcpy(&gammatable[0], ptr, length * sizeof(byte));
 	table = W_CacheLumpName("tables", PU_CACHE, CvtNull, 1);
 
-	costable = (fixed_t*)&(sintable[FINEANGLES / 4]);
+	costable = (fix32_t*)&(sintable[FINEANGLES / 4]);
 
 	wstart = W_GetNumForName("WALLSTRT");
 #if (SHAREWARE == 0)
@@ -317,7 +317,7 @@ void BuildTables(void)
 bool TransformObject(int x, int y, int* dispx, int* dispheight)
 {
 
-	fixed_t gx, gy, gxt, gyt, nx, ny;
+	fix32_t gx, gy, gxt, gyt, nx, ny;
 
 	//
 	// translate point to view centered coordinates
@@ -367,8 +367,8 @@ void TransformPoint(int x, int y, int* screenx, int* height, int* texture,
 					int vertical)
 {
 
-	fixed_t gxt, gyt, nx, ny;
-	fixed_t gxtt, gytt;
+	fix32_t gxt, gyt, nx, ny;
+	fix32_t gxtt, gytt;
 	int gx, gy;
 	int vx, vy;
 	int svs, svc;
@@ -498,8 +498,8 @@ bool TransformSimplePoint(int x, int y, int* screenx, int* height,
 							 int* texture, int vertical)
 {
 
-	fixed_t gxt, gyt, nx, ny;
-	fixed_t gxtt, gytt;
+	fix32_t gxt, gyt, nx, ny;
+	fix32_t gxtt, gytt;
 	int gx, gy;
 
 	//
@@ -622,8 +622,8 @@ bool TransformPlane(int x1, int y1, int x2, int y2, visobj_t* plane)
 
 int CalcHeight(void)
 {
-	fixed_t gxt, gyt, nx;
-	long gx, gy;
+	fix32_t gxt, gyt, nx;
+	int32_t gx, gy;
 
 
 	gx = xintercept - viewx;

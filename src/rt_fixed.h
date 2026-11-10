@@ -22,8 +22,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <stdint.h>
 
-typedef int32_t fixed_t;
-typedef uint32_t ufixed_t;
+typedef int16_t fix16_t;
+typedef uint16_t ufix16_t;
+
+typedef int32_t fix32_t;
+typedef uint32_t ufix32_t;
 
 /*
 FUNCTION:
@@ -33,11 +36,11 @@ DESCRIPTION:
 	8.16 bit accuracy.
 */
 
-fixed_t FixedSqrtHP(fixed_t n); // High Precision (8.16)
+fix32_t FixedSqrtHP(fix32_t n); // High Precision (8.16)
 
-fixed_t FixedMul(fixed_t a, fixed_t b);
-fixed_t FixedDiv2(fixed_t a, fixed_t b);
-fixed_t FixedScale(fixed_t orig, fixed_t factor, fixed_t divisor);
-fixed_t FixedMulShift(fixed_t a, fixed_t b, fixed_t shift);
+fix32_t FixedMul(fix32_t a, fix32_t b);
+fix32_t FixedDiv2(fix32_t a, fix32_t b);
+fix32_t FixedScale(fix32_t orig, fix32_t factor, fix32_t divisor);
+fix32_t FixedMulShift(fix32_t a, fix32_t b, fix32_t shift);
 
 #endif

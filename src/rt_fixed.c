@@ -2,13 +2,13 @@
 
 #include "rt_fixed.h"
 
-fixed_t FixedMul(fixed_t a, fixed_t b)
+fix32_t FixedMul(fix32_t a, fix32_t b)
 {
 	int64_t scratch1 = (int64_t)a * (int64_t)b + (int64_t)0x8000;
 	return (scratch1 >> 16) & 0xffffffff;
 }
 
-fixed_t FixedMulShift(fixed_t a, fixed_t b, fixed_t shift)
+fix32_t FixedMulShift(fix32_t a, fix32_t b, fix32_t shift)
 {
 	int64_t x = a;
 	int64_t y = b;
@@ -17,7 +17,7 @@ fixed_t FixedMulShift(fixed_t a, fixed_t b, fixed_t shift)
 	return (((uint64_t)z) >> shift) & 0xffffffff;
 }
 
-fixed_t FixedDiv2(fixed_t a, fixed_t b)
+fix32_t FixedDiv2(fix32_t a, fix32_t b)
 {
 	int64_t x = (signed int)a;
 	int64_t y = (signed int)b;
@@ -26,7 +26,7 @@ fixed_t FixedDiv2(fixed_t a, fixed_t b)
 	return (z) & 0xffffffff;
 }
 
-fixed_t FixedScale(fixed_t orig, fixed_t factor, fixed_t divisor)
+fix32_t FixedScale(fix32_t orig, fix32_t factor, fix32_t divisor)
 {
 	/*
 		int64_t x = orig;
@@ -42,18 +42,18 @@ fixed_t FixedScale(fixed_t orig, fixed_t factor, fixed_t divisor)
 	return (float)orig * factor / divisor;
 }
 
-fixed_t FixedSqrtHP(fixed_t n) // High Precision (8.16)
+fix32_t FixedSqrtHP(fix32_t n) // High Precision (8.16)
 {
 	/* This is more or less a direct C transliteration of the asm code.
 	   I've replaced right shifting with division, since right shifting
 	   signed values is undefined in ANSI C (though it usually works).
 	   ROTT does not use this routine heavily. */
-	ufixed_t root, mask, val;
-	fixed_t d;
+	ufix32_t root, mask, val;
+	fix32_t d;
 
 	root = 0;
 	mask = 0x40000000;
-	val = (ufixed_t)n;
+	val = (ufix32_t)n;
 hp1:
 	d = val;
 	d -= mask;
@@ -102,5 +102,5 @@ hp4:
 		goto hp3;
 hp6:
 
-	return (fixed_t)root;
+	return (fix32_t)root;
 }

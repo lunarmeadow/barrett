@@ -1268,7 +1268,7 @@ void PreCache(void)
 ======================
 */
 
-void CA_RLEWexpand(word* source, word* dest, long length, unsigned rlewtag)
+void CA_RLEWexpand(word* source, word* dest, int32_t length, unsigned rlewtag)
 {
 	word value, count, i;
 	word* end;
@@ -1443,9 +1443,9 @@ void ReadROTTMap(char* filename, int mapnum)
 {
 	RTLMAP RTLMap;
 	int filehandle;
-	long pos;
-	long compressed;
-	long expanded;
+	int32_t pos;
+	int32_t compressed;
+	int32_t expanded;
 	int plane;
 	byte* buffer;
 	size_t mapsoffset;
@@ -1790,9 +1790,9 @@ void GetMapInfo(mapfileinfo_t* mapinfo)
 void LoadTedMap(const char* extension, int mapnum)
 
 {
-	long pos;
-	long compressed;
-	long expanded;
+	int32_t pos;
+	int32_t compressed;
+	int32_t expanded;
 	int plane;
 	int i;
 	int maphandle;
@@ -2002,7 +2002,7 @@ void SetupWalls(void)
 			}
 			if ((loadedgame == false) && (MAPSPOT(i, j, 2) == 0xeeee))
 			{
-				_2Dpoint* tdptr;
+				vec2i_t* tdptr;
 
 				tdptr = &(MISCVARS->EPOP[MISCVARS->nextpop]);
 				tdptr->x = i;
@@ -5650,7 +5650,7 @@ void SetupRandomActors(void)
 	word *map, tile;
 	int starti, totalrandom = 0, count = 0, ambush, locindex, orig;
 	byte actorpresent[10] = {0}, index = 0, randomtype, used[100] = {0};
-	_2Dpoint randloc[100];
+	vec2i_t randloc[100];
 
 	map = mapplanes[1];
 	map += 5;

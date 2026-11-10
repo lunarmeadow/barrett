@@ -42,14 +42,14 @@ typedef struct sas
 {
 	int x, y, z;
 	int flags;
-	signed char ticcount;
+	int8_t ticcount;
 	int hitpoints;
-	short int shapenum;
-	signed char ammo;
-	signed char count;
-	signed char itemnumber;
-	short int areanumber;
-	short int whichstat;
+	int16_t shapenum;
+	int8_t ammo;
+	int8_t count;
+	int8_t itemnumber;
+	int16_t areanumber;
+	int16_t whichstat;
 	byte numanims;
 	int linked_to;
 } saved_stat_t;

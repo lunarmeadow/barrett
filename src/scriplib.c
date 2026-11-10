@@ -51,7 +51,7 @@ bool tokenready; // only true if UnGetToken was just called
 
 void LoadScriptFile(char* filename)
 {
-	long size;
+	int32_t size;
 
 	size = LoadFile(filename, (void**)&scriptbuffer);
 

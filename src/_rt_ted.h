@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _rt_ted_private
 #define _rt_ted_private
 
+#include "rt_def.h"
 #define MAXPRECACHE 3500
 
 #include "rt_actor.h"
@@ -46,7 +47,7 @@ typedef struct
 
 typedef struct
 {
-	short RLEWtag;
+	int16_t RLEWtag;
 	int headeroffsets[100];
 	byte tileinfo[1];
 } map_file_t;

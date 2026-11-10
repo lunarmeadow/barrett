@@ -68,7 +68,7 @@ int basemaxshade;
 int viewheight;
 int viewwidth;
 uint64_t heightnumerator;
-fixed_t scale;
+fix32_t scale;
 int screenofs;
 int centerx;
 int centery;
@@ -82,7 +82,7 @@ byte* redmap;
 byte* greenmap;
 byte* playermaps[MAXPLAYERCOLORS];
 // short  pixelangle[MAXVIEWWIDTH];
-short pixelangle[MAXSCREENWIDTH];
+int16_t pixelangle[MAXSCREENWIDTH];
 byte gammatable[GAMMAENTRIES];
 int gammaindex;
 int focallength = 160;
@@ -203,7 +203,7 @@ void SetViewDelta(void)
 	//  and sprite x calculations
 	//
 
-	scale = (fixed_t)((centerx / (float)160) * focallength);
+	scale = (fix32_t)((centerx / (float)160) * focallength);
 	//
 	// divide heightnumerator by a posts distance to get the posts height for
 	// the heightbuffer.  The pixel height is height>>HEIGHTFRACTION
@@ -254,8 +254,8 @@ void CalcProjection(void)
 		// start 1/2 pixel over, so viewangle bisects two middle pixels
 		intang = pangle[frac >> 16];
 		SwapIntelLong(&intang);
-		pixelangle[centerx - 1 - i] = (short)intang;
-		pixelangle[centerx + i] = (short)-intang;
+		pixelangle[centerx - 1 - i] = (int16_t)intang;
+		pixelangle[centerx + i] = (int16_t)-intang;
 		frac += (length * 65536 / centerx);
 	}
 	table = W_CacheLumpName("tables", PU_CACHE, CvtNull, 1);
@@ -596,9 +596,9 @@ void SetupLightLevels(void)
 		if (fog == 0)
 		{
 			lightsource = 1;
-			lights = Z_Malloc(MAPSIZE * MAPSIZE * (sizeof(unsigned long)),
+			lights = Z_Malloc(MAPSIZE * MAPSIZE * (sizeof(uint32_t)),
 							  PU_LEVEL, NULL);
-			memset(lights, 0, MAPSIZE * MAPSIZE * (sizeof(unsigned long)));
+			memset(lights, 0, MAPSIZE * MAPSIZE * (sizeof(uint32_t)));
 		}
 		else
 			Error(
