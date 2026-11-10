@@ -475,7 +475,7 @@ void US_PrintUnsigned(uint32_t n)
 {
 	char buffer[32];
 
-	US_Print(ultoa(n, buffer, 10));
+	US_Print(safe_ultoa(n, buffer, 10));
 }
 
 //******************************************************************************
@@ -488,7 +488,7 @@ void US_PrintSigned(int32_t n)
 {
 	char buffer[32];
 
-	US_Print(ltoa(n, buffer, 10));
+	US_Print(safe_ltoa(n, buffer, 10));
 }
 
 //******************************************************************************

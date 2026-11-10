@@ -2768,7 +2768,7 @@ void DrawStoredGame(byte* pic, int episode, int area)
 	else
 		level = area + 1;
 
-	ltoa(level, str, 10);
+	safe_ltoa(level, str, 10);
 	DrawMenuBufPropString(117, 128, str);
 	CurrentFont = tinyfont;
 

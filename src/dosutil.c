@@ -45,7 +45,7 @@ int32_t filelength(int handle)
 	return (int32_t)buf.st_size;
 }
 
-char* ultoa(uint32_t value, char* string, int radix)
+char* safe_ultoa(uint32_t value, char* string, int radix)
 {
 	switch (radix)
 	{
@@ -179,7 +179,7 @@ char* itoa(int value, char* string, int radix)
 	return string;
 }
 
-char* ltoa(int32_t value, char* string, int radix)
+char* safe_ltoa(int32_t value, char* string, int radix)
 {
 	switch (radix)
 	{

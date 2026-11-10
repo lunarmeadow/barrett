@@ -134,8 +134,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 char* strupr(char*);
 char* itoa(int, char*, int);
-char* ltoa(int32_t, char*, int);
-char* ultoa(uint32_t, char*, int);
+char* safe_ltoa(int32_t, char*, int);
+char* safe_ultoa(uint32_t, char*, int);
 char getch(void);
 int32_t filelength(int handle);
 #else
