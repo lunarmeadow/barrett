@@ -31,6 +31,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef ___MULTIVC_H
 #define ___MULTIVC_H
 
+#include <stdint.h>
 #define TRUE  (1 == 1)
 #define FALSE (!TRUE)
 
@@ -137,12 +138,12 @@ typedef struct
 
 typedef struct
 {
-	unsigned char left;
-	unsigned char right;
+	uint8_t left;
+	uint8_t right;
 } Pan;
 
-typedef signed short MONO16;
-typedef signed char MONO8;
+typedef int16_t MONO16;
+typedef int8_t MONO8;
 
 typedef struct
 {
@@ -162,33 +163,33 @@ typedef struct
 {
 	//   MONO8 left;
 	//   MONO8 right;
-	char left;
-	char right;
+	int8_t left;
+	int8_t right;
 } STEREO8;
 
 typedef struct
 {
-	char RIFF[4];
-	unsigned long file_size;
-	char WAVE[4];
-	char fmt[4];
-	unsigned long format_size;
+	uint8_t RIFF[4];
+	uint32_t file_size;
+	uint8_t WAVE[4];
+	uint8_t fmt[4];
+	uint32_t format_size;
 } riff_header;
 
 typedef struct
 {
-	unsigned short wFormatTag;
-	unsigned short nChannels;
-	unsigned long nSamplesPerSec;
-	unsigned long nAvgBytesPerSec;
-	unsigned short nBlockAlign;
-	unsigned short nBitsPerSample;
+	uint16_t wFormatTag;
+	uint16_t nChannels;
+	uint32_t nSamplesPerSec;
+	uint32_t nAvgBytesPerSec;
+	uint16_t nBlockAlign;
+	uint16_t nBitsPerSample;
 } format_header;
 
 typedef struct
 {
-	unsigned char DATA[4];
-	unsigned long size;
+	uint8_t DATA[4];
+	uint32_t size;
 } data_header;
 
 typedef MONO8 VOLUME8[256];
