@@ -116,7 +116,8 @@ void GetToken(bool crossline)
 // skip space
 //
 skipspace:
-	while (*script_p <= 32)
+	// asan fix: don't dereference possibly OOB char ptr
+	while (script_p < scriptend_p && *script_p <= 32)
 	{
 		if (script_p >= scriptend_p)
 		{
@@ -149,12 +150,14 @@ skipspace:
 		if (!crossline)
 			Error("Line %i is incomplete\nin file %s\n", scriptline,
 				  scriptfilename);
-		while (*script_p++ != '\n')
-			if (script_p >= scriptend_p)
-			{
-				endofscript = true;
-				return;
-			}
+		while (script_p < scriptend_p && *script_p != '\n')
+			script_p++;
+
+		if (script_p >= scriptend_p)
+		{
+			endofscript = true;
+			return;
+		}
 		goto skipspace;
 	}
 

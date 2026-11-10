@@ -4382,11 +4382,15 @@ void HeatSeek(objtype* ob)
 		{
 			tactor = (objtype*)ob->target;
 
-			if ((!tactor->nextactive) && (!tactor->prevactive))
-			{
-				ob->target = NULL;
-				return;
-			}
+			// ! TODO: this is broken, i believe the purpose is to find heatseekers
+			// that are detached from the object linked list?
+			// but as such this causes an ASAN error as those become freed or dangling or whatever
+			// heatseeker still works ok otherwise from my limited testing
+			// if ((!tactor->nextactive) && (!tactor->prevactive))
+			// {
+			// 	ob->target = NULL;
+			// 	return;
+			// }
 			dx = tactor->x - ob->x;
 			dy = ob->y - tactor->y;
 			dz = ob->z - tactor->z;
