@@ -5580,7 +5580,8 @@ void SetupGameLevel(void)
 		SetModemLightLevel(gamestate.BattleOptions.LightLevel);
 	}
 
-	if (player != NULL)
+	// ! TODO: this sucks
+	if (player != NULL && !loadedgame)
 	{
 		for (i = 0; i < 100; i++)
 		{
