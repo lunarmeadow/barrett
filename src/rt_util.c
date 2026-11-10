@@ -620,7 +620,7 @@ void* SafeMalloc(int32_t size)
 		Error("Called SafeMalloc without starting zone memory\n");
 	ptr = Z_Malloc(size, PU_STATIC, NULL);
 
-	if (!ptr)
+	if (!ptr && size)
 		Error("SafeMalloc failure for %d bytes", size);
 
 	return ptr;
@@ -634,7 +634,7 @@ void* SafeLevelMalloc(int32_t size)
 		Error("Called SafeLevelMalloc without starting zone memory\n");
 	ptr = Z_LevelMalloc(size, PU_STATIC, NULL);
 
-	if (!ptr)
+	if (!ptr && size)
 		Error("SafeLevelMalloc failure for %d bytes", size);
 
 	return ptr;
@@ -642,10 +642,8 @@ void* SafeLevelMalloc(int32_t size)
 
 void SafeFree(void* ptr)
 {
-	if (ptr == NULL)
-		Error("SafeFree : Tried to free a freed pointer\n");
-
-	Z_Free(ptr);
+	if (ptr != NULL)
+		Z_Free(ptr);
 }
 
 /*
