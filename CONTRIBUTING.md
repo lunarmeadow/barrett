@@ -6,10 +6,16 @@ Thank you for your interest in contributing to Barrett.
 
 Please be polite and patient with the maintainers. The maintainers are often busy with little spare time, or take breaks from Barrett's development. 
 
-## LLM Policy
+## AI Policy
 
-Please refrain from submitting LLM-generated contributions. PRs (code OR description/comments) or issues written by an LLM will be rejected.
-This policy does not extend to traditional, pre-LLM code generators, such as IntelliSense auto-complete or suggestions.
+Any contributions created in-part or in-whole by generative AI are strictly forbidden and will be rejected.
+This restriction extends to all aspects of a submission, such as code, PR descriptions, or issues.
+
+This restriction *does not* extend to standard algorithmic code generators or analyzers such as:
+
+- Algorithmic auto-completion & suggestions (e.g. IntelliSense)
+- Linters & formatters
+- Macros, templates, snippets or scripts
 
 ## Bug Reporting & Issues
 
@@ -84,7 +90,9 @@ For non-fatal bugs, please also describe any odd behaviour exhibited by Barrett 
 
 Barrett commits are labelled by scope as such:
 
-<scope>: <description>
+`scope: description`
+
+e.g. `fix: asan crashes on new column funcs`
 
 Generally for single file changes, the scope is simply the name of the file, including the .c or .h extension.
 
