@@ -103,7 +103,7 @@ static const int NORMALYZANGLE = 0;
 
 int controlbuf[3];
 int buttonbits;
-extern _2Dpoint LASTSOUND;
+extern vec2i_t LASTSOUND;
 //
 // player state info
 //

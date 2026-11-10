@@ -2002,7 +2002,7 @@ void SetupWalls(void)
 			}
 			if ((loadedgame == false) && (MAPSPOT(i, j, 2) == 0xeeee))
 			{
-				_2Dpoint* tdptr;
+				vec2i_t* tdptr;
 
 				tdptr = &(MISCVARS->EPOP[MISCVARS->nextpop]);
 				tdptr->x = i;
@@ -5646,7 +5646,7 @@ void SetupRandomActors(void)
 	word *map, tile;
 	int starti, totalrandom = 0, count = 0, ambush, locindex, orig;
 	byte actorpresent[10] = {0}, index = 0, randomtype, used[100] = {0};
-	_2Dpoint randloc[100];
+	vec2i_t randloc[100];
 
 	map = mapplanes[1];
 	map += 5;

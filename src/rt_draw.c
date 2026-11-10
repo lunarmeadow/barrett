@@ -121,10 +121,10 @@ int skyScalers[MAXSCREENHEIGHT];
 // refresh variables
 //
 
-fixed_t viewx, viewy; // the focal point
+fix32_t viewx, viewy; // the focal point
 int viewangle;
 int c_startx, c_starty;
-fixed_t viewsin, viewcos;
+fix32_t viewsin, viewcos;
 int tics;
 
 //
@@ -154,7 +154,7 @@ static int nonbobpheight;
 
 static visobj_t* sortedvislist[MAXVISIBLE];
 
-static const fixed_t mindist = 0x1000;
+static const fix32_t mindist = 0x1000;
 
 static int weaponbobx, weaponboby;
 
@@ -278,7 +278,7 @@ void BuildTables(void)
 	memcpy(&gammatable[0], ptr, length * sizeof(byte));
 	table = W_CacheLumpName("tables", PU_CACHE, CvtNull, 1);
 
-	costable = (fixed_t*)&(sintable[FINEANGLES / 4]);
+	costable = (fix32_t*)&(sintable[FINEANGLES / 4]);
 
 	wstart = W_GetNumForName("WALLSTRT");
 #if (SHAREWARE == 0)
@@ -317,7 +317,7 @@ void BuildTables(void)
 bool TransformObject(int x, int y, int* dispx, int* dispheight)
 {
 
-	fixed_t gx, gy, gxt, gyt, nx, ny;
+	fix32_t gx, gy, gxt, gyt, nx, ny;
 
 	//
 	// translate point to view centered coordinates
@@ -367,8 +367,8 @@ void TransformPoint(int x, int y, int* screenx, int* height, int* texture,
 					int vertical)
 {
 
-	fixed_t gxt, gyt, nx, ny;
-	fixed_t gxtt, gytt;
+	fix32_t gxt, gyt, nx, ny;
+	fix32_t gxtt, gytt;
 	int gx, gy;
 	int vx, vy;
 	int svs, svc;
@@ -498,8 +498,8 @@ bool TransformSimplePoint(int x, int y, int* screenx, int* height,
 							 int* texture, int vertical)
 {
 
-	fixed_t gxt, gyt, nx, ny;
-	fixed_t gxtt, gytt;
+	fix32_t gxt, gyt, nx, ny;
+	fix32_t gxtt, gytt;
 	int gx, gy;
 
 	//
@@ -622,7 +622,7 @@ bool TransformPlane(int x1, int y1, int x2, int y2, visobj_t* plane)
 
 int CalcHeight(void)
 {
-	fixed_t gxt, gyt, nx;
+	fix32_t gxt, gyt, nx;
 	long gx, gy;
 
 

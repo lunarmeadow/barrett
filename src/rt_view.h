@@ -90,7 +90,7 @@ extern int basemaxshade;
 extern int viewheight;
 extern int viewwidth;
 extern uint64_t heightnumerator;
-extern fixed_t scale;
+extern fix32_t scale;
 extern int screenofs;
 extern int centerx;
 extern int centery;

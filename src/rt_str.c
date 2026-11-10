@@ -497,16 +497,14 @@ void US_PrintSigned(long int n)
 //
 //******************************************************************************
 
-void USL_PrintInCenter(const char* s, Rect r)
+void USL_PrintInCenter(const char* s, SDL_Rect *r)
 {
-	int w, h, rw, rh;
+	int w, h;
 
 	USL_MeasureString(s, &w, &h, CurrentFont);
-	rw = r.lr.x - r.ul.x;
-	rh = r.lr.y - r.ul.y;
 
-	px = r.ul.x + ((rw - w) / 2);
-	py = r.ul.y + ((rh - h) / 2);
+	px = r->x + ((r->w - w) / 2);
+	py = r->y + ((r->h - h) / 2);
 	USL_DrawString(s);
 }
 
@@ -518,14 +516,14 @@ void USL_PrintInCenter(const char* s, Rect r)
 
 void US_PrintCentered(const char* s)
 {
-	Rect r;
+	SDL_Rect r;
 
-	r.ul.x = WindowX;
-	r.ul.y = WindowY;
-	r.lr.x = r.ul.x + WindowW;
-	r.lr.y = r.ul.y + WindowH;
+	r.x = WindowX;
+	r.y = WindowY;
+	r.w = WindowW;
+	r.h = WindowH;
 
-	USL_PrintInCenter(s, r);
+	USL_PrintInCenter(s, &r);
 }
 
 //******************************************************************************

@@ -1084,7 +1084,7 @@ void LoadStatics(byte* buffer, int size)
 	}
 }
 
-void Set_NewZ_to_MapValue(fixed_t* newz, int zoffset, const char* errorstr,
+void Set_NewZ_to_MapValue(fix32_t* newz, int zoffset, const char* errorstr,
 						  int tilex, int tiley)
 {
 	int zf, z;
@@ -1326,7 +1326,7 @@ void SpawnStatic(int tilex, int tiley, int mtype, int zoffset)
 
 		if (temp->itemnumber == stat_dariantouch)
 		{
-			_2Dpoint* tdptr;
+			vec2i_t* tdptr;
 
 			tdptr = &(MISCVARS->ETOUCH[MISCVARS->nexttouch]);
 

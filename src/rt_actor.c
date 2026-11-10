@@ -92,7 +92,7 @@ int objcount;
 
 byte RANDOMACTORTYPE[10];
 
-_2Dpoint SNAKEPATH[512];
+vec2i_t SNAKEPATH[512];
 actor_misc_flags mstruct, *MISCVARS = &mstruct;
 int angletodir[ANGLES];
 objtype* new;
@@ -1602,7 +1602,7 @@ void SpawnDisk(int tilex, int tiley, int type, bool master)
 			// new->flags |= FL_SYNCED;
 			zoffset = MAPSPOT(tilex, tiley, 2);
 			if ((zoffset & 0xff00) == 0xb000)
-				Set_NewZ_to_MapValue((fixed_t*)(&(new->temp2)), zoffset,
+				Set_NewZ_to_MapValue((fix32_t*)(&(new->temp2)), zoffset,
 									 "elev disk", tilex, tiley);
 			else
 				new->temp2 = 32;
@@ -1613,7 +1613,7 @@ void SpawnDisk(int tilex, int tiley, int type, bool master)
 			SpawnNewObj(tilex, tiley, &s_pathdisk, diskobj);
 			zoffset = MAPSPOT(tilex, tiley, 2);
 			if ((zoffset & 0xff00) == 0xb000)
-				Set_NewZ_to_MapValue((fixed_t*)(&(new->z)), zoffset, "path disk",
+				Set_NewZ_to_MapValue((fix32_t*)(&(new->z)), zoffset, "path disk",
 									 tilex, tiley);
 
 			new->dir = (type - 1) << 1;
@@ -7682,7 +7682,7 @@ hiding_status HoleStatus(objtype* ob)
 	int i, tx, ty, dist, noneleft, invisible, curr, min;
 	thing_point dummy, *dptr = &dummy;
 	objtype* tactor;
-	_2Dpoint* tdptr;
+	vec2i_t* tdptr;
 
 	min = 0x7fffffff;
 	noneleft = 1;

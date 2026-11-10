@@ -26,7 +26,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _rt_str_public
 #define _rt_str_public
 
-#include "develop.h"
+#include "SDL.h"
 #include "lumpy.h"
 
 //***************************************************************************
@@ -42,21 +42,6 @@ extern int fontcolor;
 // TYPEDEFS
 //
 //***************************************************************************
-
-typedef struct
-{
-	int x, y;
-} Point;
-
-typedef struct
-{
-	int x, y, w, h, px, py;
-} WindowRec; // Record used to save & restore screen windows
-
-typedef struct
-{
-	Point ul, lr;
-} Rect;
 
 //***************************************************************************
 //
@@ -84,7 +69,7 @@ void US_Print(const char* s);
 void US_BufPrint(const char* s);
 void US_PrintUnsigned(unsigned long int n);
 void US_PrintSigned(long int n);
-void USL_PrintInCenter(const char* s, Rect r);
+void USL_PrintInCenter(const char* s, SDL_Rect *r);
 void US_PrintCentered(const char* s);
 void US_CPrintLine(const char* s);
 void US_CPrint(const char* s);

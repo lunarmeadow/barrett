@@ -23,7 +23,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "develop.h"
 
 #define MINFRAGMENT	  64
-#define DPMI_INT	  0x31
 #define MAXMEMORYSIZE 900000000
 
 #define LEVELZONESIZE 512000
