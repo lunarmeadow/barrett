@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "rt_game.h"
 #include "_rt_game.h"
 #include "rt_menu.h"
+#include "rt_stat.h"
 #include "z_zone.h"
 #include "w_wad.h"
 #include "lumpy.h"
@@ -4912,7 +4913,7 @@ bool LoadTheGame(int num, gamestorage_t* game)
 	if (game->version != ROTTVERSION)
 		return false;
 
-	// Fix for crash when loading a save on a custom map pack
+	//Fix for crash when loading a save on a custom map pack
 	if (GameLevels.avail)
 	{
 		memcpy(&game->info.file, &GameLevels.file, sizeof(GameLevels.file));
@@ -4937,6 +4938,9 @@ bool LoadTheGame(int num, gamestorage_t* game)
 
 	// Free up the current level
 	Z_FreeTags(PU_LEVELSTRUCT, PU_LEVELEND); // Free current level
+
+	// fix, was not reallocating statics on load
+	InitStaticList();
 
 	gamestate.battlemode = battle_StandAloneGame;
 	BATTLE_SetOptions(&BATTLE_Options[battle_StandAloneGame]);
