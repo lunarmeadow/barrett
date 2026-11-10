@@ -596,9 +596,9 @@ void SetupLightLevels(void)
 		if (fog == 0)
 		{
 			lightsource = 1;
-			lights = Z_Malloc(MAPSIZE * MAPSIZE * (sizeof(unsigned long)),
+			lights = Z_Malloc(MAPSIZE * MAPSIZE * (sizeof(uint32_t)),
 							  PU_LEVEL, NULL);
-			memset(lights, 0, MAPSIZE * MAPSIZE * (sizeof(unsigned long)));
+			memset(lights, 0, MAPSIZE * MAPSIZE * (sizeof(uint32_t)));
 		}
 		else
 			Error(

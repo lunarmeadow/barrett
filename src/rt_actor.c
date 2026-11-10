@@ -79,7 +79,7 @@ short colheight[15];
 
 byte deathshapeoffset[8] = {0, 7, 7, 8, 8, 9, 8, 7};
 
-unsigned long MAXFUNCTION, MINFUNCTION, MAXSTATE, MINSTATE;
+uintptr_t MAXFUNCTION, MINFUNCTION, MAXSTATE, MINSTATE;
 
 objtype* PLAYER0MISSILE;
 objtype* SCREENEYE;

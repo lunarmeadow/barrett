@@ -77,7 +77,7 @@ extern visobj_t *visptr, *visstep, *farthest;
 
 extern long xintercept, yintercept;
 extern byte mapseen[MAPSIZE][MAPSIZE];
-extern unsigned long* lights;
+extern uint32_t* lights;
 
 extern int hp_startfrac;
 extern int hp_srcstep;
@@ -96,7 +96,7 @@ extern int firstcoloffset;
 
 #define LightSourceAt(x, y) (*(lights + ((x) << 7) + (y)))
 #define SetLight(x, y, level)                                                  \
-	(LightSourceAt((x), (y)) |= (unsigned long)(level))
+	(LightSourceAt((x), (y)) |= (uint32_t)(level))
 
 //=========================== functions =============================
 

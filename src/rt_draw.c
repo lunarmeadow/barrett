@@ -74,7 +74,7 @@ byte* shadingtable;
 word tilemap[MAPSIZE][MAPSIZE]; // wall values only
 byte spotvis[MAPSIZE][MAPSIZE];
 byte mapseen[MAPSIZE][MAPSIZE];
-unsigned long* lights;
+uint32_t* lights;
 
 int wstart;
 

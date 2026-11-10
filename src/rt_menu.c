@@ -5870,7 +5870,7 @@ bool SliderMenu(int* number, int upperbound, int lowerbound, int erasex,
 	patch_t* shape;
 	bool returnval;
 	bool moved;
-	unsigned long scale;
+	uint32_t scale;
 	int exit;
 	int range;
 	int timer;
@@ -6013,7 +6013,7 @@ bool BoundSliderMenu(int* number, int upperbound, int lowerbound, int erasex,
 	char boundstr[64];
 	bool returnval;
 	bool moved;
-	unsigned long scale;
+	uint32_t scale;
 	int exit;
 	int range;
 	int timer;
@@ -6183,7 +6183,7 @@ bool ConditionalLimitSliderMenu(int* number, int upperbound, int lowerbound, int
 	char boundstr[64];
 	bool returnval;
 	bool moved;
-	unsigned long scale;
+	uint32_t scale;
 	int exit;
 	int range;
 	int timer;
@@ -6377,7 +6377,7 @@ bool ColourSliderMenu(int* number, int erasex,
 	patch_t* shape;
 	bool returnval;
 	bool moved;
-	unsigned long scale;
+	uint32_t scale;
 	int exit;
 	int range;
 	int timer;
@@ -6538,7 +6538,7 @@ bool AspectSliderMenu(int* number, int erasex,
 	patch_t* shape;
 	bool returnval;
 	bool moved;
-	unsigned long scale;
+	uint32_t scale;
 	int exit;
 	int range;
 	int timer;
