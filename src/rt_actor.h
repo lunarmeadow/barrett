@@ -220,7 +220,7 @@ typedef struct objstruct
 	fix32_t drawx, drawy;
 	classtype obclass;
 	statetype* state;
-	signed char door_to_open;
+	int8_t door_to_open;
 	byte areanumber;
 	int16_t shapeoffset;
 	int targettilex, targettiley;

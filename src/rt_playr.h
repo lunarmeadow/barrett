@@ -77,7 +77,7 @@ typedef enum
 typedef struct atkinf
 {
 	attack_action attack;
-	char mtics, frame; // attack is 1 for gun, 2 for knife, 3 for machine guns,
+	int8_t mtics, frame; // attack is 1 for gun, 2 for knife, 3 for machine guns,
 	// 4 for chaingun (orig. game)
 } attack_t;
 
@@ -96,7 +96,7 @@ typedef struct
 	int lives;
 	int health;
 	int triads;
-	signed char ammo;
+	int8_t ammo;
 	int16_t poweruptime;
 	int16_t protectiontime;
 	int new_weapon;
@@ -104,7 +104,7 @@ typedef struct
 	int weapon;
 	int missileweapon;
 	int bulletweapon;
-	signed char HASBULLETWEAPON[3];
+	int8_t HASBULLETWEAPON[3];
 	int attackframe, attackcount, weaponframe;
 	byte player;
 	int topspeed;
@@ -121,8 +121,8 @@ typedef struct
 	int16_t weaponheight;
 	byte weaponx, weapony;
 	word batblast;
-	signed char NETCAPTURED;
-	signed char HASKNIFE;
+	int8_t NETCAPTURED;
+	int8_t HASKNIFE;
 	int oldweapon, oldmissileweapon;
 	int16_t weapondowntics, weaponuptics;
 	int soundtime;

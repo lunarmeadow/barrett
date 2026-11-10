@@ -4026,7 +4026,7 @@ void SaveDoors(byte** buf, int* size)
 	int doorsave;
 	byte doorflag;
 	byte doorlocked;
-	signed char dooreindex;
+	int8_t dooreindex;
 	int16_t doortime;
 	int unitsize;
 	byte* ptr;
@@ -4090,7 +4090,7 @@ void LoadDoors(byte* buf, int size)
 	int doorsave;
 	byte doorflag;
 	byte doorlocked;
-	signed char dooreindex;
+	int8_t dooreindex;
 	int16_t doortime;
 	byte* ptr;
 	int unitsize;

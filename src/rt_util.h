@@ -151,10 +151,10 @@ int _dos_findnext(struct find_t* f);
 
 struct dosdate_t
 {
-	unsigned char day;
-	unsigned char month;
-	unsigned int year;
-	unsigned char dayofweek;
+	uint8_t day;
+	uint8_t month;
+	uint32_t year;
+	uint8_t dayofweek;
 };
 
 void _dos_getdate(struct dosdate_t* date);

@@ -244,8 +244,8 @@ typedef struct sat
 
 	byte areanumber;
 	byte obclass;
-	signed char door_to_open;
-	signed char dir;
+	int8_t door_to_open;
+	int8_t dir;
 
 } saved_actor_t;
 

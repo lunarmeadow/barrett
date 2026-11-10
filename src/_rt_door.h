@@ -20,12 +20,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _rt_door_private
 #define _rt_door_private
 
+#include <stdint.h>
 #define OPENTICS 165
 
 typedef struct tp
 {
-	signed char actionindex;
-	signed char swapactionindex;
+	int8_t actionindex;
+	int8_t swapactionindex;
 	int whichobj;
 	byte tictime;
 	byte ticcount;
