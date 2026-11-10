@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -133,9 +133,9 @@ extern int spritestop;
 extern int fog;
 extern int lightsource;
 extern int SNAKELEVEL;
-extern boolean insetupgame;
+extern bool insetupgame;
 extern char LevelName[80];
-extern boolean ISRTL;
+extern bool ISRTL;
 
 void PreCacheGroup(int, int, int); // added type
 void AssignTeams(void);
@@ -176,8 +176,8 @@ void Illuminate();
 
 int GetSongForLevel(void);
 void CheckHolidays(void);
-boolean IsChristmas(void);
+bool IsChristmas(void);
 
-boolean DoPanicMapping(void);
+bool DoPanicMapping(void);
 
 #endif

@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -58,9 +58,9 @@ static int titleshadedir = 1;
 static int titleyoffset = 0;
 static char titlestring[40] = "\0";
 static int readytoflip;
-static boolean MenuBufStarted = false;
+static bool MenuBufStarted = false;
 static int mindist = 0x2700;
-static boolean BackgroundDrawn = false;
+static bool BackgroundDrawn = false;
 
 static plane_t planelist[MAXPLANES], *planeptr;
 
@@ -120,8 +120,8 @@ void GetPoint(int x1, int y1, int px, int py, int* screenx, int* height,
 			  int angle)
 {
 
-	fixed gxt, gyt, nx, ny;
-	fixed gxtt, gytt;
+	fixed_t gxt, gyt, nx, ny;
+	fixed_t gxtt, gytt;
 	int gx, gy;
 
 	//
@@ -495,7 +495,7 @@ void SetupMenuBuf(void)
 //
 //******************************************************************************
 
-void PositionMenuBuf(int angle, int distance, boolean drawbackground)
+void PositionMenuBuf(int angle, int distance, bool drawbackground)
 {
 	int px, py;
 	font_t* oldfont;
@@ -1032,7 +1032,7 @@ void DrawTMenuBufBox(int x, int y, int width, int height)
 //
 //******************************************************************************
 
-void DrawTMenuBufHLine(int x, int y, int width, boolean up)
+void DrawTMenuBufHLine(int x, int y, int width, bool up)
 {
 	byte* buffer;
 	byte* buf;
@@ -1089,7 +1089,7 @@ void DrawTMenuBufHLine(int x, int y, int width, boolean up)
 //
 //******************************************************************************
 
-void DrawTMenuBufVLine(int x, int y, int height, boolean up)
+void DrawTMenuBufVLine(int x, int y, int height, bool up)
 {
 	byte* buffer;
 	byte* buf;

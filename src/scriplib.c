@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -38,8 +38,8 @@ char name[MAXTOKEN * 2];
 char scriptfilename[512];
 char *scriptbuffer, *script_p, *scriptend_p;
 int scriptline;
-boolean endofscript;
-boolean tokenready; // only true if UnGetToken was just called
+bool endofscript;
+bool tokenready; // only true if UnGetToken was just called
 
 /*
 ==============
@@ -93,7 +93,7 @@ void UnGetToken(void)
 ==============
 */
 
-void GetToken(boolean crossline)
+void GetToken(bool crossline)
 {
 	char* token_p;
 
@@ -184,7 +184,7 @@ skipspace:
 ==============
 */
 
-void GetTokenEOL(boolean crossline)
+void GetTokenEOL(bool crossline)
 {
 	char* name_p;
 
@@ -277,7 +277,7 @@ skipspace:
 ==============
 */
 
-boolean TokenAvailable(void)
+bool TokenAvailable(void)
 {
 	char* search_p;
 

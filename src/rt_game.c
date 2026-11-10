@@ -120,8 +120,8 @@ static int powerupheight;
 static int protectiontime;
 static int protectionheight;
 
-static boolean EndLevelStuff = false;
-static boolean borderset = false;
+static bool EndLevelStuff = false;
+static bool borderset = false;
 static int oldsec = -1;
 
 static pic_t* BkPic;
@@ -141,7 +141,7 @@ extern Queue* sdl_draw_obj_queue;
 extern void VL_MemToScreenClipped(byte* source, int width, int height, int x,
 								  int y);
 void DrawPPic(int xpos, int ypos, int width, int height, byte* src, int num,
-			  boolean up, boolean bufferofsonly);
+			  bool up, bool bufferofsonly);
 extern void MoveScreenUpLeft();
 extern void MoveScreenUpRight();
 extern void MoveScreenDownLeft();
@@ -152,7 +152,7 @@ extern void MoveScreenDownRight();
 //
 //******************************************************************************
 
-void V_ReDrawBkgnd(int x, int y, int width, int height, boolean shade)
+void V_ReDrawBkgnd(int x, int y, int width, int height, bool shade)
 {
 	byte* src;
 	byte* dest;
@@ -357,22 +357,22 @@ extern int hudRescaleFactor;
 // DrawPlayScreen ()
 //
 //******************************************************************************
-void DrawPlayScreen(boolean bufferofsonly)
+void DrawPlayScreen(bool bufferofsonly)
 {
 	pic_t* shape;
 
 	int shapenum;
 
 	// figure out where the middle point of the status bar should be for top bar
-	topBarCenterOffsetX = (iGLOBAL_SCREENWIDTH - 320) >> 1;
+	topBarCenterOffsetX = (FRAMEBUFFERWIDTH - 320) >> 1;
 
 	if (SHOW_TOP_STATUS_BAR())
 	{
-		if (iGLOBAL_SCREENWIDTH > 320 || iGLOBAL_SCREENHEIGHT > 200)
+		if (FRAMEBUFFERWIDTH > 320 || FRAMEBUFFERHEIGHT > 200)
 		{
 			shape = (pic_t*)W_CacheLumpName("backtile", PU_CACHE, Cvt_pic_t, 1);
 
-			DrawTiledRegion(0, 0, iGLOBAL_SCREENWIDTH, 16 * hudRescaleFactor, 0,
+			DrawTiledRegion(0, 0, FRAMEBUFFERWIDTH, 16 * hudRescaleFactor, 0,
 							16, shape);
 		}
 		shape = (pic_t*)W_CacheLumpName("stat_bar", PU_CACHE, Cvt_pic_t, 1);
@@ -389,31 +389,31 @@ void DrawPlayScreen(boolean bufferofsonly)
 	{
 		shape = (pic_t*)W_CacheLumpName("bottbar", PU_CACHE, Cvt_pic_t, 1);
 
-		if (iGLOBAL_SCREENWIDTH > 320 || iGLOBAL_SCREENHEIGHT > 200)
+		if (FRAMEBUFFERWIDTH > 320 || FRAMEBUFFERHEIGHT > 200)
 		{
 			shape = (pic_t*)W_CacheLumpName("backtile", PU_CACHE, Cvt_pic_t, 1);
 
-			DrawTiledRegion(0, iGLOBAL_SCREENHEIGHT - 16 * hudRescaleFactor,
-							iGLOBAL_SCREENWIDTH, 13 * hudRescaleFactor, 10, 10,
+			DrawTiledRegion(0, FRAMEBUFFERHEIGHT - 16 * hudRescaleFactor,
+							FRAMEBUFFERWIDTH, 13 * hudRescaleFactor, 10, 10,
 							shape);
-			// DrawTiledRegion( 0, iGLOBAL_SCREENHEIGHT - 29*hudRescaleFactor,
-			// iGLOBAL_SCREENWIDTH, 3*hudRescaleFactor, 10,10, shape );
+			// DrawTiledRegion( 0, FRAMEBUFFERHEIGHT - 29*hudRescaleFactor,
+			// FRAMEBUFFERWIDTH, 3*hudRescaleFactor, 10,10, shape );
 
 			// apparently the line below was causing segfaults on linux...
 
-			// DrawTiledRegion( 0, iGLOBAL_SCREENHEIGHT - 16*hudRescaleFactor,
-			// iGLOBAL_SCREENWIDTH, 16*hudRescaleFactor, 34,32, shape );
+			// DrawTiledRegion( 0, FRAMEBUFFERHEIGHT - 16*hudRescaleFactor,
+			// FRAMEBUFFERWIDTH, 16*hudRescaleFactor, 34,32, shape );
 
 			shape = (pic_t*)W_CacheLumpName("bottbar", PU_CACHE, Cvt_pic_t, 1);
 
 			// enqueue(sdl_draw_obj_queue, shape);
 
-			// GameMemToScreen( shape, topBarCenterOffsetX, iGLOBAL_SCREENHEIGHT
+			// GameMemToScreen( shape, topBarCenterOffsetX, FRAMEBUFFERHEIGHT
 			// - 16, bufferofsonly ); //using topBarCenterOffsetX since bottbar
 			// dims == statbar dims
 		}
 
-		GameMemToScreen(shape, topBarCenterOffsetX, iGLOBAL_SCREENHEIGHT - 16,
+		GameMemToScreen(shape, topBarCenterOffsetX, FRAMEBUFFERHEIGHT - 16,
 						bufferofsonly); // using topBarCenterOffsetX since
 										// bottbar dims == statbar dims
 
@@ -426,8 +426,8 @@ void DrawPlayScreen(boolean bufferofsonly)
 		{
 			shape = (pic_t*)W_CacheLumpName("demo", PU_CACHE, Cvt_pic_t, 1);
 
-			DrawPPic((iGLOBAL_SCREENWIDTH - (shape->width << 2)),
-					 (iGLOBAL_SCREENHEIGHT - shape->height) >> 1, shape->width,
+			DrawPPic((FRAMEBUFFERWIDTH - (shape->width << 2)),
+					 (FRAMEBUFFERHEIGHT - shape->height) >> 1, shape->width,
 					 shape->height, (byte*)&shape->data, 1, true,
 					 bufferofsonly);
 		}
@@ -561,7 +561,7 @@ void GetShortCodeName(char* dest, char* source, int maxwidth)
 // DrawKills ()
 //
 //******************************************************************************
-void DrawKills(boolean bufferofsonly)
+void DrawKills(bool bufferofsonly)
 {
 	int rank;
 	int xpos;
@@ -729,10 +729,10 @@ void DrawKills(boolean bufferofsonly)
 	//	 SetTextMode (  );
 	// Draw all the other losers
 	// #define KILLS_Y      176
-	iKILLS_Y = iGLOBAL_SCREENHEIGHT - 24;
+	iKILLS_Y = FRAMEBUFFERHEIGHT - 24;
 	// draw blank status  pic->width = 8;pic->height = 24
 	pic = blankfragpic;
-	for (temp = iGLOBAL_SCREENWIDTH - pic->width - 24; temp > pic->width;
+	for (temp = FRAMEBUFFERWIDTH - pic->width - 24; temp > pic->width;
 		 temp -= pic->width)
 	{
 		DrawPPic(temp, iKILLS_Y, pic->width, pic->height, (byte*)&pic->data, 1,
@@ -814,7 +814,7 @@ void DrawKills(boolean bufferofsonly)
 		// Advance to next position
 		xpos += KILLS_WIDTH;
 
-		if (xpos >= iGLOBAL_SCREENWIDTH)
+		if (xpos >= FRAMEBUFFERWIDTH)
 		{
 			break;
 		}
@@ -822,7 +822,7 @@ void DrawKills(boolean bufferofsonly)
 
 	for (rank = BATTLE_NumberOfTeams; rank <= MAXKILLBOXES; rank++)
 	{
-		if (xpos >= iGLOBAL_SCREENWIDTH)
+		if (xpos >= FRAMEBUFFERWIDTH)
 		{
 			break;
 		}
@@ -867,7 +867,7 @@ void DrawPlayers(void)
 	CurrentFont = tinyfont;
 
 	xpos =
-		(iGLOBAL_SCREENWIDTH - min(numplayers, MAXKILLBOXES) * KILLS_WIDTH) / 2;
+		(FRAMEBUFFERWIDTH - min(numplayers, MAXKILLBOXES) * KILLS_WIDTH) / 2;
 	// SetTextMode (  );//PLAYERSTATE
 	for (team = 0; team < BATTLE_NumberOfTeams; team++)
 	{
@@ -927,12 +927,12 @@ void DrawPlayers(void)
 					xpos += KILLS_WIDTH;
 				}
 			}
-			if (xpos >= iGLOBAL_SCREENWIDTH)
+			if (xpos >= FRAMEBUFFERWIDTH)
 			{
 				break;
 			}
 		}
-		if (xpos >= iGLOBAL_SCREENWIDTH)
+		if (xpos >= FRAMEBUFFERWIDTH)
 		{
 			break;
 		}
@@ -945,7 +945,7 @@ void DrawPlayers(void)
 //
 //******************************************************************************
 
-void StatusDrawPic(unsigned x, unsigned y, pic_t* nums, boolean bufferofsonly)
+void StatusDrawPic(unsigned x, unsigned y, pic_t* nums, bool bufferofsonly)
 {
 	DrawMPPic(x, y, nums->width, nums->height, 0, (byte*)&nums->data,
 			  bufferofsonly);
@@ -958,7 +958,7 @@ void StatusDrawPic(unsigned x, unsigned y, pic_t* nums, boolean bufferofsonly)
 //******************************************************************************
 
 void StatusDrawColoredPic(unsigned x, unsigned y, pic_t* nums,
-						  boolean bufferofsonly, int color)
+						  bool bufferofsonly, int color)
 {
 	DrawColoredMPPic(x, y, nums->width, nums->height, 0, (byte*)&nums->data,
 					 bufferofsonly, color);
@@ -972,7 +972,7 @@ void StatusDrawColoredPic(unsigned x, unsigned y, pic_t* nums,
 //
 //******************************************************************************
 
-void DrawGameString(int x, int y, const char* str, boolean bufferofsonly)
+void DrawGameString(int x, int y, const char* str, bool bufferofsonly)
 {
 	byte* tempbuf;
 
@@ -998,7 +998,7 @@ void DrawGameString(int x, int y, const char* str, boolean bufferofsonly)
 //
 //******************************************************************************
 
-void DrawNumber(int x, int y, int width, int which, boolean bufferofsonly)
+void DrawNumber(int x, int y, int width, int which, bool bufferofsonly)
 {
 	unsigned length, c;
 	char* str;
@@ -1132,7 +1132,7 @@ void HealPlayer(int points, objtype* ob)
 //
 //******************************************************************************
 
-void DrawLives(boolean bufferofsonly)
+void DrawLives(bool bufferofsonly)
 
 {
 	if (!SHOW_TOP_STATUS_BAR())
@@ -1167,7 +1167,7 @@ void GiveExtraMan(void)
 //
 //******************************************************************************
 
-void DrawScore(boolean bufferofsonly)
+void DrawScore(bool bufferofsonly)
 
 {
 	if (!SHOW_TOP_STATUS_BAR())
@@ -1276,77 +1276,6 @@ void GiveWeapon(objtype* ob, int weapon)
 	}
 }
 
-// LT added
-//******************************************************************************
-//
-//  GivePlayerAmmo ()
-//
-//******************************************************************************
-
-void GivePlayerAmmo(objtype* ob, statobj_t* item_pickup, int which)
-{
-	playertype* pstate;
-
-	M_LINKSTATE(ob, pstate);
-
-	int playerCurrentAmmo = pstate->ammo;
-
-	int ammoInItem = item_pickup->ammo;
-
-	int maxAmmoInWeapon = stats[item_pickup->itemnumber].ammo;
-
-	// printf("playerCurrentAmmo: %d \n", playerCurrentAmmo);
-	// printf("ammoInItem: %d \n", ammoInItem);
-	// printf("maxAmmoInWeapon: %d \n", maxAmmoInWeapon);
-
-	int newAmmoAmount = ammoInItem + playerCurrentAmmo;
-
-	if (newAmmoAmount > maxAmmoInWeapon)
-	{
-		ammoInItem = newAmmoAmount - maxAmmoInWeapon;
-		if (ammoInItem < 0)
-		{
-			Error("Ammo in item cannot be set to a negative number!");
-		}
-		item_pickup->ammo = ammoInItem;
-		newAmmoAmount = maxAmmoInWeapon;
-	}
-	else
-	{
-		ammoInItem = 0;
-	}
-	pstate->ammo = newAmmoAmount;
-
-	if (pstate->ammo && (pstate->missileweapon != -1) &&
-		(!(WEAPON_IS_MAGICAL(which))) &&
-		(!(WEAPON_IS_MAGICAL(pstate->missileweapon))))
-	{
-		int nx, ny;
-
-		nx = ob->tilex;
-		ny = ob->tiley;
-
-		// If the missile weapon still has ammo in it after taking ammo from it,
-		// spawn it on the ground
-		if (ammoInItem)
-		{
-			if (IsPlatform(nx, ny))
-				SpawnStatic(nx, ny, GetItemForWeapon(pstate->missileweapon), 9);
-			else
-			{
-				int newz = sprites[ob->tilex][ob->tiley]->z;
-				SpawnStatic(nx, ny, GetItemForWeapon(pstate->missileweapon),
-							-1);
-				LASTSTAT->z = newz;
-			}
-
-			// update ammo count on missile weapon on ground
-			LASTSTAT->ammo = ammoInItem;
-			EnableOldWeapon(pstate);
-		}
-	}
-}
-
 //******************************************************************************
 //
 // GiveMissileWeapon ()
@@ -1403,7 +1332,7 @@ void GiveMissileWeapon(objtype* ob, int which)
 //
 //******************************************************************************
 
-void DrawKeys(boolean bufferofsonly)
+void DrawKeys(bool bufferofsonly)
 {
 	if (!SHOW_TOP_STATUS_BAR())
 	{
@@ -1441,7 +1370,7 @@ void DrawKeys(boolean bufferofsonly)
 //
 //******************************************************************************
 
-void StatusDrawTime(unsigned x, unsigned y, unsigned num, boolean bufferofsonly)
+void StatusDrawTime(unsigned x, unsigned y, unsigned num, bool bufferofsonly)
 
 {
 	DrawMPPic(x, y, timenums[num]->width, timenums[num]->height, 0,
@@ -1456,8 +1385,8 @@ void StatusDrawTime(unsigned x, unsigned y, unsigned num, boolean bufferofsonly)
 //
 //******************************************************************************
 
-void DrawTimeNumber(int x, int y, int number, boolean seconds,
-					boolean bufferofsonly)
+void DrawTimeNumber(int x, int y, int number, bool seconds,
+					bool bufferofsonly)
 {
 	char str[20];
 
@@ -1494,7 +1423,7 @@ void DrawTimeNumber(int x, int y, int number, boolean seconds,
 //
 //******************************************************************************
 
-void DrawTimeXY(int x, int y, int sec, boolean bufferofsonly)
+void DrawTimeXY(int x, int y, int sec, bool bufferofsonly)
 
 {
 	int min;
@@ -1520,7 +1449,7 @@ void DrawTimeXY(int x, int y, int sec, boolean bufferofsonly)
 //
 //******************************************************************************
 
-void DrawTime(boolean bufferofsonly)
+void DrawTime(bool bufferofsonly)
 
 {
 	int sec;
@@ -1567,7 +1496,7 @@ void DrawTime(boolean bufferofsonly)
 //******************************************************************************
 
 void DrawMPPic(int xpos, int ypos, int width, int height, int heightmod,
-			   byte* src, boolean bufferofsonly)
+			   byte* src, bool bufferofsonly)
 {
 	int olddest;
 	int dest;
@@ -1631,7 +1560,7 @@ void DrawMPPic(int xpos, int ypos, int width, int height, int heightmod,
 //******************************************************************************
 
 void DrawColoredMPPic(int xpos, int ypos, int width, int height, int heightmod,
-					  byte* src, boolean bufferofsonly, int color)
+					  byte* src, bool bufferofsonly, int color)
 {
 	int olddest;
 	int dest;
@@ -1761,7 +1690,7 @@ void UpdateTriads(objtype* ob, int num)
 //
 //****************************************************************************
 
-void DrawTriads(boolean bufferofsonly)
+void DrawTriads(bool bufferofsonly)
 
 {
 	if (!SHOW_TOP_STATUS_BAR())
@@ -1782,7 +1711,7 @@ void DrawTriads(boolean bufferofsonly)
 //******************************************************************************
 
 void DrawPPic(int xpos, int ypos, int width, int height, byte* src, int num,
-			  boolean up, boolean bufferofsonly)
+			  bool up, bool bufferofsonly)
 {
 	int olddest;
 	int dest;
@@ -1846,7 +1775,7 @@ void DrawPPic(int xpos, int ypos, int width, int height, byte* src, int num,
 //
 //****************************************************************************
 
-void DrawBarHealth(boolean bufferofsonly)
+void DrawBarHealth(bool bufferofsonly)
 
 {
 	int percenthealth;
@@ -1919,7 +1848,7 @@ void DrawBarHealth(boolean bufferofsonly)
 //
 //****************************************************************************
 
-void DrawBarAmmo(boolean bufferofsonly)
+void DrawBarAmmo(bool bufferofsonly)
 {
 	int ammo_y;
 
@@ -1974,7 +1903,7 @@ void DrawBarAmmo(boolean bufferofsonly)
 //******************************************************************************
 
 void SingleDrawPPic(int xpos, int ypos, int width, int height, byte* src,
-					int num, boolean up)
+					int num, bool up)
 {
 	byte* olddest;
 	byte* dest;
@@ -2167,24 +2096,24 @@ void DrawPause(void)
 		bufferofs = bufftemp;
 		p = (pic_t*)W_CacheLumpNum(W_GetNumForName("paused"), PU_CACHE,
 								   Cvt_pic_t, 1);
-		DrawPauseXY((iGLOBAL_SCREENWIDTH - (p->width << 2)) >> 1,
-					(iGLOBAL_SCREENHEIGHT - p->height) >> 1); // bna++
+		DrawPauseXY((FRAMEBUFFERWIDTH - (p->width << 2)) >> 1,
+					(FRAMEBUFFERHEIGHT - p->height) >> 1); // bna++
 		// DrawPauseXY( (320-(p->width<<2) ) >>1, (200-p->height)>>1);
 		/*
 			  //buf = (byte *) SafeMalloc (64000);
 			  w = p->width;
 			  h = p->height;
-			  x = (iGLOBAL_SCREENWIDTH-((p->width)<<2) ) >>1;
-			  y = (iGLOBAL_SCREENHEIGHT-(p->height))>>1;
+			  x = (FRAMEBUFFERWIDTH-((p->width)<<2) ) >>1;
+			  y = (FRAMEBUFFERHEIGHT-(p->height))>>1;
 
-			  x1 = (iGLOBAL_SCREENWIDTH-((p->width*2)<<2) ) >>1;
-			  y1 = (iGLOBAL_SCREENHEIGHT-(p->height*2))>>1;
+			  x1 = (FRAMEBUFFERWIDTH-((p->width*2)<<2) ) >>1;
+			  y1 = (FRAMEBUFFERHEIGHT-(p->height*2))>>1;
 
-			  source = bufferofs + (iGLOBAL_SCREENWIDTH*y)+x;
-			  target = bufferofs + (iGLOBAL_SCREENWIDTH*y1)+x1;
+			  source = bufferofs + (FRAMEBUFFERWIDTH*y)+x;
+			  target = bufferofs + (FRAMEBUFFERWIDTH*y1)+x1;
 
 			 //
-		memcpy(tmpPICbuf,bufftemp,iGLOBAL_SCREENWIDTH*iGLOBAL_SCREENHEIGHT);
+		memcpy(tmpPICbuf,bufftemp,FRAMEBUFFERWIDTH*FRAMEBUFFERHEIGHT);
 
 			  bufferofs = bufftemp;//(byte *)tmpPICbuf;//buf;//write picture in
 		tmpbuf VL_MemToScreen ((byte *)&p->data, p->width, p->height,x, y);
@@ -2193,8 +2122,8 @@ void DrawPause(void)
 
 
 			  //VL_MemStrechedToScreen ((byte *)&p->data, p->width,
-		p->height,(iGLOBAL_SCREENWIDTH-((p->width*2)<<2) ) >>1,
-		(iGLOBAL_SCREENHEIGHT-(p->height*2))>>1);
+		p->height,(FRAMEBUFFERWIDTH-((p->width*2)<<2) ) >>1,
+		(FRAMEBUFFERHEIGHT-(p->height*2))>>1);
 			  //DrawEpisodeLevel (x,y);
 
 			  //VL_MemToScreen ((byte *)&p->data, p->width, p->height,0, 0);
@@ -2204,8 +2133,8 @@ void DrawPause(void)
 			  //buf = bufftemp;
 			  //b = tmpPICbuf ;
 
-			  source = bufferofs + (iGLOBAL_SCREENWIDTH*y)+x+(w*4);
-			  target = bufferofs + (iGLOBAL_SCREENWIDTH*y1)+x+(2*w*4);
+			  source = bufferofs + (FRAMEBUFFERWIDTH*y)+x+(w*4);
+			  target = bufferofs + (FRAMEBUFFERWIDTH*y1)+x+(2*w*4);
 
 			  //first strech lines in x direction
 			  for (y=0;y<h;y++){
@@ -2215,21 +2144,21 @@ void DrawPause(void)
 					*target-- = *source--;
 				}
 				target=c;source=t2;
-				target += iGLOBAL_SCREENWIDTH;
-				source += iGLOBAL_SCREENWIDTH;
+				target += FRAMEBUFFERWIDTH;
+				source += FRAMEBUFFERWIDTH;
 			  }
 			  //strech then lines in y direction
-			  source -= ((iGLOBAL_SCREENWIDTH*(y/2))+(w*4));//bufferofs +
-		(iGLOBAL_SCREENWIDTH*y)+x+(iGLOBAL_SCREENWIDTH*(y)); target =
-		(source+(iGLOBAL_SCREENWIDTH*(y))+1);//bufferofs +
-		(iGLOBAL_SCREENWIDTH*y)+x+(iGLOBAL_SCREENWIDTH*(y1));
+			  source -= ((FRAMEBUFFERWIDTH*(y/2))+(w*4));//bufferofs +
+		(FRAMEBUFFERWIDTH*y)+x+(FRAMEBUFFERWIDTH*(y)); target =
+		(source+(FRAMEBUFFERWIDTH*(y))+1);//bufferofs +
+		(FRAMEBUFFERWIDTH*y)+x+(FRAMEBUFFERWIDTH*(y1));
 
 			  for (y=0;y<h;y++){
 				memcpy(target,source,(w*4*2));
-				memcpy(target+iGLOBAL_SCREENWIDTH,source,(w*4*2));
+				memcpy(target+FRAMEBUFFERWIDTH,source,(w*4*2));
 
-				target -= iGLOBAL_SCREENWIDTH*2;
-				source -= iGLOBAL_SCREENWIDTH;
+				target -= FRAMEBUFFERWIDTH*2;
+				source -= FRAMEBUFFERWIDTH;
 			  }
 
 		/ *
@@ -2237,26 +2166,26 @@ void DrawPause(void)
 				c=target;t2=source;
 				for (x=0;x<w*4;x++){
 					*target = *source;
-					*(target+++iGLOBAL_SCREENWIDTH) = *source;
+					*(target+++FRAMEBUFFERWIDTH) = *source;
 					*target = *source;
-					*(target+++iGLOBAL_SCREENWIDTH) = *source;
+					*(target+++FRAMEBUFFERWIDTH) = *source;
 					source++;
 				}
 				target=c;source=t2;
-				target += iGLOBAL_SCREENWIDTH*2;
-				source += iGLOBAL_SCREENWIDTH;
+				target += FRAMEBUFFERWIDTH*2;
+				source += FRAMEBUFFERWIDTH;
 			  }
 		*/
 
 		//	  memcpy(
-		//bufftemp,tmpPICbuf,iGLOBAL_SCREENWIDTH*iGLOBAL_SCREENHEIGHT);
+		//bufftemp,tmpPICbuf,FRAMEBUFFERWIDTH*FRAMEBUFFERHEIGHT);
 	}
 	else
 	{
 		p = (pic_t*)W_CacheLumpNum(W_GetNumForName("wait"), PU_CACHE, Cvt_pic_t,
 								   1);
-		DrawPauseXY((iGLOBAL_SCREENWIDTH - (p->width << 2)) >> 1,
-					(iGLOBAL_SCREENHEIGHT - p->height) >> 1); // bna++
+		DrawPauseXY((FRAMEBUFFERWIDTH - (p->width << 2)) >> 1,
+					(FRAMEBUFFERHEIGHT - p->height) >> 1); // bna++
 		// DrawPauseXY( (320-(p->width<<2) ) >>1, (200-p->height)>>1);
 	}
 	//   VH_UpdateScreen () ;
@@ -2793,7 +2722,7 @@ void DrawHighScores(void)
 //
 //******************************************************************************
 
-void CheckHighScore(long score, word other, boolean INMENU)
+void CheckHighScore(long score, word other, bool INMENU)
 {
 	word i, j;
 	int n;
@@ -3051,8 +2980,8 @@ void DrawEOLHeader(int playstate)
 	VW_UpdateScreen();
 }
 
-boolean EndBonusFirst;
-boolean EndBonusSkip;
+bool EndBonusFirst;
+bool EndBonusSkip;
 int EndBonusNumBonuses;
 int EndBonusVoice;
 int EndBonusStartY;
@@ -3158,7 +3087,7 @@ void LevelCompleted(exit_t playstate)
 
 {
 	objtype* obj;
-	boolean dobonus;
+	bool dobonus;
 	int i;
 	int kr;
 	int sr;
@@ -3835,7 +3764,7 @@ void ShowEndScore(int localplayer)
 	int killcount;
 	int suicidecount;
 	char tempstr[15];
-	boolean dofullstats;
+	bool dofullstats;
 	int NumPlayers;
 
 	// show at the most 11 players
@@ -4094,7 +4023,7 @@ int FindAngleToWindow(int tx, int ty)
 =
 ==================
 */
-boolean ZoomDeathOkay(void)
+bool ZoomDeathOkay(void)
 {
 	int x, y;
 	int radius;
@@ -4140,13 +4069,13 @@ boolean ZoomDeathOkay(void)
 #define DEATHROTATE 6
 
 // void RotateScreen(int startAngle, int endAngle, int startScale, int endScale,
-// int time, int option, boolean fadeOut);
+// int time, int option, bool fadeOut);
 
 // void RotateScreenScaleFloat(float startAngle, float endAngle, float
-// startScale, float endScale, int time, boolean fadeOut, boolean
+// startScale, float endScale, int time, bool fadeOut, bool
 // drawPlayScreen);
 
-extern boolean dopefish;
+extern bool dopefish;
 void Died(void)
 {
 	long dx, dy;
@@ -4173,7 +4102,7 @@ void Died(void)
 	{
 		int x, y, z, radius, heightoffset;
 		int endangle, startangle, killangle;
-		boolean deadflagset;
+		bool deadflagset;
 		objtype* dummy;
 
 		x = player->x;
@@ -4517,12 +4446,12 @@ static byte whichstr = 0;
 
 void DoLoadGameAction(void)
 {
-	if ((SaveTime + 1) < GetTicCount())
+	if ((SaveTime + 1) < GetCachedTic())
 	{
 		byte* temp = bufferofs;
 
 		bufferofs = displayofs;
-		SaveTime = GetTicCount();
+		SaveTime = GetCachedTic();
 
 		CurrentFont = tinyfont;
 
@@ -4633,12 +4562,7 @@ void SaveTag(int handle, char* tag, int size)
 //
 //******************************************************************************
 
-extern boolean enableZomROTT;
-extern boolean allowBlitzMoreMissileWeps;
-extern boolean enableAmmoPickups;
-extern Queue* enemiesToRes[8];
-
-boolean SaveTheGame(int num, gamestorage_t* game)
+bool SaveTheGame(int num, gamestorage_t* game)
 {
 	char loadname[MAX_PATH] = "rottgam0.rot";
 	char filename[MAX_PATH];
@@ -4830,7 +4754,7 @@ boolean SaveTheGame(int num, gamestorage_t* game)
 	// Misc
 
 	// ticcount
-	myticcount = GetTicCount();
+	myticcount = GetCachedTic();
 	size = sizeof(myticcount);
 	SafeWrite(savehandle, &myticcount, size);
 
@@ -4861,39 +4785,6 @@ boolean SaveTheGame(int num, gamestorage_t* game)
 
 	size = sizeof(poweradjust);
 	SafeWrite(savehandle, &poweradjust, size);
-
-	size = sizeof(allowBlitzMoreMissileWeps);
-	SafeWrite(savehandle, &allowBlitzMoreMissileWeps, size);
-
-	size = sizeof(enableAmmoPickups);
-	SafeWrite(savehandle, &enableAmmoPickups, size);
-
-	size = sizeof(enableZomROTT);
-	SafeWrite(savehandle, &enableZomROTT, size);
-
-	// ZomROTT Stuff
-	if (enableZomROTT)
-	{
-		int z;
-		for (z = 0; z < 8; z++)
-		{
-			size = sizeof(int);
-			SafeWrite(savehandle, &enemiesToRes[z]->NumOfItems, size);
-			if (enemiesToRes[z]->NumOfItems == 0)
-			{
-				continue;
-			}
-
-			int x;
-			Node* thingToSave = enemiesToRes[z]->Head;
-			size = sizeof(objtype);
-			for (x = 0; x < enemiesToRes[z]->NumOfItems; x++)
-			{
-				SafeWrite(savehandle, thingToSave->data, size);
-				thingToSave = thingToSave->next;
-			}
-		}
-	}
 
 	close(savehandle);
 
@@ -4952,9 +4843,9 @@ int LoadBuffer(byte** dest, byte** src)
 //
 //******************************************************************************
 
-extern boolean doRescaling;
+extern bool doRescaling;
 
-boolean LoadTheGame(int num, gamestorage_t* game)
+bool LoadTheGame(int num, gamestorage_t* game)
 {
 	char loadname[45] = "rottgam0.rot";
 	char filename[128];
@@ -5265,64 +5156,6 @@ boolean LoadTheGame(int num, gamestorage_t* game)
 	memcpy(&poweradjust, bufptr, size);
 	bufptr += size;
 
-	size = sizeof(allowBlitzMoreMissileWeps);
-	memcpy(&allowBlitzMoreMissileWeps, bufptr, size);
-	bufptr += size;
-
-	size = sizeof(enableAmmoPickups);
-	memcpy(&enableAmmoPickups, bufptr, size);
-	bufptr += size;
-
-	size = sizeof(enableZomROTT);
-	memcpy(&enableZomROTT, bufptr, size);
-	bufptr += size;
-
-	// ZomROTT Stuff
-	if (enableZomROTT)
-	{
-		int z;
-		for (z = 0; z < 8; z++)
-		{
-			size = sizeof(int);
-
-			int origQueueSize = 0;
-			Queue* enemyQueue;
-
-			origQueueSize = 0;
-
-			enemyQueue = malloc(sizeof(Queue));
-			InitQueue(enemyQueue, sizeof(objtype));
-
-			memcpy(&origQueueSize, bufptr, size);
-			bufptr += size;
-			enemiesToRes[z] = enemyQueue;
-
-			// memcpy(&origQueueSize, bufptr, size);
-			// bufptr+=size;
-
-			size = sizeof(objtype);
-
-			int x = 0;
-
-			while (x < origQueueSize)
-			{
-				objtype* item = (objtype*)malloc(sizeof(objtype));
-
-				memcpy(item, bufptr, size);
-
-				// fix for crash that occurs after something tries to respawn
-				// after the game is loaded
-				SetReverseDeathState(item);
-
-				Enqueue(enemyQueue, item);
-
-				bufptr += size;
-
-				x++;
-			}
-		}
-	}
-
 	// Set the viewsize
 
 	SetViewSize(viewsize);
@@ -5355,7 +5188,6 @@ boolean LoadTheGame(int num, gamestorage_t* game)
 	for (i = 0; i < 100; i++)
 		UpdateLightLevel(player->areanumber);
 
-	CalcTics();
 	CalcTics();
 
 	pickquick = true;

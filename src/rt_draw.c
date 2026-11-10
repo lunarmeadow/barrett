@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -68,7 +68,6 @@ Global Variables GLOBAL VARIABLES
 
 int iG_masked;
 
-int whereami = -1;
 
 byte* shadingtable;
 
@@ -114,14 +113,18 @@ short tantable[FINEANGLES];
 int sintable[FINEANGLES + FINEANGLEQUAD + 1],
 	*costable = sintable + (FINEANGLES / 4);
 
+
+// precompute (i * 200) / screenHeight
+int skyScalers[MAXSCREENHEIGHT];
+
 //
 // refresh variables
 //
 
-fixed viewx, viewy; // the focal point
+fixed_t viewx, viewy; // the focal point
 int viewangle;
 int c_startx, c_starty;
-fixed viewsin, viewcos;
+fixed_t viewsin, viewcos;
 int tics;
 
 //
@@ -151,7 +154,7 @@ static int nonbobpheight;
 
 static visobj_t* sortedvislist[MAXVISIBLE];
 
-static const fixed mindist = 0x1000;
+static const fixed_t mindist = 0x1000;
 
 static int weaponbobx, weaponboby;
 
@@ -192,6 +195,17 @@ void InterpolateWall(visobj_t* plane);
 =
 ==================
 */
+
+// precompute (i * 200 / screenheight) to avoid expensive, constant floating point division for DrawSkyPost
+void GenerateSkyScalerTable(void)
+{
+	const int screenH = FRAMEBUFFERHEIGHT;
+
+	for(int i = 0; i < MAXSCREENHEIGHT; i++)
+	{
+		skyScalers[i] = (int)((200 * i) / screenH);
+	}
+}
 
 void BuildTables(void)
 {
@@ -264,7 +278,7 @@ void BuildTables(void)
 	memcpy(&gammatable[0], ptr, length * sizeof(byte));
 	table = W_CacheLumpName("tables", PU_CACHE, CvtNull, 1);
 
-	costable = (fixed*)&(sintable[FINEANGLES / 4]);
+	costable = (fixed_t*)&(sintable[FINEANGLES / 4]);
 
 	wstart = W_GetNumForName("WALLSTRT");
 #if (SHAREWARE == 0)
@@ -300,10 +314,10 @@ void BuildTables(void)
 ========================
 */
 
-boolean TransformObject(int x, int y, int* dispx, int* dispheight)
+bool TransformObject(int x, int y, int* dispx, int* dispheight)
 {
 
-	fixed gx, gy, gxt, gyt, nx, ny;
+	fixed_t gx, gy, gxt, gyt, nx, ny;
 
 	//
 	// translate point to view centered coordinates
@@ -353,8 +367,8 @@ void TransformPoint(int x, int y, int* screenx, int* height, int* texture,
 					int vertical)
 {
 
-	fixed gxt, gyt, nx, ny;
-	fixed gxtt, gytt;
+	fixed_t gxt, gyt, nx, ny;
+	fixed_t gxtt, gytt;
 	int gx, gy;
 	int vx, vy;
 	int svs, svc;
@@ -480,12 +494,12 @@ void TransformPoint(int x, int y, int* screenx, int* height, int* texture,
 ========================
 */
 
-boolean TransformSimplePoint(int x, int y, int* screenx, int* height,
+bool TransformSimplePoint(int x, int y, int* screenx, int* height,
 							 int* texture, int vertical)
 {
 
-	fixed gxt, gyt, nx, ny;
-	fixed gxtt, gytt;
+	fixed_t gxt, gyt, nx, ny;
+	fixed_t gxtt, gytt;
 	int gx, gy;
 
 	//
@@ -533,11 +547,11 @@ boolean TransformSimplePoint(int x, int y, int* screenx, int* height,
 ========================
 */
 
-boolean TransformPlane(int x1, int y1, int x2, int y2, visobj_t* plane)
+bool TransformPlane(int x1, int y1, int x2, int y2, visobj_t* plane)
 {
-	boolean result2;
-	boolean result1;
-	boolean vertical;
+	bool result2;
+	bool result1;
+	bool vertical;
 	int txstart, txend;
 
 	vertical = ((x2 - x1) == 0);
@@ -608,10 +622,9 @@ boolean TransformPlane(int x1, int y1, int x2, int y2, visobj_t* plane)
 
 int CalcHeight(void)
 {
-	fixed gxt, gyt, nx;
+	fixed_t gxt, gyt, nx;
 	long gx, gy;
 
-	whereami = 0;
 
 	gx = xintercept - viewx;
 	gxt = FixedMul(gx, viewcos);
@@ -642,7 +655,6 @@ int StatRotate(statobj_t* temp)
 	int angle;
 	int dx, dy;
 
-	whereami = 2;
 
 	dx = temp->x - player->x;
 	dy = player->y - temp->y;
@@ -672,7 +684,6 @@ int CalcRotate(objtype* ob)
 	int dx, dy;
 	int rotation;
 
-	whereami = 1;
 
 	// this isn't exactly correct, as it should vary by a trig value'
 	// but it is close enough with only eight rotations
@@ -733,18 +744,18 @@ int CalcRotate(objtype* ob)
 #define SGN(x) ((x > 0) ? (1) : ((x == 0) ? (0) : (-1)))
 
 /*--------------------------------------------------------------------------*/
-int CompareHeights(s1p, s2p)
-visobj_t **s1p, **s2p;
+int CompareHeights(void *v1p, void *v2p)
 {
-	whereami = 3;
-	return SGN((*s1p)->viewheight - (*s2p)->viewheight);
+	visobj_t** s1p = (visobj_t**) v1p;
+	visobj_t** s2p = (visobj_t**) v2p;
+	return SGN((*s1p)->viewheight-(*s2p)->viewheight);
 }
 
-void SwitchPointers(s1p, s2p) visobj_t **s1p, **s2p;
+void SwitchPointers(void *v1p, void *v2p)
 {
-	visobj_t* temp;
+	visobj_t **s1p = (visobj_t**) v1p, **s2p = (visobj_t**) v2p;
+	visobj_t *temp;
 
-	whereami = 4;
 	temp = *s1p;
 	*s1p = *s2p;
 	*s2p = temp;
@@ -754,7 +765,6 @@ void SortVisibleList(int numvisible, visobj_t* vlist)
 {
 	int i;
 
-	whereami = 5;
 	for (i = 0; i < numvisible; i++)
 		sortedvislist[i] = &(vlist[i]);
 	hsort((char*)&(sortedvislist[0]), numvisible, sizeof(visobj_t*),
@@ -780,19 +790,35 @@ void DrawScaleds(void)
 	int i, numvisible;
 	int gx, gy;
 	byte* visspot;
-	boolean result;
+	bool result;
 	statobj_t* statptr;
 	objtype* obj;
 	maskedwallobj_t* tmwall;
 
-	whereami = 6;
+	byte tilex_next, tilex_prev, tiley_next, tiley_prev;
 
 	//
 	// place maskwall objects
 	//
 	for (tmwall = FIRSTMASKEDWALL; tmwall; tmwall = tmwall->next)
 	{
-		if (spotvis[tmwall->tilex][tmwall->tiley])
+		tilex_next = tmwall->tilex + 1;
+		tilex_prev = tmwall->tilex - 1;
+		tiley_next = tmwall->tiley + 1;
+		tiley_prev = tmwall->tiley - 1;
+
+		// ashley added: butt ugly hack to avoid masked walls being cut off on edges of view.
+
+		// check if any 2 adjacent tiles on X or Y are in view.
+		// this should be properly fixed in InitialCast or WallRefresh, but it reduces the issue.
+		// on this spot
+		if (spotvis[tmwall->tilex][tmwall->tiley]
+			// check adjacent x tiles 
+			|| spotvis[tilex_next][tmwall->tiley]
+			|| spotvis[tilex_prev][tmwall->tiley]
+			// check adjacent y tiles 
+			|| spotvis[tmwall->tilex][tiley_next]
+			|| spotvis[tmwall->tilex][tiley_prev])
 		{
 			mapseen[tmwall->tilex][tmwall->tiley] = 1;
 			if (tmwall->vertical)
@@ -960,9 +986,11 @@ void DrawScaleds(void)
 		//
 		// could be in any of the nine surrounding tiles
 		//
-		if (*visspot || (*(visspot - 1)) || (*(visspot + 1)) ||
-			(*(visspot - 129)) || (*(visspot - 128)) || (*(visspot - 127)) ||
-			(*(visspot + 129)) || (*(visspot + 128)) || (*(visspot + 127)))
+		// spotvis is 128x128, ensure that min/max bounds check doesn't under or overflow.
+		if(visspot + 129 <= &spotvis[0][0] + 16384 && visspot - 129 >= &spotvis[0][0])
+		if(visspot[0] 	  || visspot[-1]   || visspot[1]     ||
+	 	  (visspot[-129]  || visspot[-128] || visspot[-127]) ||
+		  (visspot[129]   || visspot[128]  || visspot[127])   )
 		{
 
 			//        result = TransformObject (obj->drawx,
@@ -980,14 +1008,14 @@ void DrawScaleds(void)
 			if (player->flags & FL_SHROOMS)
 			{
 				visptr->shapesize = 4;
-				visptr->h2 = (GetTicCount() & 0xff);
+				visptr->h2 = (GetCachedTic() & 0xff);
 			}
 			if (obj->obclass == playerobj)
 			{
 				if (obj->flags & FL_GODMODE)
 				{
 					visptr->shapesize = 4;
-					visptr->h2 = 240 + (GetTicCount() & 0x7);
+					visptr->h2 = 240 + (GetCachedTic() & 0x7);
 				}
 				else if (obj->flags & FL_COLORED)
 				{
@@ -1115,7 +1143,6 @@ void DrawPlayerWeapon(void)
 	int female, black;
 	int altshape = 0;
 
-	whereami = 7;
 
 	SoftError("\n attackframe: %d, weaponframe: %d, weapondowntics: %d"
 			  " weaponuptics: %d",
@@ -1278,13 +1305,17 @@ void DrawPlayerWeapon(void)
 
 			temp = weaponscale;
 			delta = FixedMul((weaponbobx << 9), weaponscale);
-			weaponscale += delta;
+
+			// was += delta, this sets it to zero when doom bobbing is enabled (disables 3D motion)
+			weaponscale += doombobbing == false ? delta : 0;
 			ScaleWeapon(xdisp - weaponbobx,
-						ydisp + weaponboby + locplayerstate->weaponheight,
+						ydisp + weaponboby + 1 + locplayerstate->weaponheight,
 						shapenum);
-			weaponscale -= delta;
+			
+			// was -= delta, this sets it to zero when doom bobbing is enabled (disables 3D motion)
+			weaponscale -= doombobbing == false ? delta : 0;
 			ScaleWeapon(weaponbobx - 80,
-						ydisp + weaponboby + locplayerstate->weaponheight,
+						ydisp + weaponboby + 1 + locplayerstate->weaponheight,
 						altshape);
 			weaponscale = temp;
 		}
@@ -1295,9 +1326,9 @@ void DrawPlayerWeapon(void)
 
 			temp = weaponscale;
 			delta = FixedMul((weaponbobx << 9), weaponscale);
-			weaponscale -= delta;
+			weaponscale -= doombobbing == false ? delta : 0;
 			ScaleWeapon(xdisp + weaponbobx,
-						ydisp + weaponboby + locplayerstate->weaponheight,
+						ydisp + 1 + weaponboby + locplayerstate->weaponheight,
 						shapenum);
 			weaponscale = temp;
 		}
@@ -1310,7 +1341,6 @@ void AdaptDetail(void)
 	return;
 #else
 
-	whereami = 8;
 	if ((preindex < 0) || (preindex > 2))
 		Error("preindex out of range\n");
 	pretics[preindex] =
@@ -1343,25 +1373,10 @@ void AdaptDetail(void)
 =====================
 */
 
+// cache tic count here. GetTicCount is stil allowed
 void CalcTics(void)
 {
-
-#if PROFILE
-	tics = PROFILETICS;
-	GetTicCount() += PROFILETICS;
-	oldtime = GetTicCount();
-	return;
-#else
-	volatile int tc;
-
-	whereami = 9;
-	//   SoftError("InCalcTics\n");
-	//   SoftError("CT GetTicCount()=%ld\n",GetTicCount());
-	//   SoftError("CT oldtime=%ld\n",oldtime);
-
-	//
-	// calculate tics since last refresh for adaptive timing
-	//
+	int tc;
 
 	tc = GetTicCount();
 	while (tc == oldtime)
@@ -1370,13 +1385,8 @@ void CalcTics(void)
 	}
 	tics = tc - oldtime;
 
-	//   SoftError("CT GetTicCount()=%ld\n",GetTicCount());
-	//   if (tics>MAXTICS)
-	//      {
-	//      tc-=(tics-MAXTICS);
-	//      GetTicCount() = tc;
-	//     tics = MAXTICS;
-	//      }
+	// cache updated tic count (only use where CalcTics is called, esp in hot loops like game loop)
+	SetCachedTic(tc);
 
 	if (demoplayback || demorecord)
 	{
@@ -1387,8 +1397,8 @@ void CalcTics(void)
 			ISR_SetTime(tc);
 		}
 	}
+
 	oldtime = tc;
-#endif
 }
 
 /*
@@ -1406,7 +1416,6 @@ void SetSpriteLightLevel(int x, int y, visobj_t* sprite, int dir,
 	int lv;
 	int intercept;
 
-	whereami = 10;
 
 	if (MISCVARS->GASON == 1)
 	{
@@ -1422,7 +1431,7 @@ void SetSpriteLightLevel(int x, int y, visobj_t* sprite, int dir,
 
 	if (fog)
 	{
-		i = ((sprite->viewheight * 200 / iGLOBAL_SCREENHEIGHT) >> normalshade) +
+		i = ((sprite->viewheight * 200 / FRAMEBUFFERHEIGHT) >> normalshade) +
 			minshade;
 		if (i > maxshade)
 			i = maxshade;
@@ -1438,14 +1447,14 @@ void SetSpriteLightLevel(int x, int y, visobj_t* sprite, int dir,
 				intercept = (y >> 11) & 0x1c;
 
 			lv = (((LightSourceAt(x >> 16, y >> 16) >> intercept) & 0xf) >> 1);
-			i = maxshade - ((sprite->viewheight * 200 / iGLOBAL_SCREENHEIGHT) >> normalshade) - lv;
+			i = maxshade - ((sprite->viewheight * 200 / FRAMEBUFFERHEIGHT) >> normalshade) - lv;
 			if (i < minshade)
 				i = minshade;
 			sprite->colormap = colormap + (i << 8);
 		}
 		else
 		{
-			i = maxshade - ((sprite->viewheight * 200 / iGLOBAL_SCREENHEIGHT) >> normalshade);
+			i = maxshade - ((sprite->viewheight * 200 / FRAMEBUFFERHEIGHT) >> normalshade);
 			if (i < minshade)
 				i = minshade;
 			sprite->colormap = colormap + (i << 8);
@@ -1470,7 +1479,6 @@ void SetColorLightLevel(int x, int y, visobj_t* sprite, int dir, int color,
 	int height;
 	byte* map;
 
-	whereami = 11;
 	height = sprite->viewheight << 1;
 	map = playermaps[color];
 	if (MISCVARS->GASON == 1)
@@ -1487,7 +1495,7 @@ void SetColorLightLevel(int x, int y, visobj_t* sprite, int dir, int color,
 
 	if (fog)
 	{
-		i = ((height * 200 / iGLOBAL_SCREENHEIGHT) >> normalshade) + minshade;
+		i = ((height * 200 / FRAMEBUFFERHEIGHT) >> normalshade) + minshade;
 		if (i > maxshade)
 			i = maxshade;
 		sprite->colormap = map + (i << 8);
@@ -1531,7 +1539,6 @@ void SetWallLightLevel(wallcast_t* post)
 	int lv;
 	int i;
 
-	whereami = 12;
 	if (MISCVARS->GASON == 1)
 	{
 		shadingtable = greenmap + (MISCVARS->gasindex << 8);
@@ -1588,7 +1595,7 @@ void SetWallLightLevel(wallcast_t* post)
 	}
 	if (fog)
 	{
-		i = ((post->wallheight * 200 / iGLOBAL_SCREENHEIGHT) >> normalshade) +
+		i = ((post->wallheight * 200 / FRAMEBUFFERHEIGHT) >> normalshade) +
 			minshade - lv + la;
 		if (i > maxshade + la)
 			i = maxshade + la;
@@ -1596,7 +1603,7 @@ void SetWallLightLevel(wallcast_t* post)
 	}
 	else
 	{
-		i = maxshade - ((post->wallheight * 200 / iGLOBAL_SCREENHEIGHT) >> normalshade) - lv + la;
+		i = maxshade - ((post->wallheight * 200 / FRAMEBUFFERHEIGHT) >> normalshade) - lv + la;
 		if (i >= maxshade)
 			i = maxshade;
 		if (i < minshade + la)
@@ -1621,7 +1628,6 @@ void DrawWallPost(wallcast_t* post, byte* buf)
 	byte* src;
 	byte* src2;
 
-	whereami = 42;
 	if (post->lump)
 		src = W_CacheLumpNum(post->lump, PU_CACHE, CvtNull, 1);
 	if (post->alttile != 0)
@@ -1733,7 +1739,6 @@ void DrawWalls(void)
 	int plane;
 	wallcast_t* post;
 
-	whereami = 13;
 
 	plane = 0;
 
@@ -1777,11 +1782,10 @@ void TransformDoors(void)
 {
 	int i;
 	int numvisible;
-	boolean result;
+	bool result;
 	int gx, gy;
 	visobj_t visdoorlist[MAXVISIBLEDOORS], *doorptr;
 
-	whereami = 14;
 	doorptr = &visdoorlist[0];
 	//
 	// place door objects
@@ -1866,9 +1870,8 @@ void TransformPushWalls(void)
 	byte* visspot;
 	visobj_t* savedptr;
 	int numvisible;
-	boolean result;
+	bool result;
 
-	whereami = 15;
 	savedptr = visptr;
 	//
 	// place pwall objects
@@ -2015,7 +2018,6 @@ void WallRefresh(void)
 	int mag;
 	int yzangle;
 
-	whereami = 16;
 	firstcoloffset = (firstcoloffset + (tics << 8)) & 65535;
 
 	if (missobj)
@@ -2035,11 +2037,11 @@ void WallRefresh(void)
 			viewangle = (player->angle +
 						 FixedMulShift(
 							 FINEANGLES,
-							 sintable[(GetTicCount() << 5) & (FINEANGLES - 1)],
+							 sintable[(GetCachedTic() << 5) & (FINEANGLES - 1)],
 							 (16 + 4))) &
 						(FINEANGLES - 1);
-			ChangeFocalWidth(FixedMulShift(
-				40, sintable[(GetTicCount() << 5) & (FINEANGLES - 1)], 16));
+			ChangeFocalLength(FixedMulShift(
+				40, sintable[(GetCachedTic() << 5) & (FINEANGLES - 1)], 16));
 		}
 		else
 			viewangle = player->angle;
@@ -2050,7 +2052,7 @@ void WallRefresh(void)
 		pheight = player->z + locplayerstate->playerheight +
 				  locplayerstate->heightoffset;
 		nonbobpheight = pheight;
-		if (((player->z == nominalheight) ||
+		if (((player->z == nominalheight || doombobbing) ||
 			 (IsPlatform(player->tilex, player->tiley)) ||
 			 (DiskAt(player->tilex, player->tiley))) &&
 			(!(player->flags & FL_DOGMODE)) && (BobbinOn == true) &&
@@ -2060,14 +2062,28 @@ void WallRefresh(void)
 
 			mag = (player->speed > MAXBOB ? MAXBOB : player->speed);
 
-			pheight +=
-				FixedMulShift(mag, sintable[(GetTicCount() << 7) & 2047], 28);
+			int bobxshift = doombobbing == true ? 26 : 27;
+			int bobyshift = 26;
+			int pheightshift = doombobbing == true ? 27 : 28;
 
+			// reduce midair head-bobbing, because you are not in fact "walking on sunshine"
+			if(player->z != nominalheight && doombobbing)
+				pheightshift = 28;
+
+			pheight +=
+				FixedMulShift(mag, sintable[(GetCachedTic() << 7) & 2047], pheightshift);
+
+			// bob calc itself is basically mathematically equivalent to doom bobbing, 
+			// just need to disable 3d scaling and normalize shift values to be numerically equivalent.
 			weaponbobx = FixedMulShift(
-				mag, costable[((GetTicCount() << 5)) & (FINEANGLES - 1)], 27);
+				mag, costable[((GetCachedTic() << 5)) & (FINEANGLES - 1)], bobxshift);
 			weaponboby = FixedMulShift(
-				mag, sintable[((GetTicCount() << 5)) & ((FINEANGLES / 2) - 1)],
-				26);
+				mag, sintable[((GetCachedTic() << 5)) & ((FINEANGLES / 2) - 1)],
+				bobyshift);
+
+			// weaponframe non-zero = not idle frame
+			if((locplayerstate->weaponframe || locplayerstate->buttonheld[bt_attack]) && doombobbing)
+				weaponbobx = weaponboby = 0;
 		}
 		else
 		{
@@ -2078,15 +2094,15 @@ void WallRefresh(void)
 		spotvis[player->tilex][player->tiley] = 1;
 	}
 
-	if (yzangle > ANG180)
-		pheight -= (sintable[yzangle & 2047] >> 14);
-	else
-		pheight += (sintable[yzangle & 2047] >> 14);
+	// if (yzangle > ANG180)
+	// 	pheight -= (sintable[yzangle & 2047] >> 14);
+	// else
+	// 	pheight += (sintable[yzangle & 2047] >> 14);
 
-	viewx -=
-		(FixedMul(sintable[yzangle & 2047], costable[viewangle & 2047]) >> 1);
-	viewy +=
-		(FixedMul(sintable[yzangle & 2047], sintable[viewangle & 2047]) >> 1);
+	// viewx -=
+	// 	(FixedMul(sintable[yzangle & 2047], costable[viewangle & 2047]) >> 2);
+	// viewy +=
+	// 	(FixedMul(sintable[yzangle & 2047], sintable[viewangle & 2047]) >> 2);
 
 	// Set YZ angle
 
@@ -2114,7 +2130,7 @@ void WallRefresh(void)
 	mag = 7 + ((3 - gamestate.difficulty) << 2);
 
 	transparentlevel =
-		FixedMul(mag, sintable[(GetTicCount() << 5) & (FINEANGLES - 1)]) + mag;
+		FixedMul(mag, sintable[(GetCachedTic() << 5) & (FINEANGLES - 1)]) + mag;
 
 	viewsin = sintable[viewangle];
 	viewcos = costable[viewangle];
@@ -2186,6 +2202,7 @@ void GetRainBoundingBox(int* xmin, int* xmax, int* ymin, int* ymax)
 ========================
 */
 
+int maxTex = 0;
 void InterpolateWall(visobj_t* plane)
 {
 	int d1, d2;
@@ -2199,7 +2216,6 @@ void InterpolateWall(visobj_t* plane)
 	int dx;
 	int height;
 
-	whereami = 17;
 	dx = (plane->x2 - plane->x1 + 1);
 	if (plane->h1 <= 0 || plane->h2 <= 0 || dx == 0)
 		return;
@@ -2223,6 +2239,14 @@ void InterpolateWall(visobj_t* plane)
 			if (bot)
 			{
 				texture = ((top / bot) + (plane->texturestart >> 4)) & 0xfc0;
+
+				// ashley added: prevent OOB in column indexing
+				// { column | 0 < column < 4032 }. limit is 64x higher because of texture << 4 in the wallpost struct.
+				if(texture < 0)
+					texture = 0;
+				if(texture > 4032)
+					texture = 4032;
+
 				posts[i].texture = texture << 4;
 				posts[i].lump = plane->shapenum;
 				posts[i].alttile = plane->altshapenum;
@@ -2263,7 +2287,6 @@ void InterpolateDoor(visobj_t* plane)
 	byte* buf;
 	patch_t* p;
 
-	whereami = 18;
 	dx = (plane->x2 - plane->x1 + 1);
 	if (plane->h1 <= 0 || plane->h2 <= 0 || dx == 0)
 		return;
@@ -2299,6 +2322,14 @@ void InterpolateDoor(visobj_t* plane)
 					centeryfrac - FixedMul(dc_texturemid, dc_invscale);
 
 				texture = ((top / bot) + (plane->texturestart >> 4)) >> 6;
+
+				// ashley added: prevent OOB in column indexing
+				// { column | 0 < column < 63 } because patch is 64x64
+				if(texture < 0)
+					texture = 0;
+				if(texture > 63)
+					texture = 63;
+
 				SetLightLevel(height >> DHEIGHTFRACTION);
 				ScaleMaskedPost(p->collumnofs[texture] + shape, buf);
 
@@ -2306,17 +2337,19 @@ void InterpolateDoor(visobj_t* plane)
 				{
 					sprtopoffset -= (dc_invscale << 6) * (levelheight - 1);
 					bottomscreen = sprtopoffset + (dc_invscale * nominalheight);
-					dc_yl = (sprtopoffset + SFRACUNIT - 1) >> SFRACBITS;
-					dc_yh = ((bottomscreen - 1) >> SFRACBITS) + 1;
+					dc_yl = (sprtopoffset + SFRACUNIT) >> SFRACBITS;
+					dc_yh = ((bottomscreen + (dc_invscale>>6)) >> SFRACBITS) + 1;
+					ylcmp = (sprtopoffset + (dc_invscale>>6) + SFRACUNIT) >> SFRACBITS;
+					yhcmp = ((bottomscreen - (dc_invscale>>6)) >> SFRACBITS) + 1;
 					if (dc_yl >= viewheight)
 						continue;
 					else if (dc_yl < 0)
 						dc_yl = 0;
 					if (dc_yh > viewheight)
-						dc_yh = viewheight;
+						dc_yh = viewheight - 1;
 
 					dc_source = shape2 + ((texture << 6) & 0xfc0);
-					R_DrawWallColumn(buf);
+					R_DrawUpperDoorColumn(buf);
 				}
 			}
 
@@ -2355,10 +2388,9 @@ void InterpolateMaskedWall(visobj_t* plane)
 	transpatch_t* p;
 	patch_t* p2;
 	patch_t* p3;
-	boolean drawbottom, drawmiddle, drawtop;
+	bool drawbottom, drawmiddle, drawtop;
 	int topoffset;
 
-	whereami = 19;
 	dx = (plane->x2 - plane->x1 + 1);
 	if (plane->h1 <= 0 || plane->h2 <= 0 || dx == 0)
 		return;
@@ -2423,24 +2455,48 @@ void InterpolateMaskedWall(visobj_t* plane)
 				sprtopoffset =
 					centeryfrac - FixedMul(dc_texturemid, dc_invscale);
 
+				// column index
 				texture = ((top / bot) + (plane->texturestart >> 4)) >> 6;
+
+				// ashley added: prevent OOB in column indexing
+				// { column | 0 < column < 63 } as patches are 64x64.
+				if(texture < 0)
+					texture = 0;
+				if(texture > 63)
+					texture = 63;
+
 				SetLightLevel(height >> DHEIGHTFRACTION);
-				if (drawbottom == true)
+
+				// apply sparkle patch to unstacked walls, apply special patch for stacked 
+				if (drawbottom && !(drawmiddle || drawtop))
+				{
 					ScaleTransparentPost(p->collumnofs[texture] + shape, buf,
 										 (p->translevel + 8));
+				}
+				else if (drawbottom && (drawmiddle || drawtop))
+				{
+					ScaleTransparentTallPost(p->collumnofs[texture] + shape, buf,
+										 (p->translevel + 8));
+				}
 				for (j = 0; j < levelheight - 2; j++)
 				{
 					sprtopoffset -= (dc_invscale << 6);
 					dc_texturemid += (1 << 22);
 					if (drawmiddle == true)
-						ScaleMaskedPost(p2->collumnofs[texture] + shape2, buf);
+						ScaleMaskedTallPost(p2->collumnofs[texture] + shape2, buf);
 				}
 				if (levelheight > 1)
 				{
 					sprtopoffset -= (dc_invscale << 6);
 					dc_texturemid += (1 << 22);
-					if (drawtop == true)
+					if (drawtop && !(drawbottom || drawmiddle))
+					{
 						ScaleMaskedPost(p3->collumnofs[texture] + shape3, buf);
+					}
+					if (drawtop && (drawbottom || drawmiddle))
+					{
+						ScaleMaskedTallPost(p3->collumnofs[texture] + shape3, buf);
+					}
 				}
 			}
 			top += topinc;
@@ -2466,7 +2522,6 @@ void DrawPlayerLocation(void)
 
 	CurrentFont = tinyfont;
 
-	whereami = 20;
 	for (i = 0; i < 18; i++)
 		memset((byte*)bufferofs + (ylookup[i + PLY]) + PLX, 0, 6);
 	px = PLX;
@@ -2489,18 +2544,17 @@ void DrawPlayerLocation(void)
 */
 
 // void RotateScreen(int startAngle, int endAngle, int startScale, int endScale,
-// int time, int option, boolean fadeOut);
+// int time, int option, bool fadeOut);
 
 void RotateScreenScaleFloat(float startAngle, float endAngle, float startScale,
-							float endScale, int time, boolean fadeOut,
-							boolean drawPlayScreen);
+							float endScale, int time, bool fadeOut,
+							bool drawPlayScreen);
 
 int playerview = 0;
 void ThreeDRefresh(void)
 {
 	objtype* tempptr;
 
-	whereami = 21;
 	tempptr = player;
 
 	//
@@ -2554,12 +2608,17 @@ void ThreeDRefresh(void)
 			DrawScreenSprite(SCREENEYE->targettilex, SCREENEYE->targettiley,
 							 SCREENEYE->state->condition + GIBEYE1 +
 								 shapestart);
+
+		// DrawPlayScreen(false);
+		// DrawStats();
+		// DrawTime(false);
+
 		UpdateClientControls();
 
 		if (player->flags & FL_GASMASK)
 			DrawScreenSizedSprite(gmasklump);
 
-		if (SHOW_PLAYER_STATS())
+		if(SHOW_PLAYER_STATS())
 		{
 			DrawStats();
 		}
@@ -2608,6 +2667,7 @@ void ThreeDRefresh(void)
 		DrawPlayerLocation();
 
 	FlipPage();
+
 	gamestate.frame++;
 
 	player = tempptr;
@@ -2621,7 +2681,6 @@ void ThreeDRefresh(void)
 
 void FlipPage(void)
 {
-	whereami = 22;
 
 	if ((SHAKETICS != 0xFFFF) && (!inmenu) && (!GamePaused) && (!fizzlein))
 	{
@@ -2668,18 +2727,18 @@ void DrawScaledScreen(int x, int y, int step, byte* src)
 	int xsize;
 	int ysize;
 
-	xsize = (iGLOBAL_SCREENWIDTH << 16) / step;
-	if (xsize > iGLOBAL_SCREENWIDTH)
-		xsize = iGLOBAL_SCREENWIDTH;
-	ysize = (iGLOBAL_SCREENHEIGHT << 16) / step;
-	if (ysize > iGLOBAL_SCREENHEIGHT)
-		ysize = iGLOBAL_SCREENHEIGHT;
+	xsize = (FRAMEBUFFERWIDTH << 16) / step;
+	if (xsize > FRAMEBUFFERWIDTH)
+		xsize = FRAMEBUFFERWIDTH;
+	ysize = (FRAMEBUFFERHEIGHT << 16) / step;
+	if (ysize > FRAMEBUFFERHEIGHT)
+		ysize = FRAMEBUFFERHEIGHT;
 
 	{
 		yfrac = 0;
 		for (j = y; j < y + ysize; j++)
 		{
-			p = src + (iGLOBAL_SCREENWIDTH * (yfrac >> 16));
+			p = src + (FRAMEBUFFERWIDTH * (yfrac >> 16));
 			buf = (byte*)bufferofs + ylookup[j] + x;
 			xfrac = 0;
 			yfrac += step;
@@ -2721,7 +2780,7 @@ void DoLoadGameSequence(void)
 	dy = (-y) / time;
 	ds = -((s - 0x1000000) / time);
 
-	destscreen = SafeMalloc(iGLOBAL_SCREENWIDTH * iGLOBAL_SCREENHEIGHT);
+	destscreen = SafeMalloc(FRAMEBUFFERWIDTH * FRAMEBUFFERHEIGHT);
 	SetupScreen(false);
 	ThreeDRefresh();
 
@@ -2751,10 +2810,9 @@ void DoLoadGameSequence(void)
 	FlipPage();
 	SafeFree(destscreen);
 	CalcTics();
-	CalcTics();
 	// bna++ section
 	shape = (pic_t*)W_CacheLumpName("backtile", PU_CACHE, Cvt_pic_t, 1);
-	DrawTiledRegion(0, 16, iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT - 32, 0,
+	DrawTiledRegion(0, 16, FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT - 32, 0,
 					16, shape); // bna++
 	DrawPlayScreen(false);
 	DisableScreenStretch();
@@ -2769,7 +2827,7 @@ void DoLoadGameSequence(void)
 //
 //******************************************************************************
 byte* RotatedImage;
-boolean RotateBufferStarted = false;
+bool RotateBufferStarted = false;
 void StartupRotateBuffer(int masked)
 {
 	int k; ////zxcv
@@ -2788,32 +2846,32 @@ void StartupRotateBuffer(int masked)
 	//   RotatedImage=SafeMalloc(131072);org
 	// RotatedImage=SafeMalloc(131072*8);
 
-	// int amountToAlloc = ((iGLOBAL_SCREENWIDTH * iGLOBAL_SCREENHEIGHT)*2) +
+	// int amountToAlloc = ((FRAMEBUFFERWIDTH * FRAMEBUFFERHEIGHT)*2) +
 	// 3072; //this replaces 131072
 
 	RotatedImage = SafeMalloc(131072);
 
 	/*
-		if (iGLOBAL_SCREENWIDTH == 320) {
+		if (FRAMEBUFFERWIDTH == 320) {
 			RotatedImage=SafeMalloc(131072);
-		} else if (iGLOBAL_SCREENWIDTH == 640) {
+		} else if (FRAMEBUFFERWIDTH == 640) {
 			RotatedImage=SafeMalloc(131072*4);
-		} else if (iGLOBAL_SCREENWIDTH == 800) {
+		} else if (FRAMEBUFFERWIDTH == 800) {
 			RotatedImage=SafeMalloc(131072*8);
 		}
-		else if (iGLOBAL_SCREENWIDTH == 1024)
+		else if (FRAMEBUFFERWIDTH == 1024)
 		{
 			RotatedImage=SafeMalloc(131072*14);
 		}
-		else if (iGLOBAL_SCREENWIDTH == 1280)
+		else if (FRAMEBUFFERWIDTH == 1280)
 		{
 			RotatedImage=SafeMalloc(131072*20);
 		}
-		else if (iGLOBAL_SCREENWIDTH == 1400)
+		else if (FRAMEBUFFERWIDTH == 1400)
 		{
 			RotatedImage=SafeMalloc(131072*20);
 		}
-		else if (iGLOBAL_SCREENWIDTH == 1920)
+		else if (FRAMEBUFFERWIDTH == 1920)
 		{
 			RotatedImage=SafeMalloc(131072*50);
 		}
@@ -2825,48 +2883,48 @@ void StartupRotateBuffer(int masked)
 	else
 		memset(RotatedImage, 0xff, 131072);
 	/*
-			if (iGLOBAL_SCREENWIDTH == 320) {
+			if (FRAMEBUFFERWIDTH == 320) {
 				memset(RotatedImage,0,131072);
-			} else if (iGLOBAL_SCREENWIDTH == 640) {
+			} else if (FRAMEBUFFERWIDTH == 640) {
 				memset(RotatedImage,0,131072*4);
-			} else if (iGLOBAL_SCREENWIDTH == 800) {
+			} else if (FRAMEBUFFERWIDTH == 800) {
 				//memset(RotatedImage,0,131072);//org
 				memset(RotatedImage,0,131072*8);
-			}else if (iGLOBAL_SCREENWIDTH == 1024) {
+			}else if (FRAMEBUFFERWIDTH == 1024) {
 				memset(RotatedImage,0,131072*14);
 			}
-			else if (iGLOBAL_SCREENWIDTH == 1280)
+			else if (FRAMEBUFFERWIDTH == 1280)
 			{
 				memset(RotatedImage, 0, 131072*20);
 			}
-			else if (iGLOBAL_SCREENWIDTH == 1400)
+			else if (FRAMEBUFFERWIDTH == 1400)
 			{
 				memset(RotatedImage, 0, 131072*20);
 			}
-			else if (iGLOBAL_SCREENWIDTH == 1920)
+			else if (FRAMEBUFFERWIDTH == 1920)
 			{
 				memset(RotatedImage, 0, 131072*50);
 			}
 		} else {
-			if (iGLOBAL_SCREENWIDTH == 320) {
+			if (FRAMEBUFFERWIDTH == 320) {
 				memset(RotatedImage,0xff,131072);
-			} else if (iGLOBAL_SCREENWIDTH == 640) {
+			} else if (FRAMEBUFFERWIDTH == 640) {
 				memset(RotatedImage,0xff,131072*4);
-			} else if (iGLOBAL_SCREENWIDTH == 800) {
+			} else if (FRAMEBUFFERWIDTH == 800) {
 				memset(RotatedImage,0xff,131072*8);
 			}
-			else if (iGLOBAL_SCREENWIDTH == 1024) {
+			else if (FRAMEBUFFERWIDTH == 1024) {
 				memset(RotatedImage,0xff,131072*14);
 			}
-			else if (iGLOBAL_SCREENWIDTH == 1280)
+			else if (FRAMEBUFFERWIDTH == 1280)
 			{
 				memset(RotatedImage, 0xff, 131072*20);
 			}
-			else if (iGLOBAL_SCREENWIDTH == 1400)
+			else if (FRAMEBUFFERWIDTH == 1400)
 			{
 				memset(RotatedImage, 0xff, 131072*20);
 			}
-			else if (iGLOBAL_SCREENWIDTH == 1920)
+			else if (FRAMEBUFFERWIDTH == 1920)
 			{
 				memset(RotatedImage, 0xff, 131072*50);
 			}
@@ -2875,16 +2933,16 @@ void StartupRotateBuffer(int masked)
 	// memset(RotatedImage,0xff,131072);//org
 	// memset(RotatedImage,0xff,131072*8);
 
-	if ((masked == false) && (iGLOBAL_SCREENWIDTH >= 800))
+	if ((masked == false) && (FRAMEBUFFERWIDTH >= 800))
 	{
 		DisableScreenStretch();
 		// SetTextMode (  );
 
 		k = (28 * 512); // 14336;
 		// k=((0+28)<<10);//28672
-		for (a = 0; a < iGLOBAL_SCREENHEIGHT; a++)
+		for (a = 0; a < FRAMEBUFFERHEIGHT; a++)
 		{
-			for (b = 0; b < iGLOBAL_SCREENWIDTH; b++)
+			for (b = 0; b < FRAMEBUFFERWIDTH; b++)
 			{
 				//*(RotatedImage+99+((a+28)<<9)+b)   =   *((byte
 				//*)bufferofs+(a*linewidth)+b);
@@ -2897,13 +2955,13 @@ void StartupRotateBuffer(int masked)
 			// k+=512*2;
 		}
 	}
-	else if ((masked == false) && (iGLOBAL_SCREENWIDTH == 640))
+	else if ((masked == false) && (FRAMEBUFFERWIDTH == 640))
 	{
 		DisableScreenStretch();
 		k = (28 * 512); // 14336;
-		for (a = 0; a < iGLOBAL_SCREENHEIGHT; a++)
+		for (a = 0; a < FRAMEBUFFERHEIGHT; a++)
 		{
-			for (b = 0; b < iGLOBAL_SCREENWIDTH; b++)
+			for (b = 0; b < FRAMEBUFFERWIDTH; b++)
 			{
 				k = ((a + 28) << 10);
 				*(RotatedImage + (k) + b) =
@@ -2911,7 +2969,7 @@ void StartupRotateBuffer(int masked)
 			}
 		}
 	}
-	else if ((masked == true) || (iGLOBAL_SCREENWIDTH == 320))
+	else if ((masked == true) || (FRAMEBUFFERWIDTH == 320))
 	{
 		for (a = 0; a < 200; a++)
 		{
@@ -2961,8 +3019,8 @@ void ScaleAndRotateBuffer(int startangle, int endangle, int startscale,
 	//    int Xh = 160;//org
 	//    int Yh = 100;//org
 
-	int Xh = iGLOBAL_SCREENWIDTH / 2;
-	int Yh = iGLOBAL_SCREENHEIGHT / 2;
+	int Xh = FRAMEBUFFERWIDTH / 2;
+	int Yh = FRAMEBUFFERHEIGHT / 2;
 	//  Xh = 259;
 	//  Yh = 109;
 
@@ -2977,7 +3035,6 @@ void ScaleAndRotateBuffer(int startangle, int endangle, int startscale,
 
 	scale = (startscale << 6);
 
-	CalcTics();
 	CalcTics();
 	// SDL_SetRelativeMouseMode(SDL_FALSE);
 
@@ -3005,14 +3062,13 @@ void ScaleAndRotateBuffer(int startangle, int endangle, int startscale,
 	DrawRotatedScreen(Xh, Yh, (byte*)bufferofs, endangle & (FINEANGLES - 1),
 					  endscale, 0);
 	CalcTics();
-	CalcTics();
 	// I_Delay (240);//bna++
 	// bna++ section
 	if (playstate == ex_stillplaying)
 	{ // bna++
 		pic_t* shape;
 		shape = (pic_t*)W_CacheLumpName("backtile", PU_CACHE, Cvt_pic_t, 1);
-		DrawTiledRegion(0, 16, iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT - 32,
+		DrawTiledRegion(0, 16, FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT - 32,
 						0, 16, shape); // bna++
 		DisableScreenStretch();		   // dont strech when we go BACK TO GAME
 		DrawPlayScreen(true);		   // repaint ammo and life stat
@@ -3026,7 +3082,7 @@ void ScaleAndRotateBuffer(int startangle, int endangle, int startscale,
 //
 //******************************************************************************
 
-extern boolean skipRotate;
+extern bool skipRotate;
 
 void RotateBuffer(int startangle, int endangle, int startscale, int endscale,
 				  int time)
@@ -3047,8 +3103,8 @@ void VL_FadeOutScaledScreen(int start, int end, int red, int green, int blue,
 							int steps, float scale);
 
 void RotateScreenScaleFloat(float startAngle, float endAngle, float startScale,
-							float endScale, int time, boolean fadeOut,
-							boolean drawPlayScreen)
+							float endScale, int time, bool fadeOut,
+							bool drawPlayScreen)
 {
 	DisableScreenStretch();
 
@@ -3072,7 +3128,6 @@ void RotateScreenScaleFloat(float startAngle, float endAngle, float startScale,
 	// printf("startingScale: %f \n", scale);
 
 	CalcTics();
-	CalcTics();
 
 	int i;
 
@@ -3087,7 +3142,7 @@ void RotateScreenScaleFloat(float startAngle, float endAngle, float startScale,
 
 		// printf("factor: %f \n", factor);
 
-		DoScreenRotateScale(iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT, newTex,
+		DoScreenRotateScale(FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT, newTex,
 							angle, factor);
 
 		scale += (scalestep);
@@ -3104,7 +3159,7 @@ void RotateScreenScaleFloat(float startAngle, float endAngle, float startScale,
 	if (fadeOut == true)
 		VL_FadeOutScaledScreen(0, 255, 0, 0, 0, VBLCOUNTER >> 1, endScale);
 
-	// DoScreenRotateScale(iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT, newTex,
+	// DoScreenRotateScale(FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT, newTex,
 	// 0, 1.0);
 
 	SDL_DestroyTexture(newTex);
@@ -3122,7 +3177,7 @@ void RotateScreenScaleFloat(float startAngle, float endAngle, float startScale,
 //     zooming out from the screen.
 /*
 void RotateScreen(int startAngle, int endAngle, int startScale, int endScale,
-int time, int option, boolean fadeOut)
+int time, int option, bool fadeOut)
 {
 	DisableScreenStretch();
 
@@ -3152,7 +3207,6 @@ was rotating too effing fast
 	printf("startingScale: %f \n", scale);
 
 	CalcTics();
-	CalcTics();
 
 	int i;
 
@@ -3178,7 +3232,7 @@ GetRenderer(), sdl_surface);
 
 		//printf("factor: %f \n", factor);
 
-		DoScreenRotateScale(iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT, newTex,
+		DoScreenRotateScale(FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT, newTex,
 angle, factor);
 
 		scale+=(scalestep);
@@ -3196,7 +3250,7 @@ angle, factor);
 	if(fadeOut == true)
 		VL_FadeOutScaledScreen (0, 255, 0,0,0,VBLCOUNTER>>1, abs(factor));
 
-	//DoScreenRotateScale(iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT, newTex,
+	//DoScreenRotateScale(FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT, newTex,
 0, 1.0);
 
 	SDL_DestroyTexture(newTex);
@@ -3223,8 +3277,8 @@ void DrawRotatedScreen(int cx, int cy, byte* destscreen, int angle, int scale,
 	// int Xres = 320;//old value
 	// int Yres = 200;//old val
 
-	int Xr = iGLOBAL_SCREENWIDTH;	 // 640;
-	int Yr = (iGLOBAL_SCREENHEIGHT); // 400; //bna aaaa fix
+	int Xr = FRAMEBUFFERWIDTH;	 // 640;
+	int Yr = (FRAMEBUFFERHEIGHT); // 400; //bna aaaa fix
 
 	//	   SetTextMode (  );
 	c = FixedMulShift(scale, costable[angle], 11);
@@ -3233,27 +3287,27 @@ void DrawRotatedScreen(int cx, int cy, byte* destscreen, int angle, int scale,
 	//   c = c/2; //these values are to rotate degres or?
 	//   s = s/2;
 	//   xst & xct= start center values ;
-	if ((iGLOBAL_SCREENWIDTH == 320) || (masked == true))
+	if ((FRAMEBUFFERWIDTH == 320) || (masked == true))
 	{
 		xst = (((-cx) * s) + (128 << 16)) - (cy * c);
 		xct = (((-cx) * c) + (256 << 16) + (1 << 18) - (1 << 16)) + (cy * s);
 	}
-	else if ((iGLOBAL_SCREENWIDTH == 640) && (masked == false))
+	else if ((FRAMEBUFFERWIDTH == 640) && (masked == false))
 	{
 		xst = (((-cx) * s) + ((268) << 16)) - (cy * c);
 		xct = (((-cx) * c) + ((317) << 16) + (1 << 18) - (1 << 16)) + (cy * s);
 	} // y=268;x=317
-	else if ((iGLOBAL_SCREENWIDTH == 800) && (masked == false))
+	else if ((FRAMEBUFFERWIDTH == 800) && (masked == false))
 	{
 		xst = (((-cx) * s) + ((328) << 16)) - (cy * c);
 		xct = (((-cx) * c) + ((397) << 16) + (1 << 18) - (1 << 16)) + (cy * s);
 	} // 328 397
-	else if ((iGLOBAL_SCREENWIDTH == 1024) && (masked == false))
+	else if ((FRAMEBUFFERWIDTH == 1024) && (masked == false))
 	{
 		xst = (((-cx) * s) + ((410) << 16)) - (cy * c); // 1024/768=1.3333
 		xct = (((-cx) * c) + ((500) << 16) + (1 << 18) - (1 << 16)) + (cy * s);
 	} // 388 397
-	else if ((iGLOBAL_SCREENWIDTH >= 1152) && (masked == false))
+	else if ((FRAMEBUFFERWIDTH >= 1152) && (masked == false))
 	{
 		xst = (((-cx) * s) + ((432) << 16)) - (cy * c);
 		xct = (((-cx) * c) + ((576) << 16) + (1 << 18) - (1 << 16)) + (cy * s);
@@ -3262,9 +3316,9 @@ void DrawRotatedScreen(int cx, int cy, byte* destscreen, int angle, int scale,
 	mr_xstep = s;
 	mr_ystep = c;
 
-	if ((iGLOBAL_SCREENWIDTH >= 800) && (masked == 0))
+	if ((FRAMEBUFFERWIDTH >= 800) && (masked == 0))
 	{
-		screen = destscreen + iGLOBAL_SCREENWIDTH; // bna aaaa fix
+		screen = destscreen + FRAMEBUFFERWIDTH; // bna aaaa fix
 	}
 	else
 	{
@@ -3323,7 +3377,6 @@ void ApogeeTitle(void)
 	int dy, dangle, dscale;
 	int time;
 
-	CalcTics();
 	CalcTics();
 	IN_ClearKeysDown();
 	viewwidth = 320;
@@ -3391,7 +3444,6 @@ void ApogeeTitle(void)
 			goto apogeeexit;
 	}
 	CalcTics();
-	CalcTics();
 	VL_DrawPostPic(W_GetNumForName("ap_wrld"));
 	DrawRotatedScreen(x, y >> 16, (byte*)bufferofs, 0, APOGEESCALEEND, 1);
 	FlipPage();
@@ -3418,7 +3470,6 @@ void DopefishTitle(void)
 	int height;
 
 	shapenum = W_GetNumForName("scthead1");
-	CalcTics();
 	CalcTics();
 	IN_ClearKeysDown();
 	MU_StartSong(song_secretmenu);
@@ -3469,7 +3520,6 @@ void RotationFunSDL(void)
 	// StartupRotateBuffer (0);
 
 	CalcTics();
-	CalcTics();
 
 	SDL_Texture* currScreen =
 		SDL_CreateTextureFromSurface((SDL_Renderer*)GetRenderer(), sdl_surface);
@@ -3479,11 +3529,11 @@ void RotationFunSDL(void)
 		IN_UpdateKeyboard();
 		// printf("PRE SCALE \n");
 
-		DoScreenRotateScale(iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT,
+		DoScreenRotateScale(FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT,
 							currScreen, angle, scale);
 
 		// printf("POST SCALE \n");
-		// DrawRotatedScreen(iGLOBAL_SCREENWIDTH/2,iGLOBAL_SCREENHEIGHT/2,(byte
+		// DrawRotatedScreen(FRAMEBUFFERWIDTH/2,FRAMEBUFFERHEIGHT/2,(byte
 		// *)bufferofs,angle,scale,0); FlipPage();
 		CalcTics();
 		INL_GetMouseDelta(&x, &y);
@@ -3494,23 +3544,22 @@ void RotationFunSDL(void)
 			if (scale > 0)
 			{
 				scale -= 0.01;
-				// printf("new width:  %f \n", (float)iGLOBAL_SCREENWIDTH *
+				// printf("new width:  %f \n", (float)FRAMEBUFFERWIDTH *
 				// scale); printf("new height: %f \n",
-				// (float)iGLOBAL_SCREENHEIGHT * scale); printf("scale: %f \n",
+				// (float)FRAMEBUFFERHEIGHT * scale); printf("scale: %f \n",
 				// scale);
 			}
 		}
 		else if (buttons & (1 << 1))
 		{
 			scale += 0.01;
-			// printf("new width:  %f \n", (float)iGLOBAL_SCREENWIDTH * scale);
-			// printf("new height: %f \n", (float)iGLOBAL_SCREENHEIGHT * scale);
+			// printf("new width:  %f \n", (float)FRAMEBUFFERWIDTH * scale);
+			// printf("new height: %f \n", (float)FRAMEBUFFERHEIGHT * scale);
 			// printf("scale: %f \n", scale);
 		}
 	}
 	SDL_DestroyTexture(currScreen);
 
-	CalcTics();
 	CalcTics();
 	Keyboard[sc_Escape] = 0;
 
@@ -3538,12 +3587,11 @@ void RotationFun(void)
 	StartupRotateBuffer(0);
 
 	CalcTics();
-	CalcTics();
 	while (!Keyboard[sc_Escape])
 	{
 		IN_UpdateKeyboard();
 
-		DrawRotatedScreen(iGLOBAL_SCREENWIDTH / 2, iGLOBAL_SCREENHEIGHT / 2,
+		DrawRotatedScreen(FRAMEBUFFERWIDTH / 2, FRAMEBUFFERHEIGHT / 2,
 						  (byte*)bufferofs, angle, scale, 0);
 		FlipPage();
 		CalcTics();
@@ -3561,13 +3609,12 @@ void RotationFun(void)
 		}
 	}
 	CalcTics();
-	CalcTics();
 	Keyboard[sc_Escape] = 0;
 
 	ShutdownRotateBuffer();
 }
 
-boolean ScreenSaverStarted = false;
+bool ScreenSaverStarted = false;
 screensaver_t* ScreenSaver;
 #define PAUSETIME (70)
 
@@ -3624,17 +3671,17 @@ void StartupScreenSaver(void)
 	ScreenSaver = (screensaver_t*)SafeMalloc(sizeof(screensaver_t));
 	ScreenSaver->phase = 0;
 	ScreenSaver->pausetime = PAUSETIME;
-	if (iGLOBAL_SCREENWIDTH == 320)
+	if (FRAMEBUFFERWIDTH == 320)
 	{
 		ScreenSaver->pausex = 120;
 		ScreenSaver->pausey = 84;
 	}
-	else if (iGLOBAL_SCREENWIDTH == 640)
+	else if (FRAMEBUFFERWIDTH == 640)
 	{
 		ScreenSaver->pausex = 240;
 		ScreenSaver->pausey = 201;
 	}
-	else if (iGLOBAL_SCREENWIDTH == 800)
+	else if (FRAMEBUFFERWIDTH == 800)
 	{
 		ScreenSaver->pausex = 300;
 		ScreenSaver->pausey = 252;
@@ -3693,9 +3740,9 @@ void UpdateScreenSaver(void)
 		ScreenSaver->dx = abs(ScreenSaver->dx);
 		ScreenSaver->dy += (RandomNumber("Rotate", 0) >> 6) - 2;
 	}
-	else if (ScreenSaver->x > iGLOBAL_SCREENWIDTH - SPINSIZE)
+	else if (ScreenSaver->x > FRAMEBUFFERWIDTH - SPINSIZE)
 	{
-		ScreenSaver->x = iGLOBAL_SCREENWIDTH - SPINSIZE;
+		ScreenSaver->x = FRAMEBUFFERWIDTH - SPINSIZE;
 		ScreenSaver->dx = -(abs(ScreenSaver->dx));
 		ScreenSaver->dy += (RandomNumber("Rotate", 0) >> 6) - 2;
 	}
@@ -3705,9 +3752,9 @@ void UpdateScreenSaver(void)
 		ScreenSaver->dy = abs(ScreenSaver->dy);
 		ScreenSaver->dx += (RandomNumber("Rotate", 0) >> 6) - 2;
 	}
-	else if (ScreenSaver->y > iGLOBAL_SCREENHEIGHT - SPINSIZE)
+	else if (ScreenSaver->y > FRAMEBUFFERHEIGHT - SPINSIZE)
 	{
-		ScreenSaver->y = iGLOBAL_SCREENHEIGHT - SPINSIZE;
+		ScreenSaver->y = FRAMEBUFFERHEIGHT - SPINSIZE;
 		ScreenSaver->dy = -(abs(ScreenSaver->dy));
 		ScreenSaver->dx += (RandomNumber("Rotate", 0) >> 6) - 2;
 	}
@@ -3725,17 +3772,17 @@ void UpdateScreenSaver(void)
 	if (ScreenSaver->pausetime <= 0)
 	{
 		ScreenSaver->pausetime = PAUSETIME;
-		if (iGLOBAL_SCREENWIDTH == 320)
+		if (FRAMEBUFFERWIDTH == 320)
 		{
 			ScreenSaver->pausex = RandomNumber("pausex", 0) % 240;
 			ScreenSaver->pausey = RandomNumber("pausey", 0) % 168;
 		}
-		else if (iGLOBAL_SCREENWIDTH == 640)
+		else if (FRAMEBUFFERWIDTH == 640)
 		{
 			ScreenSaver->pausex = RandomNumber("pausex", 0) % 480;
 			ScreenSaver->pausey = RandomNumber("pausey", 0) % 403;
 		}
-		else if (iGLOBAL_SCREENWIDTH == 800)
+		else if (FRAMEBUFFERWIDTH == 800)
 		{
 			ScreenSaver->pausex = RandomNumber("pausex", 0) % 600;
 			ScreenSaver->pausey = RandomNumber("pausey", 0) % 504;
@@ -4439,7 +4486,6 @@ void DoTransmitterExplosion(void)
 	back = SafeMalloc(800 * linewidth);
 
 	CalcTics();
-	CalcTics();
 	DrawNormalSprite(0, 0, W_GetNumForName("transmit"));
 	PrepareBackground(back);
 	SetupTransmitterExplosions();
@@ -4678,7 +4724,6 @@ void DestroyEarth(void)
 	back = SafeMalloc(800 * linewidth);
 
 	CalcTics();
-	CalcTics();
 	DrawNormalSprite(0, 0, W_GetNumForName("ourearth"));
 	PrepareBackground(back);
 	SetupWorldExplosions();
@@ -4705,7 +4750,7 @@ void DestroyEarth(void)
 	SafeFree(back);
 }
 
-boolean DestroyedAllEggs(void)
+bool DestroyedAllEggs(void)
 {
 	statobj_t* temp;
 
@@ -5298,7 +5343,7 @@ void DrawPreviousCredits(int num, CreditText* Credits)
 //
 //******************************************************************************
 
-extern boolean dopefish;
+extern bool dopefish;
 void WarpCreditString(int time, byte* back, int num, CreditText* Credits)
 {
 	int dy;
@@ -5307,7 +5352,7 @@ void WarpCreditString(int time, byte* back, int num, CreditText* Credits)
 	int y;
 	int width;
 	int height;
-	boolean soundplayed;
+	bool soundplayed;
 
 	LastScan = 0;
 
@@ -5517,7 +5562,7 @@ void DrawRotRow(int count, byte* dest, byte* src)
 	ecx = mr_yfrac;
 	edx = mr_xfrac;
 
-	if ((iGLOBAL_SCREENWIDTH == 320) || (iG_masked == true))
+	if ((FRAMEBUFFERWIDTH == 320) || (iG_masked == true))
 	{
 		while (count--)
 		{
@@ -5537,7 +5582,7 @@ void DrawRotRow(int count, byte* dest, byte* src)
 			ecx += mr_ystep;
 		}
 	}
-	else if (iGLOBAL_SCREENWIDTH == 640)
+	else if (FRAMEBUFFERWIDTH == 640)
 	{
 		while (count--)
 		{
@@ -5557,12 +5602,12 @@ void DrawRotRow(int count, byte* dest, byte* src)
 			ecx += mr_ystep;
 		}
 	}
-	else if (iGLOBAL_SCREENWIDTH == 800)
+	else if (FRAMEBUFFERWIDTH == 800)
 	{
 		srctmp = src;
 		desttmp = dest;
 
-		desttmp -= (iGLOBAL_SCREENWIDTH * 1);
+		desttmp -= (FRAMEBUFFERWIDTH * 1);
 
 		ecx = mr_yfrac;
 		edx = mr_xfrac;
@@ -5601,12 +5646,12 @@ void DrawRotRow(int count, byte* dest, byte* src)
 			ecx += mr_ystep;
 		}
 	}
-	else if (iGLOBAL_SCREENWIDTH >= 1024)
+	else if (FRAMEBUFFERWIDTH >= 1024)
 	{
 		srctmp = src;
 		desttmp = dest;
 
-		desttmp -= (iGLOBAL_SCREENWIDTH * 1);
+		desttmp -= (FRAMEBUFFERWIDTH * 1);
 
 		/*
 				ecx = mr_yfrac;
@@ -5635,7 +5680,7 @@ void DrawRotRow(int count, byte* dest, byte* src)
 		srctmp = src;
 		desttmp = dest;
 
-		desttmp -= (iGLOBAL_SCREENWIDTH * 1);
+		desttmp -= (FRAMEBUFFERWIDTH * 1);
 
 		/*
 				ecx = mr_yfrac;
@@ -5666,6 +5711,9 @@ void DrawMaskedRotRow(int count, byte* dest, byte* src)
 	unsigned eax;
 	unsigned xfrac, yfrac;
 
+	const int xstep = mr_xstep;
+	const int ystep = mr_ystep;
+
 	xfrac = mr_xfrac;
 	yfrac = mr_yfrac;
 
@@ -5685,41 +5733,28 @@ void DrawMaskedRotRow(int count, byte* dest, byte* src)
 			*dest = src[eax];
 		dest++;
 
-		xfrac += mr_xstep;
-		yfrac += mr_ystep;
+		xfrac += xstep;
+		yfrac += ystep;
 	}
 }
 
 void DrawSkyPost(byte* buf, byte* src, int height)
 {
+	int i = 0;
+	byte* orig_src = src;
+
+	// force globals to be pre-loaded in register
+	const byte* restrict colormap = shadingtable;
+	const int* restrict scalers = skyScalers;
+	const int lineW = linewidth;
+
+	while (height--)
 	{
-		int i = 0;
-		byte* orig_src = src;
-		// org code
-		while (height--)
-		{
-			*buf = shadingtable[*src];
+		*buf = colormap[*src];
 
-			buf += linewidth;
-			src = orig_src + (++i * 200 / iGLOBAL_SCREENHEIGHT);
-		}
-		//
+		buf += lineW;
+		src = orig_src + scalers[++i];
 	}
-
-	/*
-	int lw = linewidth * 2;
-	int h  = height;
-
-	while (h--) {
-		*(buf) = shadingtable[*src];
-		buf += lw;
-		*(buf) = shadingtable[*src];
-		buf += lw;
-
-		//buf += lw;
-		src++;
-
-	}*/
 }
 
 #define CEILINGCOLOR 24 // default color when no sky or floor
@@ -5740,7 +5775,7 @@ void RefreshClear(void)
 
 	if (start > 0)
 	{
-		VL_Bar(0, 0, iGLOBAL_SCREENHEIGHT, start, CEILINGCOLOR);
+		VL_Bar(0, 0, FRAMEBUFFERWIDTH, start, CEILINGCOLOR);
 	}
 	else
 	{
@@ -5752,6 +5787,6 @@ void RefreshClear(void)
 	start = min(viewheight - start, viewheight);
 	if (start > 0)
 	{
-		VL_Bar(0, base, iGLOBAL_SCREENHEIGHT, start, FLOORCOLOR);
+		VL_Bar(0, base, FRAMEBUFFERWIDTH, start, FLOORCOLOR);
 	}
 }

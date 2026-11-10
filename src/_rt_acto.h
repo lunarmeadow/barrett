@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -25,9 +25,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define VAAPT			 24
 #define GODHAPT			 1024
 #define GODVAPT			 1024
-#define MAXDELTAYZSHOOT	 (((5 * FINEANGLES) / 360))
-#define MAXDELTAYZSEE	 (((15 * FINEANGLES) / 360))
-#define MAXSHOOTOFFSET	 (((15 * FINEANGLES) / 360))
+#define MAXSHOOTOFFSET	 (((30 * FINEANGLES) / 360))
 #define MAXSHOOTSHIFT	 (1)
 #define MAXDAMAGE		 (64)
 #define MAXYZANGLE		 (((30 * FINEANGLES) / 360))
@@ -254,17 +252,17 @@ typedef struct
 {
 	thingtype which;
 	byte tilex, tiley;
-	fixed x, y, z;
+	fixed_t x, y, z;
 } thing_point;
 
 //========================== Function Prototypes ==============================
 
 void MissileMovement(objtype*);
-boolean MissileTryMove(objtype*, int, int, int);
+bool MissileTryMove(objtype*, int, int, int);
 void T_DarkSnakeChase(objtype*);
 void HeatSeek(objtype*);
-boolean CheckDoor(objtype* ob, doorobj_t*, int, int);
-boolean NextToDoor(objtype* ob);
+bool CheckDoor(objtype* ob, doorobj_t*, int, int);
+bool NextToDoor(objtype* ob);
 void MissileHit(objtype* ob, void*);
 int Near(objtype*, void*, int);
 void FirstSighting(objtype*);
@@ -276,8 +274,8 @@ void SelectDodgeDir(objtype*);
 void SelectRollDir(objtype*);
 void SelectTouchDir(objtype*);
 void SelectMineDir(objtype*);
-boolean WallCheck(int, int);
-boolean NMEspincheck(objtype*);
+bool WallCheck(int, int);
+bool NMEspincheck(objtype*);
 void TurnActorIntoSprite(objtype* ob);
 void ActivateEnemy(objtype*);
 #endif

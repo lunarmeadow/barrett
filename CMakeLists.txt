@@ -5,12 +5,11 @@ project(barrett
 	LANGUAGES C CXX
 )
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
-find_package(Math)
 
 # only ONE of these may be active at a time (or none for the default registered version)
-option(BARRETT_SHAREWARE "Shareware" OFF)
-option(BARRETT_SUPERROTT "SuperROTT" OFF)
-option(BARRETT_SITELICENSE "Site License" OFF)
+option(BARRETT_SHAREWARE "Build Shareware version" OFF)
+option(BARRETT_SUPERROTT "Build SuperROTT version" OFF)
+option(BARRETT_SITELICENSE "Build Site License version" OFF)
 option(BARRETT_USEASAN "Turn on ASAN" OFF)
 
 if((BARRETT_SHAREWARE AND BARRETT_SUPERROTT) OR (BARRETT_SUPERROTT AND BARRETT_SITELICENSE) OR (BARRETT_SHAREWARE AND BARRETT_SITELICENSE))
@@ -26,6 +25,8 @@ elseif(BARRETT_SITELICENSE)
 else()
 	message(STATUS "Building Registered version")
 endif()
+
+cmake_policy(SET CMP0135 NEW)
 
 include(FetchContent)
 
@@ -44,6 +45,25 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(adlmidi inih)
 
+if(MSVC)
+	set(BARRETT_SDL2_VERSION "2.32.10")
+	FetchContent_Declare(
+		sdl2_msvc
+		URL "https://github.com/libsdl-org/SDL/releases/download/release-${BARRETT_SDL2_VERSION}/SDL2-devel-${BARRETT_SDL2_VERSION}-VC.zip"
+		URL_HASH MD5=a7f901f6f9630f37d9c8bcf8e57ba02a
+	)
+	FetchContent_MakeAvailable(sdl2_msvc)
+	set(SDL2_DIR "${sdl2_msvc_SOURCE_DIR}/cmake")
+	set(BARRETT_SDL2_MIXER_VERSION "2.8.1")
+	FetchContent_Declare(
+		sdl2_mixer_msvc
+		URL "https://github.com/libsdl-org/SDL_mixer/releases/download/release-${BARRETT_SDL2_MIXER_VERSION}/SDL2_mixer-devel-${BARRETT_SDL2_MIXER_VERSION}-VC.zip"
+		URL_HASH MD5=5922d1f423b266bd0df7dd90f5dd6e4b
+	)
+	FetchContent_MakeAvailable(sdl2_mixer_msvc)
+	set(SDL2_mixer_DIR "${sdl2_mixer_msvc_SOURCE_DIR}/cmake")
+endif()
+
 find_package(SDL2 REQUIRED CONFIG REQUIRED COMPONENTS SDL2)
 find_package(SDL2 REQUIRED CONFIG COMPONENTS SDL2main)
 find_package(SDL2_mixer REQUIRED CONFIG REQUIRED COMPONENTS SDL2_mixer)
@@ -61,13 +81,13 @@ set(AUDIOLIB_SOURCES
 add_library(audiolib STATIC ${AUDIOLIB_SOURCES})
 
 add_library(ASAN::ASAN IMPORTED INTERFACE)
-target_compile_options(ASAN::ASAN INTERFACE -fsanitize=address $<$<NOT:$<COMPILE_LANG_AND_ID:C,MSVC>>:-fno-omit-frame-pointer>)
-target_link_options(ASAN::ASAN INTERFACE -fsanitize=address)
+target_compile_options(ASAN::ASAN INTERFACE -fsanitize=address,undefined $<$<NOT:$<COMPILE_LANG_AND_ID:C,MSVC>>:-fno-omit-frame-pointer>)
+target_link_options(ASAN::ASAN INTERFACE -fsanitize=address,undefined)
 
-set_target_properties(audiolib PROPERTIES C_STANDARD_REQUIRED ON C_STANDARD 17)
+set_target_properties(audiolib PROPERTIES C_STANDARD_REQUIRED ON C_STANDARD 23)
 target_link_libraries(audiolib PRIVATE SDL2::SDL2 SDL2_mixer::SDL2_mixer)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
-	target_compile_options(audiolib PRIVATE -Wall -Wextra -Wpedantic)
+	target_compile_options(audiolib PRIVATE -Wall -Wextra -Wpedantic -Wfatal-errors)
 endif()
 
 set(BARRETT_SOURCES
@@ -126,14 +146,37 @@ set(BARRETT_SOURCES
 
 add_executable(barrett ${BARRETT_SOURCES})
 target_include_directories(barrett PRIVATE ${inih_SOURCE_DIR})
-target_link_libraries(barrett PRIVATE $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main> SDL2::SDL2 SDL2_mixer::SDL2_mixer ADLMIDI $<TARGET_NAME_IF_EXISTS:Math::Math>)
+target_link_libraries(barrett PRIVATE $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main> SDL2::SDL2 SDL2_mixer::SDL2_mixer ADLMIDI)
 target_link_libraries(barrett PRIVATE audiolib)
 target_link_libraries(barrett PUBLIC $<$<BOOL:${BARRETT_USEASAN}>:ASAN::ASAN>)
 target_compile_definitions(barrett PRIVATE SHAREWARE=$<BOOL:${BARRETT_SHAREWARE}>)
 target_compile_definitions(barrett PRIVATE SUPERROTT=$<BOOL:${BARRETT_SUPERROTT}>)
 target_compile_definitions(barrett PRIVATE SITELICENSE=$<BOOL:${BARRETT_SITELICENSE}>)
-target_compile_definitions(barrett PRIVATE PLATFORM_UNIX=1)
-set_target_properties(barrett PROPERTIES C_STANDARD_REQUIRED ON C_STANDARD 17)
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "CLANG")
-	target_compile_options(barrett PRIVATE -Wall -Wextra -Wshadow -Wpedantic)
+if(MSVC)
+	target_compile_definitions(barrett PRIVATE PLATFORM_WIN32=1)
+	target_compile_definitions(barrett PRIVATE PLATFORM_UNIX=0)
+	target_compile_options(barrett PRIVATE /wd4996 /wd4305 /wd4244 /wd4101)
+else()
+	target_compile_definitions(barrett PRIVATE PLATFORM_WIN32=0)
+	target_compile_definitions(barrett PRIVATE PLATFORM_UNIX=1)
+endif()
+set_target_properties(barrett PROPERTIES C_STANDARD_REQUIRED ON C_STANDARD 23)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
+	target_compile_options(barrett PRIVATE -Wall -Wextra -Wshadow=compatible-local -Wpedantic -Wfatal-errors)
+	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+		target_compile_options(barrett PRIVATE -g -O0)
+		if(NOT MINGW)
+			target_link_options(barrett PRIVATE -rdynamic)
+		endif()
+	elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+		target_compile_options(barrett PRIVATE -O2)
+	endif()
+endif()
+
+# statically link libc on windows bc mingw is a royal pain in the ass.
+# maybe use MSVC eventually but this should be good for now.
+# windows executable is probably huge so it should be stripped and compiled for size.
+if(MINGW)
+	target_compile_options(barrett PRIVATE -static-libgcc -static-libstdc++ -static)
+	target_link_options(barrett PRIVATE -static-libgcc -static-libstdc++ -static)
 endif()

@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -51,7 +51,7 @@ unsigned uwidthtable[UPDATEHIGH];
 unsigned blockstarts[UPDATEWIDE * UPDATEHIGH];
 byte update[UPDATESIZE];
 byte palette1[256][3], palette2[256][3];
-boolean screenfaded;
+bool screenfaded;
 
 //******************************************************************************
 //
@@ -123,7 +123,7 @@ void VL_MemStrechedToScreen(byte* source, int width, int height, int x, int y)
 	{
 		for (j = 0; j < height; j++)
 		{
-			destline = (byte*)(bufferofs + (iGLOBAL_SCREENWIDTH * j) +
+			destline = (byte*)(bufferofs + (FRAMEBUFFERWIDTH * j) +
 							   ylookup[y + j] + x);
 			o = ptr;
 			for (i = 0; i < width; i += 1)
@@ -134,8 +134,8 @@ void VL_MemStrechedToScreen(byte* source, int width, int height, int x, int y)
 			}
 			ptr = o;
 
-			destline = (byte*)(bufferofs + iGLOBAL_SCREENWIDTH +
-							   (iGLOBAL_SCREENWIDTH * j) + ylookup[y + j] + x);
+			destline = (byte*)(bufferofs + FRAMEBUFFERWIDTH +
+							   (FRAMEBUFFERWIDTH * j) + ylookup[y + j] + x);
 			for (i = 0; i < width; i += 1)
 			{
 				*(destline + i * 4 + plane) = *ptr;
@@ -172,6 +172,9 @@ void DrawTiledRegion(int x, int y, int width, int height, int offx, int offy,
 	int HeightIndex;
 	int WidthIndex;
 
+	// don't reload register constantly
+	const int screenW = FRAMEBUFFERWIDTH;
+
 	start = (byte*)(bufferofs + x + ylookup[y]);
 
 	source = &tile->data;
@@ -193,7 +196,6 @@ void DrawTiledRegion(int x, int y, int width, int height, int offx, int offy,
 	while (plane > 0)
 	{
 		origdest = start + (4 - plane);
-
 		sourcey = offy;
 		sourceoff = source + startoffset;
 		HeightIndex = height;
@@ -206,7 +208,10 @@ void DrawTiledRegion(int x, int y, int width, int height, int offx, int offy,
 			while (WidthIndex--)
 			{
 				*dest = sourceoff[sourcex];
-				dest += 4;
+
+				// ashley added: fix asan detection (clamp dest to not overflow on X-axis)
+				if(dest + 4 < origdest + screenW)
+					dest += 4;
 
 				sourcex++;
 				if (sourcex >= sourcewidth)
@@ -214,7 +219,7 @@ void DrawTiledRegion(int x, int y, int width, int height, int offx, int offy,
 					sourcex = 0;
 				}
 			}
-			origdest += iGLOBAL_SCREENWIDTH;
+			origdest += screenW;
 
 			sourceoff += sourcewidth;
 			sourcey++;
@@ -239,7 +244,7 @@ void DrawTiledRegion(int x, int y, int width, int height, int offx, int offy,
 
 void VWB_DrawPic(int x, int y, pic_t* pic)
 {
-	if (((iGLOBAL_SCREENWIDTH > 320) && !StretchScreen) ||
+	if (((FRAMEBUFFERWIDTH > 320) && !StretchScreen) ||
 		VW_MarkUpdateBlock(x, y, x + (pic->width << 2) - 1,
 						   y + (pic->height) - 1))
 		VL_MemToScreen((byte*)&pic->data, pic->width, pic->height, x, y);
@@ -271,7 +276,7 @@ void VL_Bar(int x, int y, int width, int height, int color)
 
 void VWB_Bar(int x, int y, int width, int height, int color)
 {
-	if (((iGLOBAL_SCREENWIDTH > 320) && !StretchScreen) ||
+	if (((FRAMEBUFFERWIDTH > 320) && !StretchScreen) ||
 		VW_MarkUpdateBlock(x, y, x + width, y + height - 1))
 		VL_Bar(x, y, width, height, color);
 }
@@ -380,7 +385,7 @@ void VWB_Vlin(int y1, int y2, int x, int color)
 //
 //******************************************************************************
 
-void VL_THlin(unsigned x, unsigned y, unsigned width, boolean up)
+void VL_THlin(unsigned x, unsigned y, unsigned width, bool up)
 {
 	byte* dest = (byte*)(bufferofs + ylookup[y] + x);
 
@@ -409,7 +414,7 @@ void VL_THlin(unsigned x, unsigned y, unsigned width, boolean up)
 //
 //******************************************************************************
 
-void VL_TVlin(unsigned x, unsigned y, unsigned height, boolean up)
+void VL_TVlin(unsigned x, unsigned y, unsigned height, bool up)
 {
 	byte* dest = (byte*)(bufferofs + ylookup[y] + x);
 
@@ -438,7 +443,7 @@ void VL_TVlin(unsigned x, unsigned y, unsigned height, boolean up)
 //
 //******************************************************************************
 
-void VWB_THlin(int x1, int x2, int y, boolean up)
+void VWB_THlin(int x1, int x2, int y, bool up)
 {
 	if (VW_MarkUpdateBlock(x1, y, x2, y))
 		VW_THlin(x1, x2, y, up);
@@ -450,7 +455,7 @@ void VWB_THlin(int x1, int x2, int y, boolean up)
 //
 //******************************************************************************
 
-void VWB_TVlin(int y1, int y2, int x, boolean up)
+void VWB_TVlin(int y1, int y2, int x, bool up)
 {
 	if (VW_MarkUpdateBlock(x, y1, x, y2))
 		VW_TVlin(y1, y2, x, up);
@@ -629,13 +634,13 @@ void VL_FadeOutScaledScreen(int start, int end, int red, int green, int blue,
 		WaitVBL();
 		VL_SetPalette(&palette2[0][0]);
 
-		// printf("%d \n", (int)((float)iGLOBAL_SCREENWIDTH*scale));
-		// printf("%d \n", (int)((float)iGLOBAL_SCREENHEIGHT*scale));
+		// printf("%d \n", (int)((float)FRAMEBUFFERWIDTH*scale));
+		// printf("%d \n", (int)((float)FRAMEBUFFERHEIGHT*scale));
 		// printf("%f \n", scale);
 
 		SDL_Texture* tex = GetMainSurfaceAsTexture();
 
-		DoScreenRotateScale(iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT, tex, 0,
+		DoScreenRotateScale(FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT, tex, 0,
 							scale);
 
 		SDL_DestroyTexture(tex);
@@ -785,7 +790,7 @@ void SwitchPalette(byte* newpal, int steps)
 //
 //****************************************************************************
 
-void VL_DecompressLBM(lbm_t* lbminfo, boolean flip)
+void VL_DecompressLBM(lbm_t* lbminfo, bool flip)
 {
 	int count;
 	byte b, rept;
@@ -832,9 +837,9 @@ void VL_DecompressLBM(lbm_t* lbminfo, boolean flip)
 			count += rept;
 
 		} while (count < lbminfo->width);
-		if (iGLOBAL_SCREENWIDTH > 320)
+		if (FRAMEBUFFERWIDTH > 320)
 		{
-			buf += (iGLOBAL_SCREENWIDTH - 320); // eg 800 - 320)
+			buf += (FRAMEBUFFERWIDTH - 320); // eg 800 - 320)
 		}
 	}
 
@@ -863,8 +868,8 @@ void SetBorderColor(int color)
 	// paint top red line
 	for (cnt = b; cnt < b + viewwidth; cnt++)
 	{
-		for (Ycnt = cnt; Ycnt < cnt + (5 * iGLOBAL_SCREENWIDTH);
-			 Ycnt += iGLOBAL_SCREENWIDTH)
+		for (Ycnt = cnt; Ycnt < cnt + (5 * FRAMEBUFFERWIDTH);
+			 Ycnt += FRAMEBUFFERWIDTH)
 		{
 			*Ycnt = color;
 		}
@@ -872,8 +877,8 @@ void SetBorderColor(int color)
 	// paint left red line
 	for (cnt = b; cnt < b + 5; cnt++)
 	{
-		for (Ycnt = cnt; Ycnt < cnt + (viewheight * iGLOBAL_SCREENWIDTH);
-			 Ycnt += iGLOBAL_SCREENWIDTH)
+		for (Ycnt = cnt; Ycnt < cnt + (viewheight * FRAMEBUFFERWIDTH);
+			 Ycnt += FRAMEBUFFERWIDTH)
 		{
 			*Ycnt = color;
 		}
@@ -881,18 +886,18 @@ void SetBorderColor(int color)
 	// paint right red line
 	for (cnt = b + (viewwidth - 5); cnt < b + viewwidth; cnt++)
 	{
-		for (Ycnt = cnt; Ycnt < cnt + (viewheight * iGLOBAL_SCREENWIDTH);
-			 Ycnt += iGLOBAL_SCREENWIDTH)
+		for (Ycnt = cnt; Ycnt < cnt + (viewheight * FRAMEBUFFERWIDTH);
+			 Ycnt += FRAMEBUFFERWIDTH)
 		{
 			*Ycnt = color;
 		}
 	}
 	// paint lower red line
-	for (cnt = b + ((viewheight - 5) * iGLOBAL_SCREENWIDTH);
-		 cnt < b + ((viewheight - 5) * iGLOBAL_SCREENWIDTH) + viewwidth; cnt++)
+	for (cnt = b + ((viewheight - 5) * FRAMEBUFFERWIDTH);
+		 cnt < b + ((viewheight - 5) * FRAMEBUFFERWIDTH) + viewwidth; cnt++)
 	{
-		for (Ycnt = cnt; Ycnt < b + (viewheight * iGLOBAL_SCREENWIDTH);
-			 Ycnt += iGLOBAL_SCREENWIDTH)
+		for (Ycnt = cnt; Ycnt < b + (viewheight * FRAMEBUFFERWIDTH);
+			 Ycnt += FRAMEBUFFERWIDTH)
 		{
 			*Ycnt = color;
 		}

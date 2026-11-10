@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -45,9 +45,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "w_wad.h"
 
 extern int iDemoNames;
-extern boolean iG_aimCross;
+extern bool iG_aimCross;
 
-boolean ricochetingRocketsEnabled = false;
+bool ricochetingRocketsEnabled = false;
 
 extern void DisplayMessage(int num, int position);
 
@@ -381,7 +381,7 @@ void DoWarp(void)
 {
 	/*
 		char str[10];
-		boolean esc;
+		bool esc;
 		int level;
 
 	   CurrentFont = smallfont;
@@ -432,11 +432,11 @@ void DoWarp(void)
 	ShutdownMenuBuf();
 
 	// bna++ section
-	if ((playstate == ex_stillplaying) && (iGLOBAL_SCREENWIDTH > 320))
+	if ((playstate == ex_stillplaying) && (FRAMEBUFFERWIDTH > 320))
 	{
 		pic_t* shape;
 		shape = (pic_t*)W_CacheLumpName("backtile", PU_CACHE, Cvt_pic_t, 1);
-		DrawTiledRegion(0, 16, iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT - 32,
+		DrawTiledRegion(0, 16, FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT - 32,
 						0, 16, shape);
 		DisableScreenStretch(); // dont strech when we go BACK TO GAME
 		DrawPlayScreen(true);	// repaint ammo and life stat
@@ -486,7 +486,7 @@ void DoWarp(void)
 void DoJukeBox(void)
 
 {
-	if (iGLOBAL_SCREENWIDTH > 320)
+	if (FRAMEBUFFERWIDTH > 320)
 	{
 		EnableScreenStretch(); // bna++ shut on streech mode
 	}
@@ -502,11 +502,11 @@ void DoJukeBox(void)
 	ShutdownMenuBuf();
 
 	// bna++ section
-	if ((playstate == ex_stillplaying) && (iGLOBAL_SCREENWIDTH > 320))
+	if ((playstate == ex_stillplaying) && (FRAMEBUFFERWIDTH > 320))
 	{
 		pic_t* shape;
 		shape = (pic_t*)W_CacheLumpName("backtile", PU_CACHE, Cvt_pic_t, 1);
-		DrawTiledRegion(0, 16, iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT - 32,
+		DrawTiledRegion(0, 16, FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT - 32,
 						0, 16, shape);
 		DisableScreenStretch(); // dont strech when we go BACK TO GAME
 		DrawPlayScreen(true);	// repaint ammo and life stat
@@ -731,7 +731,7 @@ void HurtPlayer(void)
 ================
 */
 
-void SetLightDiminish(boolean off)
+void SetLightDiminish(bool off)
 {
 	if (off)
 	{
@@ -753,7 +753,7 @@ void SetLightDiminish(boolean off)
 ================
 */
 
-void SetFog(boolean on)
+void SetFog(bool on)
 {
 	if (on)
 	{
@@ -836,7 +836,7 @@ void EndLevel(void)
 ================
 */
 
-void FloorandCeiling(boolean off)
+void FloorandCeiling(bool off)
 {
 	if (off)
 	{
@@ -969,7 +969,7 @@ void RestartCurrentLevel(void)
 void EndDemo(void)
 {
 	char str[10];
-	boolean esc;
+	bool esc;
 	int demonumber;
 
 	if (demorecord == false)
@@ -1020,7 +1020,7 @@ void EndDemo(void)
 void RecordDemoQuery(void)
 {
 	char str[10];
-	boolean esc;
+	bool esc;
 	int level;
 
 	ShutdownClientControls();
@@ -1076,7 +1076,7 @@ void RecordDemoQuery(void)
 void PlaybackDemoQuery(void)
 {
 	char str[10];
-	boolean esc;
+	bool esc;
 	int level;
 
 	ShutdownClientControls();
@@ -1152,7 +1152,7 @@ void WeaponCheat(int weapon)
 ================
 */
 
-extern boolean ricochetingRocketsEnabled;
+extern bool ricochetingRocketsEnabled;
 
 void RotationFunSDL(void);
 

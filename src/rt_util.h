@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -60,11 +60,11 @@ extern int _argc;
 extern char** _argv;
 
 void markgetch(void);
-boolean StringsNotEqual(char* s1, char* s2, int length);
+bool StringsNotEqual(char* s1, char* s2, int length);
 void GetPalette(char* pal);
 void ClearGraphicsScreen(void);
 void ClearBuffer(char* buf, int size);
-void Error(char* error, ...) __attribute__((noreturn, format(printf, 1, 2)));
+ATTR_NORETURN void Error(char* error, ...) ATTR_PRINTF(1, 2);
 void StartupSoftError(void);
 void ShutdownSoftError(void);
 int CheckParm(char* check);
@@ -109,18 +109,17 @@ void VL_SetPalette(byte* palette);
 void VL_GetPalette(byte* palette);
 void UL_printf(byte* str);
 void VL_NormalizePalette(byte* palette);
-void MapDebug(char* error, ...) __attribute__((format(printf, 1, 2)));
+void MapDebug(char* error, ...) ATTR_PRINTF(1, 2);
 void OpenMapDebug(void);
 void UL_ColorBox(int x, int y, int w, int h, int color);
 
 int SideOfLine(int x1, int y1, int x2, int y2, int x3, int y3);
 
-void hsort(char* base, int nel, int width, int (*compare)(),
-		   void (*switcher)());
+void hsort(char * base, int nel, int width, int (*compare)(void *, void*), void (*switcher)(void *, void*));
 
 char* UL_GetPath(char* path, char* dir);
-boolean UL_ChangeDirectory(char* path);
-boolean UL_ChangeDrive(char* drive);
+bool UL_ChangeDirectory(char* path);
+bool UL_ChangeDrive(char* drive);
 void AbortCheck(char* abortstring);
 
 void FixFilePath(char* filename);
@@ -160,7 +159,7 @@ struct dosdate_t
 
 void _dos_getdate(struct dosdate_t* date);
 
-void SoftwareError(char* error, ...) __attribute__((format(printf, 1, 2)));
+void SoftwareError(char* error, ...) ATTR_PRINTF(1, 2);
 
 #define SoftError                                                              \
 	if (1)                                                                     \
@@ -169,7 +168,7 @@ void SoftwareError(char* error, ...) __attribute__((format(printf, 1, 2)));
 	else                                                                       \
 		SoftwareError
 
-void DebugError(char* error, ...) __attribute__((format(printf, 1, 2)));
+void DebugError(char* error, ...) ATTR_PRINTF(1, 2);
 #define Debug DebugError
 // #define Debug
 

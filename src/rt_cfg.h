@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -32,35 +32,53 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 //****************************************************************************
 
+#define MINFOV 40
+#define MAXFOV 120
+
 extern int FXMode;
 extern int MusicMode;
 extern int MUvolume;
 extern int FXvolume;
-extern boolean mouseenabled;
-extern boolean joystickenabled;
-extern boolean joypadenabled;
-extern boolean allowBlitzMoreMissileWeps;
-extern boolean enableAmmoPickups;
-extern boolean autoAimMissileWeps;
-extern boolean autoAim;
-
+extern bool mouseenabled;
+extern bool joystickenabled;
+extern bool joypadenabled;
+extern bool autoAimMissileWeps;
+extern bool autoAim;
+extern bool blackwpns;
+extern bool doombobbing;
+extern bool halfmonkhp;
+extern bool disablelowhpsnd;
+extern bool ludicrousskybox;
+extern int vfov;
+extern int aspectRatioCorrection;
 extern int joystickport;
 extern int mouseadjustment;
 extern int threshold;
 extern int NumVoices;
 extern int NumChannels;
 extern int NumBits;
-extern boolean stereoreversed;
-extern boolean AutoDetailOn;
+extern bool stereoreversed;
+extern bool AutoDetailOn;
 extern int DoubleClickSpeed;
 extern int fulllight;
-extern boolean BobbinOn;
+extern bool BobbinOn;
 extern int Menuflipspeed;
 extern int DetailLevel;
 extern int fandc;
 extern int blanktime;
 extern char CodeName[9];
 extern char ApogeePath[256];
+
+extern int xhair_colour;
+extern int xhair_gap;
+extern int xhair_length;
+extern int xhair_thickness;
+extern bool xhair_prongs;
+extern bool xhair_tshape;
+extern bool xhair_dot;
+extern bool xhair_spread;
+extern bool xhair_usehp;
+extern bool xhair_outline;
 
 extern int DefaultDifficulty;
 extern int DefaultPlayerCharacter;
@@ -70,7 +88,7 @@ extern byte passwordstring[20];
 typedef struct
 {
 	char* path;
-	boolean avail;
+	bool avail;
 	char* file;
 } AlternateInformation;
 
@@ -99,7 +117,7 @@ extern MacroList CommbatMacros[MAXMACROS];
 void WriteBattleConfig(void);
 void ReadScores(void);
 void ReadInt(const char* s1, int* val);
-void ReadBoolean(const char* s1, boolean* val);
+void ReadBool(const char* s1, bool* val);
 void ReadConfig(void);
 void WriteParameter(int file, const char* s1, int val);
 void WriteScores(void);

@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -428,7 +428,7 @@ void TurnOffLight(int tilex, int tiley)
 	LightsInArea[MAPSPOT(tilex, tiley, 0) - AREATILE]--;
 }
 
-void ActivateLight(long light)
+void ActivateLight(intptr_t light)
 {
 	statobj_t* tstat;
 
@@ -439,7 +439,7 @@ void ActivateLight(long light)
 	TurnOnLight(tstat->tilex, tstat->tiley);
 }
 
-void DeactivateLight(long light)
+void DeactivateLight(intptr_t light)
 {
 	statobj_t* tstat;
 
@@ -452,8 +452,10 @@ void DeactivateLight(long light)
 
 void TurnOnLight(int i, int j)
 {
-
-	LightsInArea[MAPSPOT(i, j, 0) - AREATILE]++;
+	// ashley added: fix asan detection
+	if( ((MAPSPOT(i, j, 0) - AREATILE)) <  48 &&
+		((MAPSPOT(i, j, 0) - AREATILE)) >= 0)
+		LightsInArea[MAPSPOT(i, j, 0) - AREATILE]++;
 
 	if (lightsource == 0)
 		return;
@@ -755,7 +757,7 @@ void DoLights(int tilex, int tiley)
 ===============
 */
 
-boolean TurnOffLight0(int tilex, int tiley)
+bool TurnOffLight0(int tilex, int tiley)
 {
 	if (IsLight(tilex - 1, tiley) || IsLight(tilex - 1, tiley - 1) ||
 		IsLight(tilex, tiley - 1) || IsLight(tilex + 1, tiley - 1) ||
@@ -774,7 +776,7 @@ boolean TurnOffLight0(int tilex, int tiley)
 ===============
 */
 
-boolean TurnOffLight1(int tilex, int tiley, int i, int j)
+bool TurnOffLight1(int tilex, int tiley, int i, int j)
 {
 	int tempi = 2 * i;
 	int tempy = 2 * j;
@@ -797,7 +799,7 @@ boolean TurnOffLight1(int tilex, int tiley, int i, int j)
 ===============
 */
 
-boolean TurnOffLight2(int tilex, int tiley, int j)
+bool TurnOffLight2(int tilex, int tiley, int j)
 {
 	int tempy = 2 * j;
 
@@ -818,7 +820,7 @@ boolean TurnOffLight2(int tilex, int tiley, int j)
 ===============
 */
 
-boolean TurnOffLight3(int tilex, int tiley, int i)
+bool TurnOffLight3(int tilex, int tiley, int i)
 {
 	int tempx = 2 * i;
 
@@ -1082,7 +1084,7 @@ void LoadStatics(byte* buffer, int size)
 	}
 }
 
-void Set_NewZ_to_MapValue(fixed* newz, int zoffset, const char* errorstr,
+void Set_NewZ_to_MapValue(fixed_t* newz, int zoffset, const char* errorstr,
 						  int tilex, int tiley)
 {
 	int zf, z;
@@ -1116,7 +1118,7 @@ int BaseMarkerZ; // bna++
 void SpawnStatic(int tilex, int tiley, int mtype, int zoffset)
 {
 	statobj_t* temp;
-	boolean onetimer;
+	bool onetimer;
 
 	if (IS_SHAREWARE)
 	{
@@ -1459,6 +1461,10 @@ void SpawnSolidStatic(statobj_t* temp)
 
 void PreCacheStaticSounds(int itemnumber)
 {
+	// ashley added: fix asan detection
+	const int MAX_ITEM_NUMBER = sizeof(stats) / sizeof(stats[0]);
+	if(itemnumber < 0 || itemnumber > MAX_ITEM_NUMBER)
+		return;
 
 	if (stats[itemnumber].flags & FL_SHOOTABLE)
 		SD_PreCacheSound(SD_ITEMBLOWSND);

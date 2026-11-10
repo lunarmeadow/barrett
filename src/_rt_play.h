@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -21,16 +21,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define _rt_playr_private
 
 #include "rt_fixed.h"
-// double dTopYZANGLELIMIT; in winrott.c
-#define TopYZANGLELIMIT (44 * FINEANGLES / 360) // bna added
+
 #define YZANGLELIMIT	(30 * FINEANGLES / 360) // bna--(30*FINEANGLES/360)
-/*
-//bna++ had to limit this or the sky would fuck up
-#define TopYZANGLELIMIT  (6*FINEANGLES/360)//bna added
-#define YZANGLELIMIT  (40*FINEANGLES/360)//bna--(30*FINEANGLES/360)
-//partly fixed you can now se up but not down very much see rt_playr.c
-TopYZANGLELIMIT
-*/
 
 #define YZTILTSPEED		10
 #define SNAPBACKSPEED	10
@@ -84,7 +76,6 @@ TopYZANGLELIMIT
 	(FixedMulShift((x1 - x2), (x1 - x2), 16) +                                 \
 	 FixedMulShift((y1 - y2), (y1 - y2), 16))
 
-#define TILTLIMIT	   95
 #define PLAYERSTEPTIME 0xf000
 
 #define HITWALLSPEED 0x2800

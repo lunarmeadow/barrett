@@ -31,6 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <string.h>
 #include <ctype.h>
 
+#include "modexlib.h"
 #include "rt_def.h"
 
 #include "rt_cfg.h"
@@ -61,11 +62,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 //******************************************************************************
 
-extern int G_weaponscale;
-extern boolean iG_aimCross;
+extern bool iG_aimCross;
 extern int hudRescaleFactor;
 
-boolean WriteSoundFile = true;
+bool WriteSoundFile = true;
 
 int FXMode = 0;
 int MusicMode = 0;
@@ -73,46 +73,77 @@ int MusicMode = 0;
 int MUvolume = 196;
 int FXvolume = 196;
 
-boolean mouseenabled = 1;
-boolean usemouselook = 0;
-boolean oplmusicset = 0;
-boolean useoplmusic = 0;
+bool mouseenabled = 1;
+bool usemouselook = 0;
+bool useoplmusic = 0;
+bool blackwpns = 0;
+bool doombobbing = 0;
+bool halfmonkhp = 1;
+bool disablelowhpsnd = 1;
+bool ludicrousskybox = 1;
 int inverse_mouse = 1; // set  to -1 to invert mouse
-boolean usejump = 0;
-boolean sdl_fullscreen = 1;
-boolean borderWindow = 0;
-boolean borderlessWindow = 0;
+bool sdl_fullscreen = 1;
+bool borderWindow = 0;
+bool borderlessWindow = 0;
+bool autoAimMissileWeps = 0;
+bool autoAim = 1;
+bool allowMovementWithMouseYAxis = 1;
+int vfov = 90;
 
-boolean allowBlitzMoreMissileWeps = 0;
-boolean enableAmmoPickups = 0;
-boolean autoAimMissileWeps = 0;
-boolean autoAim = 1;
-boolean enableExtraPistolDrops = 0;
-boolean allowMovementWithMouseYAxis = 1;
-boolean enableZomROTT = 0;
-int FocalWidthOffset = 0;
+/* 
+	Different levels for aspect ratio correction
+
+	Fast applies 1.2x vertical stretch over a width x (height/1.2) framebuffer
+
+	e.g. 1920x1080 renders at 1920x900 and 1920x1080 is logical size
+
+	Accurate applies 1.2x horizontal squash over a (width/1.2) x height framebuffer
+
+	e.g. 1920x1080 renders at 2304x1080 and 1920x1080 is logical size
+
+	Fast reduces framebuffer size so makes the game faster
+
+	Accurate increases framebuffer size so makes the game slower. 
+
+	0 = none, 1 = fast, 2 = accurate;
+*/
+
+int aspectRatioCorrection = 1;
+
 int ScreenHeightToWriteToCfg = 0;
 int HudScaleToWriteToCfg = 0;
 int ScreenWidthToWriteToCfg = 0;
-boolean writeNewResIntoCfg = false;
+bool writeNewResIntoCfg = false;
 
-boolean joystickenabled = 0;
-boolean joypadenabled = 0;
+// ashley added:
+int xhair_colour = GREEN;
+int xhair_gap = 4;
+int xhair_length = 6;
+int xhair_thickness = 1;
+bool xhair_prongs = true;
+bool xhair_tshape = false;
+bool xhair_dot = false;
+bool xhair_spread = false;
+bool xhair_usehp = false;
+bool xhair_outline = false;
+
+bool joystickenabled = 0;
+bool joypadenabled = 0;
 int joystickport = 0;
 int mouseadjustment = 5;
 int threshold = 1;
 int NumVoices = 4;
 int NumChannels = 1;
 int NumBits = 8;
-boolean AutoDetailOn = true;
+bool AutoDetailOn = true;
 int DoubleClickSpeed = 20;
-boolean BobbinOn = true;
+bool BobbinOn = true;
 int Menuflipspeed = 15;
 int DetailLevel = 2; // HI DETAIL
 int fandc = 1;
 int blanktime = (2 * 60 * VBLCOUNTER);
-boolean ConfigLoaded = false;
-boolean stereoreversed = false;
+bool ConfigLoaded = false;
+bool stereoreversed = false;
 
 int DefaultDifficulty = 2;
 int DefaultPlayerCharacter = 0;
@@ -186,17 +217,17 @@ void ReadInt(const char* s1, int* val)
 
 //******************************************************************************
 //
-// ReadBoolean
+// ReadBool
 //
 //******************************************************************************
 
-void ReadBoolean(const char* s1, boolean* val)
+void ReadBool(const char* s1, bool* val)
 {
 	int temp;
 
 	temp = (int)(*val);
 	ReadInt(s1, &temp);
-	*val = (boolean)temp;
+	*val = (bool)temp;
 }
 
 //******************************************************************************
@@ -220,9 +251,9 @@ void ReadUnsigned(const char* s1, unsigned long* val)
 //
 //******************************************************************************
 
-boolean ParseSoundFile(void)
+bool ParseSoundFile(void)
 {
-	boolean retval = true;
+	bool retval = true;
 	int version = 0;
 
 	ReadInt("Version", &version);
@@ -259,7 +290,7 @@ boolean ParseSoundFile(void)
 
 		// Read in stereo reversal
 
-		ReadBoolean("StereoReverse", &stereoreversed);
+		ReadBool("StereoReverse", &stereoreversed);
 	}
 	else
 		retval = false;
@@ -402,104 +433,106 @@ void ConvertPasswordToPasswordString(void)
 //
 //******************************************************************************
 
-boolean ParseConfigFile(void)
+bool ParseConfigFile(void)
 {
 	//   int temp;
-	boolean retval = true;
+	bool retval = true;
 	int version = 0;
 
 	ReadInt("Version", &version);
 
 	if (version == ROTTVERSION)
 	{
-		// Read in allowBlitzguardMoreMissileWeps
-		ReadBoolean("AllowBlitzguardMoreMissileWeps",
-					&allowBlitzMoreMissileWeps);
-
-		// Read in enableAmmoPickups
-		ReadBoolean("EnableAmmoPickups", &enableAmmoPickups);
-
 		// Read in AutoAim
-		ReadBoolean("AutoAim", &autoAim);
+		ReadBool("AutoAim", &autoAim);
 
 		// Read in AutoAimMissileWeps
-		ReadBoolean("AutoAimMissileWeps", &autoAimMissileWeps);
-
-		// Read in EnableExtraPistolDrops
-		ReadBoolean("EnableExtraPistolDrops", &enableExtraPistolDrops);
-
-		// Read in scaleOffset
-
-		ReadInt("FocalWidthOffset", &FocalWidthOffset);
+		ReadBool("AutoAimMissileWeps", &autoAimMissileWeps);
 
 		// Read in MouseEnabled
-		ReadBoolean("MouseEnabled", &mouseenabled);
+		ReadBool("MouseEnabled", &mouseenabled);
 
 		// Read in UseMouseLook
-		ReadBoolean("UseMouseLook", &usemouselook);
+		ReadBool("UseMouseLook", &usemouselook);
 
-		// Read in OPLMusicSet
-		ReadBoolean("OPLMusicSet", &oplmusicset);
+		// Read in UseOPLMusic
+		ReadBool("UseOPLMusic", &useoplmusic);
 
-		// lock useoplmusic to state on cfg read
-		useoplmusic = oplmusicset;
+		// you get the idea
+		ReadBool("LowHPSound", &disablelowhpsnd);
+
+		ReadBool("HalfMonkHP", &halfmonkhp);
+
+		ReadBool("DoomBobbing", &doombobbing);
+
+		ReadBool("WeaponColor", &blackwpns);
+
+		ReadBool("LudicrousSkybox", &ludicrousskybox);
+    
+		ReadInt("VerticalFOV", &vfov);
+
+		ReadInt("AspectCorrection", &aspectRatioCorrection);
 
 		ReadInt("InverseMouse", &inverse_mouse);
 
-		ReadBoolean("AllowMovementWithMouseYAxis",
+		ReadBool("AllowMovementWithMouseYAxis",
 					&allowMovementWithMouseYAxis);
 
-		// Read in UseJump
-		ReadBoolean("UseJump", &usejump);
-
 		// Read in CrossHair
-		ReadBoolean("CrossHair", &iG_aimCross);
+		ReadBool("CrossHair", &iG_aimCross);
+
+		// Read in CrossHair Gap
+		ReadInt("CrossHairGap", &xhair_gap);
+
+		// Read in CrossHair Length
+		ReadInt("CrossHairLen", &xhair_length);
+
+		// Read in CrossHair Thickness
+		ReadInt("CrossHairThick", &xhair_thickness);
+
+		// Read in CrossHair Color
+		ReadInt("CrossHairEGA", &xhair_colour);
+
+		// Read in CrossHair Spread
+		ReadBool("CrossHairSpread", &xhair_spread);
+
+		// Read in CrossHair Prongs
+		ReadBool("CrossHairProngs", &xhair_prongs);
+
+		// Read in CrossHair Dot
+		ReadBool("CrossHairDot", &xhair_dot);
+
+		// Read in CrossHair Outline
+		ReadBool("CrossHairOutline", &xhair_outline);
+
+		// Read in CrossHair TShape
+		ReadBool("CrossHairTShape", &xhair_tshape);
+
+		// Read in CrossHair HP
+		ReadBool("CrossHairHP", &xhair_usehp);
 
 		// Read in JoystickEnabled
-		ReadBoolean("JoystickEnabled", &joystickenabled);
+		ReadBool("JoystickEnabled", &joystickenabled);
 
 		// Read in JoypadEnabled
-		ReadBoolean("JoypadEnabled", &joypadenabled);
+		ReadBool("JoypadEnabled", &joypadenabled);
 
 		// Read in JoystickPort
 		ReadInt("JoystickPort", &joystickport);
 
 		// Read in fullscreen
-		ReadBoolean("FullScreen", &sdl_fullscreen);
+		ReadBool("FullScreen", &sdl_fullscreen);
 
-		ReadBoolean("BorderWindow", &borderWindow);
+		ReadBool("BorderWindow", &borderWindow);
 
-		ReadBoolean("BorderlessWindow", &borderlessWindow);
+		ReadBool("BorderlessWindow", &borderlessWindow);
 
 		// Read in resolution
-		ReadInt("ScreenWidth", &iGLOBAL_SCREENWIDTH);
-		ReadInt("ScreenHeight", &iGLOBAL_SCREENHEIGHT);
+		ReadInt("ScreenWidth", &VIRTUALWIDTH);
+		ReadInt("ScreenHeight", &VIRTUALHEIGHT);
 
 		// Read in ViewSize
-
 		ReadInt("ViewSize", &viewsize);
-
-		// Read in Weaponscale
-		ReadInt("Weaponscale", &G_weaponscale); // bna added
-		if ((G_weaponscale < 150) || (G_weaponscale > 600))
-		{
-			if (iGLOBAL_SCREENWIDTH == 320)
-			{
-				G_weaponscale = 168;
-			}
-			else if (iGLOBAL_SCREENWIDTH == 640)
-			{
-				G_weaponscale = 299;
-			}
-			else if (iGLOBAL_SCREENWIDTH == 800)
-			{
-				G_weaponscale = 376;
-			}
-			else if (iGLOBAL_SCREENWIDTH == 1024)
-			{
-				G_weaponscale = 512;
-			}
-		}
 
 		// Read in HUDScale
 		ReadInt("HUDScale", &hudRescaleFactor);
@@ -511,13 +544,13 @@ boolean ParseConfigFile(void)
 		ReadInt("Threshold", &threshold);
 
 		// Read in Auto Detail
-		ReadBoolean("AutoDetail", &AutoDetailOn);
+		ReadBool("AutoDetail", &AutoDetailOn);
 
 		// Read in Light Dim
 		ReadInt("LightDim", &fulllight);
 
 		// Read in Bobbin' On
-		ReadBoolean("BobbingOn", &BobbinOn);
+		ReadBool("BobbingOn", &BobbinOn);
 
 		// Read in Double Click Speed
 		ReadInt("DoubleClickSpeed", &DoubleClickSpeed);
@@ -532,7 +565,7 @@ boolean ParseConfigFile(void)
 		ReadInt("FloorCeiling", &fandc);
 
 		// Read in MessagesEnabled
-		ReadBoolean("Messages", &MessagesEnabled);
+		ReadBool("Messages", &MessagesEnabled);
 
 		// Read in Autorun
 		ReadInt("AutoRun", &gamestate.autorun);
@@ -632,9 +665,9 @@ boolean ParseConfigFile(void)
 // ParseBattleFile ()
 //
 //******************************************************************************
-boolean ParseBattleFile(void)
+bool ParseBattleFile(void)
 {
-	boolean retval = true;
+	bool retval = true;
 	int version = 0;
 	int index;
 	int temp;
@@ -645,7 +678,7 @@ boolean ParseBattleFile(void)
 		retval = false;
 	else
 	{
-		ReadBoolean("ShowKillCount", &BATTLE_ShowKillCount);
+		ReadBool("ShowKillCount", &BATTLE_ShowKillCount);
 
 		ReadInt("GodModeTime", &BattleSpecialsTimes.GodModeTime);
 		ReadInt("DogModeTime", &BattleSpecialsTimes.DogModeTime);
@@ -670,7 +703,7 @@ boolean ParseBattleFile(void)
 		ReadInt("MercuryModeRespawnTime",
 				&BattleSpecialsTimes.MercuryModeRespawnTime);
 
-		ReadBoolean("EKG", &battlegibs);
+		ReadBool("EKG", &battlegibs);
 
 		for (index = battle_Normal; index < battle_NumBattleModes; index++)
 		{
@@ -970,13 +1003,14 @@ void ReadConfig(void)
 
 void CheckVendor(void)
 {
-	boolean saveout = false;
+	bool saveout = false;
 	int wadcrc;
 	int filecrc;
 	int size;
 	int lump;
 	byte* vendor;
 	char filename[128];
+	char fetchCWD[160];
 	const char *VENDORDOC, *VENDORLUMP;
 
 	if (IS_SHAREWARE)
@@ -990,7 +1024,10 @@ void CheckVendor(void)
 		VENDORLUMP = "LICENSE";
 	}
 
-	GetPathFromEnvironment(filename, ApogeePath, VENDORDOC);
+	// use cwd instead of userdata folder
+	getcwd(fetchCWD, sizeof(fetchCWD));
+	GetPathFromEnvironment(filename, fetchCWD, VENDORDOC);
+
 	if (access(filename, F_OK) == 0)
 	{
 		size = LoadFile(filename, (void**)&vendor);
@@ -1560,7 +1597,7 @@ void WriteSoundConfig(void)
 //
 //******************************************************************************
 
-extern boolean writeNewResIntoCfg;
+extern bool writeNewResIntoCfg;
 extern int ScreenWidthToWriteToCfg;
 extern int ScreenHeightToWriteToCfg;
 
@@ -1607,24 +1644,6 @@ void WriteConfig(void)
 
 	WriteParameter(file, "Version          ", ROTTVERSION);
 
-	// Write out AllowBlitzguardMoreMissileWeps
-
-	SafeWriteString(file, "\n;\n");
-	SafeWriteString(
-		file, "; 1 - Allows Blitzguards to have Random Missile weapons\n");
-	SafeWriteString(file, "; 0 - Disallows the above (ROTT Default)\n");
-	WriteParameter(file, "AllowBlitzguardMoreMissileWeps    ",
-				   allowBlitzMoreMissileWeps);
-
-	// Write out enableAmmoPickups
-
-	SafeWriteString(file, "\n;\n");
-	SafeWriteString(file,
-					"; 1 - Allows players to refill their missile weapons by "
-					"running over one a matching one on the ground\n");
-	SafeWriteString(file, "; 0 - Disables the above (ROTT default)\n");
-	WriteParameter(file, "EnableAmmoPickups     ", enableAmmoPickups);
-
 	// Write out autoAim
 
 	SafeWriteString(file, "\n;\n");
@@ -1642,20 +1661,6 @@ void WriteConfig(void)
 						  "at targets. (ROTT default)\n");
 	WriteParameter(file, "AutoAimMissileWeps    ", autoAimMissileWeps);
 
-	// Write out enableExtraPistolDrops
-
-	SafeWriteString(file, "\n;\n");
-	SafeWriteString(file, "; 1 - Enemies equipped with pistols have a chance "
-						  "of dropping an extra pistol when killed.\n");
-	SafeWriteString(
-		file, "; 0 - Enemies will not drop extra pistols at all. (Default)\n");
-	WriteParameter(file, "EnableExtraPistolDrops     ", enableExtraPistolDrops);
-
-	// Write out scaleOffset
-	SafeWriteString(file, "\n;\n");
-	SafeWriteString(file, "; Field Of View offset\n");
-	WriteParameter(file, "FocalWidthOffset     ", FocalWidthOffset);
-
 	// Write out MouseEnabled
 
 	SafeWriteString(file, "\n;\n");
@@ -1669,12 +1674,52 @@ void WriteConfig(void)
 	SafeWriteString(file, "; 0 - UseMouseLook Disabled\n");
 	WriteParameter(file, "UseMouseLook     ", usemouselook);
 
-	// Write out OPLMusicSet
+	// Write out UseOPLMusic
 	SafeWriteString(file, "\n;\n");
-	SafeWriteString(file, "; 1 - OPLMusicSet Enabled\n");
-	SafeWriteString(file, "; 0 - OPLMusicSet Disabled\n");
-	WriteParameter(file, "OPLMusicSet      ", oplmusicset);
+	SafeWriteString(file, "; 1 - UseOPLMusic Enabled\n");
+	SafeWriteString(file, "; 0 - UseOPLMusic Disabled\n");
+	WriteParameter(file, "UseOPLMusic      ", useoplmusic);
 
+	// Write out lowhpsound
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - LowHPSound  Disabled\n");
+	SafeWriteString(file, "; 0 - LowHPSound  Enabled\n");
+	WriteParameter(file, "LowHPSound       ", disablelowhpsnd);
+
+	// Write out halfmonkhp
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - HalfMonkHP  Enabled\n");
+	SafeWriteString(file, "; 0 - HalfMonkHP  Disabled\n");
+	WriteParameter(file, "HalfMonkHP       ", halfmonkhp);
+
+	// Write out doombobbing
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - DoomBobbing Enabled\n");
+	SafeWriteString(file, "; 0 - DoomBobbing Disabled\n");
+	WriteParameter(file, "DoomBobbing      ", doombobbing);
+
+	// Write out weapon recolours
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - WeaponColor Enabled\n");
+	SafeWriteString(file, "; 0 - WeaponColor Disabled\n");
+	WriteParameter(file, "WeaponColor      ", blackwpns);
+
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - LudicrousSkybox Enabled\n");
+	SafeWriteString(file, "; 0 - LudicrousSkybox Disabled\n");
+	WriteParameter(file, "LudicrousSkybox  ", ludicrousskybox);
+  
+	// Write out VerticalFov
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 60-150 VFOV \n");
+	WriteParameter(file, "VerticalFOV      ", vfov);
+
+	// Write out AspectRatioCorrection
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - No Aspect Correct\n");
+	SafeWriteString(file, "; 1 - Fast Aspect Correct\n");
+	SafeWriteString(file, "; 2 - Accurate Aspect Correct\n");
+	WriteParameter(file, "AspectCorrection ", aspectRatioCorrection);
 
 	// Write out InverseMouse
 	SafeWriteString(file, "\n;\n");
@@ -1689,17 +1734,68 @@ void WriteConfig(void)
 	WriteParameter(file, "allowMovementWithMouseYAxis    ",
 				   allowMovementWithMouseYAxis);
 
-	// Write out UseJump
-	SafeWriteString(file, "\n;\n");
-	SafeWriteString(file, "; 1 - usejump Enabled\n");
-	SafeWriteString(file, "; 0 - usejump Disabled\n");
-	WriteParameter(file, "UseJump          ", usejump);
-
 	// Write out CrossHair
 	SafeWriteString(file, "\n;\n");
 	SafeWriteString(file, "; 1 - CrossHair Enabled\n");
 	SafeWriteString(file, "; 0 - CrossHair Disabled\n");
 	WriteParameter(file, "CrossHair        ", iG_aimCross);
+
+	// Write out CrossHair Gap
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; CrossHair Gap\n");
+	WriteParameter(file, "CrossHairGap     ", xhair_gap);
+
+	// Write out CrossHair Length
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; CrossHair Length\n");
+	WriteParameter(file, "CrossHairLen     ", xhair_length);
+
+
+	// Write out CrossHair Thickness
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; CrossHairThickness\n");
+	WriteParameter(file, "CrossHairThick   ", xhair_thickness);
+
+	// Write out CrossHair Color
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 0-15 - CrossHair EGA Colour\n");
+	WriteParameter(file, "CrossHairEGA     ", xhair_colour);
+
+	// Write out CrossHair Spread
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - CrossHair Dynamic Spread Enabled\n");
+	SafeWriteString(file, "; 0 - CrossHair Dynamic Spread Disabled\n");
+	WriteParameter(file, "CrossHairSpread  ", xhair_spread);
+
+	// Write out CrossHair Prongs
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - CrossHair Prongs Enabled\n");
+	SafeWriteString(file, "; 0 - CrossHair Prongs Disabled\n");
+	WriteParameter(file, "CrossHairProngs  ", xhair_prongs);
+
+	// Write out CrossHair Dot
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - CrossHair Dot Enabled\n");
+	SafeWriteString(file, "; 0 - CrossHair Dot Disabled\n");
+	WriteParameter(file, "CrossHairDot     ", xhair_dot);
+
+	// Write out CrossHair Dot
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - CrossHair Outline Enabled\n");
+	SafeWriteString(file, "; 0 - CrossHair Outline Disabled\n");
+	WriteParameter(file, "CrossHairOutline ", xhair_outline);
+
+	// Write out CrossHair TShape
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - T CrossHair Enabled\n");
+	SafeWriteString(file, "; 0 - T CrossHair Disabled\n");
+	WriteParameter(file, "CrossHairTShape  ", xhair_tshape);
+
+	// Write out CrossHair HP
+	SafeWriteString(file, "\n;\n");
+	SafeWriteString(file, "; 1 - HP CrossHair Enabled\n");
+	SafeWriteString(file, "; 0 - HP CrossHair Disabled\n");
+	WriteParameter(file, "CrossHairHP      ", xhair_usehp);
 
 	// Write out JoystickEnabled
 
@@ -1743,8 +1839,8 @@ void WriteConfig(void)
 	SafeWriteString(file, "; Screen Resolution, supported resolutions: \n");
 	SafeWriteString(file, "; 320x200, 640x480 and 800x600\n");
 
-	// WriteParameter(file,"ScreenWidth      ",iGLOBAL_SCREENWIDTH);
-	// WriteParameter(file,"ScreenHeight     ",iGLOBAL_SCREENHEIGHT);
+	// WriteParameter(file,"ScreenWidth      ",FRAMEBUFFERWIDTH);
+	// WriteParameter(file,"ScreenHeight     ",FRAMEBUFFERHEIGHT);
 
 	if (writeNewResIntoCfg)
 	{
@@ -1753,8 +1849,8 @@ void WriteConfig(void)
 	}
 	else
 	{
-		WriteParameter(file, "ScreenWidth      ", iGLOBAL_SCREENWIDTH);
-		WriteParameter(file, "ScreenHeight     ", iGLOBAL_SCREENHEIGHT);
+		WriteParameter(file, "ScreenWidth      ", MONITORWIDTH);
+		WriteParameter(file, "ScreenHeight     ", MONITORHEIGHT);
 	}
 
 	// Write out ViewSize
@@ -1763,34 +1859,6 @@ void WriteConfig(void)
 	SafeWriteString(file, "; Size of View port.\n");
 	SafeWriteString(file, "; (smallest) 0 - 10 (largest)\n");
 	WriteParameter(file, "ViewSize         ", viewsize);
-
-	// Write out WEAPONSCALE  bna added
-
-	SafeWriteString(file, "\n;\n");
-	SafeWriteString(file, "; Size of Weaponscale.\n");
-	SafeWriteString(file, "; (smallest) 150 - 600 (largest)\n");
-	G_weaponscale = (weaponscale * 168) / 65536;
-
-	if ((G_weaponscale < 150) || (G_weaponscale > 600))
-	{
-		if (iGLOBAL_SCREENWIDTH == 320)
-		{
-			G_weaponscale = 168;
-		}
-		else if (iGLOBAL_SCREENWIDTH == 640)
-		{
-			G_weaponscale = 299;
-		}
-		else if (iGLOBAL_SCREENWIDTH == 800)
-		{
-			G_weaponscale = 376;
-		}
-		else if (iGLOBAL_SCREENWIDTH == 1024)
-		{
-			G_weaponscale = 512;
-		}
-	}
-	WriteParameter(file, "Weaponscale         ", G_weaponscale);
 
 	// Write out HUD Scale
 	SafeWriteString(file, "\n;\n");

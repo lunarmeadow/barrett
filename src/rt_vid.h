@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -52,7 +52,7 @@ extern unsigned mapwidthtable[64];
 extern unsigned uwidthtable[UPDATEHIGH];
 extern unsigned blockstarts[UPDATEWIDE * UPDATEHIGH];
 extern byte update[UPDATESIZE];
-extern boolean screenfaded;
+extern bool screenfaded;
 
 //***************************************************************************
 //
@@ -68,14 +68,14 @@ void VL_Bar(int x, int y, int width, int height, int color);
 void VWB_Bar(int x, int y, int width, int height, int color);
 void VWB_Hlin(int x1, int x2, int y, int color);
 void VWB_Vlin(int y1, int y2, int x, int color);
-void VWB_THlin(int x1, int x2, int y, boolean up);
-void VWB_TVlin(int y1, int y2, int x, boolean up);
+void VWB_THlin(int x1, int x2, int y, bool up);
+void VWB_TVlin(int y1, int y2, int x, bool up);
 int VW_MarkUpdateBlock(int x1, int y1, int x2, int y2);
 void VW_UpdateScreen(void);
 
 void VL_FadeOut(int start, int end, int red, int green, int blue, int steps);
 void VL_FadeIn(int start, int end, byte* palette, int steps);
-void VL_DecompressLBM(lbm_t* lbminfo, boolean flip);
+void VL_DecompressLBM(lbm_t* lbminfo, bool flip);
 void VL_FadeToColor(int time, int red, int green, int blue);
 void VWB_TBar(int x, int y, int width, int height);
 

@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -55,12 +55,12 @@ message_t Messages[MAXMSGS];
 static int UpdateMessageBackground;
 static int MessageSystemStarted = 0;
 static int LastMessageTime;
-static boolean EraseMessage[MAXMSGS];
+static bool EraseMessage[MAXMSGS];
 static int MessageOrder[MAXMSGS];
 static int TotalMessages = 0;
 static int MsgPos = 0;
 
-boolean MessagesEnabled = true;
+bool MessagesEnabled = true;
 
 int StringLength(char* string)
 {
@@ -87,7 +87,7 @@ int StringLength(char* string)
 
 void ResetMessageTime(void)
 {
-	LastMessageTime = GetTicCount();
+	LastMessageTime = GetCachedTic();
 }
 
 /*
@@ -101,7 +101,7 @@ void InitializeMessages(void)
 
 {
 	int i;
-	boolean start;
+	bool start;
 
 	start = false;
 
@@ -153,7 +153,7 @@ void GetMessageOrder(void)
 	int lowest;
 	int lowesttime;
 	byte done[MAXMSGS];
-	boolean found;
+	bool found;
 
 	memset(&done[0], 0, sizeof(done));
 	memset(MessageOrder, -1, sizeof(MessageOrder));
@@ -197,7 +197,7 @@ void DeleteMessage(int num)
 {
 	int i;
 	int msg;
-	boolean found;
+	bool found;
 
 	found = false;
 	for (i = 0; i < TotalMessages; i++)
@@ -303,9 +303,9 @@ void SetMessage(int num, char* text, int flags)
 	int i;
 	int msg;
 	int length;
-	boolean found;
+	bool found;
 
-	if (iGLOBAL_SCREENWIDTH >= 640)
+	if (FRAMEBUFFERWIDTH >= 640)
 	{
 		CurrentFont = newfont1; // smallfont;
 	}
@@ -399,8 +399,8 @@ void UpdateMessages(void)
 	int messagetics;
 	int i;
 
-	messagetics = GetTicCount() - LastMessageTime;
-	LastMessageTime = GetTicCount();
+	messagetics = GetCachedTic() - LastMessageTime;
+	LastMessageTime = GetCachedTic();
 
 	if (GamePaused == true)
 	{
@@ -433,7 +433,7 @@ extern int hudRescaleFactor;
 void DisplayMessage(int num, int position)
 {
 	PrintX = 1;
-	if (iGLOBAL_SCREENWIDTH > 320)
+	if (FRAMEBUFFERWIDTH > 320)
 	{
 		PrintY = 2 + (position * (9 * 2));
 	}
@@ -481,15 +481,15 @@ void DisplayMessage(int num, int position)
 	case MSG_MODEM:
 		fontcolor = egacolor[LIGHTBLUE];
 		DrawIString(PrintX, PrintY, "Message>", Messages[num].flags);
-		if (iGLOBAL_SCREENWIDTH == 320)
+		if (FRAMEBUFFERWIDTH == 320)
 		{
 			PrintX += 8 * 8;
 		}
-		else if (iGLOBAL_SCREENWIDTH == 640)
+		else if (FRAMEBUFFERWIDTH == 640)
 		{
 			PrintX += 8 * 8 * 2;
 		}
-		else if (iGLOBAL_SCREENWIDTH == 800)
+		else if (FRAMEBUFFERWIDTH == 800)
 		{
 			PrintX += 8 * 8 * 2;
 		}
@@ -552,13 +552,13 @@ void RestoreMessageBackground(void)
 					// SetTextMode (  );
 					// DrawTiledRegion( 0, y, 320, 9, 0, y, shape );KILLS_HEIGHT
 					// bna--
-					DrawTiledRegion(0, y, iGLOBAL_SCREENWIDTH, 9, 0, y, shape);
-					DrawTiledRegion(0, y + 8, iGLOBAL_SCREENWIDTH, 9, 0, y,
+					DrawTiledRegion(0, y, FRAMEBUFFERWIDTH, 9, 0, y, shape);
+					DrawTiledRegion(0, y + 8, FRAMEBUFFERWIDTH, 9, 0, y,
 									shape);
-					DrawTiledRegion(0, y + 16, iGLOBAL_SCREENWIDTH, 9, 0, y,
+					DrawTiledRegion(0, y + 16, FRAMEBUFFERWIDTH, 9, 0, y,
 									shape);
 
-					// DrawTiledRegion( 0, y, iGLOBAL_SCREENWIDTH, 212, 0, y,
+					// DrawTiledRegion( 0, y, FRAMEBUFFERWIDTH, 212, 0, y,
 					// shape );
 				}
 				if (viewsize == 0)
@@ -718,7 +718,7 @@ void DrawPlayerSelectionMenu(void)
 =
 ====================
 */
-void FinishModemMessage(int num, boolean send)
+void FinishModemMessage(int num, bool send)
 {
 	if ((!MSG.inmenu) && (MSG.length > 0))
 	{

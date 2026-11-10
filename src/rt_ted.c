@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -62,7 +62,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // GLOBAL VARIABLES
 //========================================
 
-extern boolean UseBaseMarker;
+extern bool UseBaseMarker;
 
 teamtype TEAM[MAXPLAYERS];
 int numareatiles[NUMAREAS + 1];
@@ -88,8 +88,8 @@ int mapwidth;
 int mapheight;
 int lastlevelloaded = -1;
 
-boolean insetupgame;
-boolean ISRTL = false;
+bool insetupgame;
+bool ISRTL = false;
 
 unsigned MapSpecials = 0;
 
@@ -101,7 +101,7 @@ char LevelName[80];
 
 static cache_t* cachelist;
 static word cacheindex;
-static boolean CachingStarted = false;
+static bool CachingStarted = false;
 static char* ROTTMAPS;
 char* BATTMAPS;
 
@@ -167,9 +167,11 @@ int GetLumpForTile(int tile);
 #define SGN(x) ((x > 0) ? (1) : ((x == 0) ? (0) : (-1)))
 
 /*--------------------------------------------------------------------------*/
-int CompareTags(s1p, s2p)
-cache_t *s1p, *s2p;
+int CompareTags(void* v1p, void* v2p)
 {
+	cache_t* s1p = (cache_t*) v1p;
+	cache_t* s2p = (cache_t*) v2p;
+
 	// Sort according to lump
 	if (DoPanicMapping() == true)
 		return SGN(s1p->cachelevel - s2p->cachelevel);
@@ -178,8 +180,11 @@ cache_t *s1p, *s2p;
 		return SGN(s1p->lump - s2p->lump);
 }
 
-void SwitchCacheEntries(s1p, s2p) cache_t *s1p, *s2p;
+void SwitchCacheEntries(void* v1p, void* v2p)
 {
+	cache_t* s1p = (cache_t*) v1p;
+	cache_t* s2p = (cache_t*) v2p;
+
 	cache_t temp;
 
 	temp = *s1p;
@@ -537,13 +542,16 @@ void PreCacheActor(int actor, int which)
 		end = W_GetNumForName("MONFIRE4");
 		PreCacheGroup(start, end, cache_patch_t);
 
-		if (IS_ALTERNATE_ACTOR(new))
-		{
-			start = W_GetNumForName("MRKKSH1");
-			end = W_GetNumForName("MRKDEAD7");
-		}
-
-		else
+		// ashley added: fix asan detection.
+		// the alternate actor lumps for this class don't exist, 
+		// and there is no index in deathshapeoffset for dfiremonkobj.
+		// this is likely vestigial, but is kept in case.
+		// if (IS_ALTERNATE_ACTOR(new))
+		// {
+		// 	start = W_GetNumForName("MRKKSH1");
+		// 	end = W_GetNumForName("MRKDEAD7");
+		// }
+		// else
 		{
 			start = W_GetNumForName("ALLKSH1");
 			end = W_GetNumForName("ALLDEAD7");
@@ -883,7 +891,7 @@ void MiscPreCache(void)
 ========================
 */
 
-boolean IsChristmas(void)
+bool IsChristmas(void)
 {
 	struct dosdate_t date;
 
@@ -941,7 +949,7 @@ void CheckHolidays(void)
 =
 ======================
 */
-extern boolean dopefish;
+extern bool dopefish;
 void DrawPreCache(void)
 {
 	if (loadedgame == false)
@@ -1040,7 +1048,7 @@ void DrawPreCache(void)
 ======================
 */
 
-extern boolean doRescaling;
+extern bool doRescaling;
 void PreCache(void)
 {
 	int i;
@@ -1055,8 +1063,8 @@ void PreCache(void)
 	int ticdelay;
 	byte* tempbuf;
 
-	double Gs;
-	Gs = (iGLOBAL_SCREENWIDTH * 100 / 320);
+	float Gs;
+	Gs = (FRAMEBUFFERWIDTH * 100 / 320);
 	Gs = Gs / 100;
 
 	doRescaling = false;
@@ -1088,25 +1096,25 @@ void PreCache(void)
 
 	SortPreCache();
 
-	double ratioNewToOldWidth = ((double)iGLOBAL_SCREENWIDTH) / 320.0;
+	float ratioNewToOldWidth = ((float)FRAMEBUFFERWIDTH) / 320.0;
 
-	double ratioNewToOldHeight = ((double)iGLOBAL_SCREENHEIGHT) / 200.0;
+	float ratioNewToOldHeight = ((float)FRAMEBUFFERHEIGHT) / 200.0;
 
-	double newPrecacheBarX = ratioNewToOldWidth * 28.0; // PRECACHEBARX = 28
+	float newPrecacheBarX = ratioNewToOldWidth * 28.0; // PRECACHEBARX = 28
 
-	double newPrecacheBarY = ratioNewToOldHeight * 178.0; // PRECACHEBARY = 178
+	float newPrecacheBarY = ratioNewToOldHeight * 178.0; // PRECACHEBARY = 178
 
-	double newPrecacheBar1LedX =
-		ratioNewToOldWidth * (double)9.0; // PRECACHEBAR1LEDX = 9
+	float newPrecacheBar1LedX =
+		ratioNewToOldWidth * (float)9.0; // PRECACHEBAR1LEDX = 9
 
-	double newPrecacheBar1LedY =
-		ratioNewToOldHeight * (double)8.0; // PRECACHEBAR1LEDY = 8
+	float newPrecacheBar1LedY =
+		ratioNewToOldHeight * (float)8.0; // PRECACHEBAR1LEDY = 8
 
-	double newPrecacheBar2LedX =
+	float newPrecacheBar2LedX =
 		newPrecacheBar1LedX; // PRECACHEBAR2LEDX = PRECACHEBAR1LEDX
 
-	double newPrecacheBar2LedY =
-		ratioNewToOldHeight * (double)12.0; // PRECACHEBAR2LEDY = 12
+	float newPrecacheBar2LedY =
+		ratioNewToOldHeight * (float)12.0; // PRECACHEBAR2LEDY = 12
 
 	if (loadedgame == false)
 	{
@@ -1131,7 +1139,7 @@ void PreCache(void)
 								 (int)(newPrecacheBarY + newPrecacheBar1LedY),
 								 W_GetNumForName("led1")); // led1 progressbar
 
-				if (iGLOBAL_SCREENWIDTH > 320)
+				if (FRAMEBUFFERWIDTH > 320)
 				{
 					DrawNormalSprite(
 						(int)(newPrecacheBarX + newPrecacheBar1LedX +
@@ -1144,7 +1152,7 @@ void PreCache(void)
 									   (Gs * (lastmem << 2)) + 3),
 								 (int)(newPrecacheBarY + newPrecacheBar1LedY),
 								 W_GetNumForName("led1")); // led1 progressbar
-				if (iGLOBAL_SCREENWIDTH > 320)
+				if (FRAMEBUFFERWIDTH > 320)
 				{
 					DrawNormalSprite(
 						(int)(newPrecacheBarX + newPrecacheBar1LedX +
@@ -1162,7 +1170,7 @@ void PreCache(void)
 									   (Gs * (lastcache << 2))),
 								 (int)(newPrecacheBarY + newPrecacheBar2LedY),
 								 W_GetNumForName("led2")); // led2 progressbar
-				if (iGLOBAL_SCREENWIDTH > 320)
+				if (FRAMEBUFFERWIDTH > 320)
 				{
 					DrawNormalSprite(
 						(int)(newPrecacheBarX + newPrecacheBar2LedX +
@@ -1186,7 +1194,7 @@ void PreCache(void)
 				ticdelay--;
 				if (ticdelay == 0)
 				{
-					extern boolean dopefish;
+					extern bool dopefish;
 
 					if (dopefish == true)
 					{
@@ -1207,10 +1215,10 @@ void PreCache(void)
 		{
 			int width, height;
 			char buf[30]; // byte * shape;
-			double WHratio = 16200 / 200;
+			float WHratio = 16200 / 200;
 			WHratio = WHratio / 100;
-			///	iGLOBAL_SCREENWIDTH = 640;
-			//	iGLOBAL_SCREENHEIGHT = 480;
+			///	FRAMEBUFFERWIDTH = 640;
+			//	FRAMEBUFFERHEIGHT = 480;
 			DisableScreenStretch();
 
 			// Cache in fonts
@@ -1220,8 +1228,8 @@ void PreCache(void)
 
 			strcpy(buf, "Press Any Key");
 			US_MeasureStr(&width, &height, "%s", &buf[0]);
-			PrintX = (iGLOBAL_SCREENWIDTH - (width)) / 2;
-			PrintY = WHratio * iGLOBAL_SCREENHEIGHT; // 162;
+			PrintX = (FRAMEBUFFERWIDTH - (width)) / 2;
+			PrintY = WHratio * FRAMEBUFFERHEIGHT; // 162;
 			// VWB_TBar (PrintX-2, PrintY-2, width+4, height+4);
 			US_BufPrint(&buf[0]);
 
@@ -1312,6 +1320,26 @@ void CheckRTLVersion(char* filename)
 	//
 	SafeRead(filehandle, RTLSignature, sizeof(RTLSignature));
 
+	// check if it's from RottEX
+	if (strcmp(RTLSignature, NORMAL_SIGNATURE_EX) == 0 ||
+		strcmp(RTLSignature, COMMBAT_SIGNATURE_EX) == 0)
+	{
+		// check version number
+		SafeRead(filehandle, &RTLVersion, sizeof(RTLVersion));
+		SwapIntelLong((int *)&RTLVersion);
+
+		if (RTLVersion > RXL_VERSION)
+		{
+			Error("The file '%s' is a version %d.%d %s file.\n"
+				  "The highest this version of ROTT can load is %d.%d.",
+				  filename, RTLVersion >> 8, RTLVersion & 0xff, RTLSignature,
+				  RXL_VERSION >> 8, RXL_VERSION & 0xff);
+		}
+
+		close(filehandle);
+		return;
+	}
+
 	if ((strcmp(RTLSignature, COMMBAT_SIGNATURE) != 0) &&
 		(strcmp(RTLSignature, NORMAL_SIGNATURE) != 0))
 	{
@@ -1335,6 +1363,74 @@ void CheckRTLVersion(char* filename)
 }
 
 /*
+ = *=====================
+ =
+ = GetMapArrayOffset
+ =
+ ======================
+ */
+
+size_t GetMapArrayOffset(int filehandle)
+{
+	char RTLSignature[4];
+	uint64_t ofs_info_headers;
+	uint64_t num_info_headers;
+	int i;
+	char info_header_magic[16];
+	uint64_t info_header_ofs;
+	uint64_t info_header_len;
+	int RTLVersion;
+
+	// load signature
+	lseek(filehandle, 0, SEEK_SET);
+	SafeRead(filehandle, RTLSignature, sizeof(RTLSignature));
+
+	// check if it's from RottEX
+	if (strcmp(RTLSignature, NORMAL_SIGNATURE_EX) == 0 ||
+		strcmp(RTLSignature, COMMBAT_SIGNATURE_EX) == 0)
+	{
+		// check version (it matters)
+		SafeRead(filehandle, &RTLVersion, sizeof(RTLVersion));
+
+		// seek to header location
+		lseek(filehandle, 8, SEEK_SET);
+
+		// read offset and num
+		SafeRead(filehandle, &ofs_info_headers, sizeof(ofs_info_headers));
+		SafeRead(filehandle, &num_info_headers, sizeof(num_info_headers));
+
+		// seek to headers
+		lseek(filehandle, ofs_info_headers, SEEK_SET);
+
+		// read info headers
+		for (i = 0; i < num_info_headers; i++)
+		{
+			// read header
+			SafeRead(filehandle, info_header_magic, sizeof(info_header_magic));
+			SafeRead(filehandle, &info_header_ofs, sizeof(info_header_ofs));
+			SafeRead(filehandle, &info_header_len, sizeof(info_header_len));
+
+			// MAPS info header contains reliable offset to data
+			// RXL 1.1 has "MAPSET", RXL 2.0 has "MAPS"
+			if ((RTLVersion == RXL_VERSION && strcmp(info_header_magic, "MAPS") == 0) ||
+				(RTLVersion == RTL_VERSION && strcmp(info_header_magic, "MAPSET") == 0))
+			{
+				return info_header_ofs;
+			}
+		}
+
+		// fail
+		close(filehandle);
+		Error("GetMapArrayOffset: Couldn't find MAPS or MAPSET info header!");
+		return 0;
+	}
+	else
+	{
+		return RTL_HEADER_OFFSET;
+	}
+}
+
+/*
 ======================
 =
 = ReadROTTMap
@@ -1352,14 +1448,16 @@ void ReadROTTMap(char* filename, int mapnum)
 	long expanded;
 	int plane;
 	byte* buffer;
+	size_t mapsoffset;
 
 	CheckRTLVersion(filename);
 	filehandle = SafeOpenRead(filename);
+	mapsoffset = GetMapArrayOffset(filehandle);
 
 	//
 	// Load map header
 	//
-	lseek(filehandle, RTL_HEADER_OFFSET + mapnum * sizeof(RTLMap), SEEK_SET);
+	lseek(filehandle, mapsoffset + mapnum * sizeof(RTLMap), SEEK_SET);
 	SafeRead(filehandle, &RTLMap, sizeof(RTLMap));
 
 	SwapIntelLong((int*)&RTLMap.used);
@@ -1440,7 +1538,7 @@ int GetNextMap(int tilex, int tiley)
 {
 	word next;
 	word icon;
-	boolean done;
+	bool done;
 
 	next = MAPSPOT(tilex, tiley, 2);
 	icon = MAPSPOT(tilex, tiley, 1);
@@ -1506,15 +1604,17 @@ void GetMapFileInfo(mapfileinfo_t* mapinfo, char* filename)
 	int filehandle;
 	int i;
 	int nummaps;
+	size_t mapsoffset;
 
 	CheckRTLVersion(filename);
 
 	filehandle = SafeOpenRead(filename);
+	mapsoffset = GetMapArrayOffset(filehandle);
 
 	//
 	// Load map header
 	//
-	lseek(filehandle, RTL_HEADER_OFFSET, SEEK_SET);
+	lseek(filehandle, mapsoffset, SEEK_SET);
 	SafeRead(filehandle, &RTLMap, sizeof(RTLMap));
 	close(filehandle);
 
@@ -1570,6 +1670,29 @@ void GetMapFileName(char* filename)
 /*
 ======================
 =
+= GetMapFilePath
+=
+======================
+*/
+void GetMapFilePath (char* filename, size_t n)
+{
+	const char *src;
+
+	if (BATTLEMODE && BattleLevels.avail == true)
+		src = BattleLevels.file;
+	else if (GameLevels.avail == true)
+		src = GameLevels.file;
+	else if (BATTLEMODE)
+		src = BATTMAPS;
+	else
+		src = ROTTMAPS;
+
+	strncpy(filename, src, n);
+}
+
+/*
+======================
+=
 = SetBattleMapFileName
 =
 ======================
@@ -1591,17 +1714,19 @@ word GetMapCRC(int num)
 
 {
 	int filehandle;
-	char filename[80];
+	char filename[256];
 	RTLMAP RTLMap;
+	size_t mapsoffset;
 
-	GetMapFileName(&filename[0]);
+	GetMapFilePath(&filename[ 0 ], sizeof(filename));
 	CheckRTLVersion(filename);
 	filehandle = SafeOpenRead(filename);
+	mapsoffset = GetMapArrayOffset(filehandle);
 
 	//
 	// Load map header
 	//
-	lseek(filehandle, RTL_HEADER_OFFSET + num * sizeof(RTLMap), SEEK_SET);
+	lseek(filehandle, mapsoffset + num * sizeof(RTLMap), SEEK_SET);
 	SafeRead(filehandle, &RTLMap, sizeof(RTLMap));
 
 	close(filehandle);
@@ -1982,7 +2107,7 @@ word GetNearestAreaNumber(int tilex, int tiley)
 void SetupWindows(void)
 {
 	int i, j;
-	boolean skythere;
+	bool skythere;
 
 	skythere = SkyExists();
 
@@ -3421,7 +3546,7 @@ void LinkElevatorDiskGroups(void)
 	int maxplatformheight[30] = {-1};
 	int num_distinct_max_heights = 0;
 	int i;
-	boolean newdiskheight;
+	bool newdiskheight;
 
 #define M_ISELEVDISK(actor)                                                    \
 	((actor->obclass == diskobj) && (actor->state == &s_elevdisk))
@@ -3480,8 +3605,8 @@ void LinkElevatorDiskGroups(void)
 =================
 */
 
-void LinkActor(objtype* ob, int tilex, int tiley, void (*action)(long),
-			   void (*swapaction)(long))
+void LinkActor(objtype* ob, int tilex, int tiley, void (*action)(intptr_t),
+			   void (*swapaction)(intptr_t))
 {
 	word touchx, touchy;
 	int clockx, clocky;
@@ -3496,7 +3621,7 @@ void LinkActor(objtype* ob, int tilex, int tiley, void (*action)(long),
 		if ((clockx == tilex) && (clocky == tiley))
 		{
 			clocklinked = 1;
-			ClockLink(EnableObject, DisableObject, (long)ob, k);
+			ClockLink(EnableObject, DisableObject, (intptr_t)ob, k);
 		}
 	}
 
@@ -3522,10 +3647,10 @@ void LinkActor(objtype* ob, int tilex, int tiley, void (*action)(long),
 			}
 
 			if (tswitch && (tswitch->flags & FL_ON))
-				Link_To_Touchplate(touchx, touchy, swapaction, action, (long)ob,
+				Link_To_Touchplate(touchx, touchy, swapaction, action, (intptr_t)ob,
 								   0);
 			else
-				Link_To_Touchplate(touchx, touchy, action, swapaction, (long)ob,
+				Link_To_Touchplate(touchx, touchy, action, swapaction, (intptr_t)ob,
 								   0);
 			if (ob->obclass == gasgrateobj)
 			{
@@ -3555,7 +3680,7 @@ void SetupInanimateActors(void)
 {
 	int i, j, linked;
 	word *map, tile;
-	void (*action)(long), (*swapaction)(long);
+	void (*action)(intptr_t), (*swapaction)(intptr_t);
 
 	map = mapplanes[1];
 
@@ -3931,7 +4056,7 @@ void SetupLights(void)
 							{
 								Link_To_Touchplate(
 									touchx, touchy, ActivateLight,
-									DeactivateLight, (long)(sprites[i][j]), 0);
+									DeactivateLight, (intptr_t)(sprites[i][j]), 0);
 								sprites[i][j]->linked_to =
 									touchindices[touchx][touchy] - 1;
 							}
@@ -3946,7 +4071,7 @@ void SetupLights(void)
 							{
 								Link_To_Touchplate(
 									touchx, touchy, DeactivateLight,
-									ActivateLight, (long)(sprites[i][j]), 0);
+									ActivateLight, (intptr_t)(sprites[i][j]), 0);
 								sprites[i][j]->linked_to =
 									touchindices[touchx][touchy] - 1;
 							}
@@ -3963,7 +4088,7 @@ void SetupLights(void)
 						{
 							Link_To_Touchplate(touchx, touchy, DeactivateLight,
 											   ActivateLight,
-											   (long)(sprites[i][j]), 0);
+											   (intptr_t)(sprites[i][j]), 0);
 							sprites[i][j]->linked_to =
 								touchindices[touchx][touchy] - 1;
 						}
@@ -4028,7 +4153,7 @@ void PrintMapStats(void)
 	MapDebug("\nTotal size of level : %6d\n", total);
 }
 
-boolean IsWeapon(int tile)
+bool IsWeapon(int tile)
 {
 	if ((tile >= 46) && (tile <= 56))
 		return true;
@@ -5233,7 +5358,7 @@ void DoRegisterConversion(void)
 =
 =======================
 */
-boolean DoPanicMapping(void)
+bool DoPanicMapping(void)
 {
 	if ((lowmemory == true) && (modemgame == false) && (demorecord == false) &&
 		(demoplayback == false))
@@ -5258,25 +5383,6 @@ void DoLowMemoryConversion(void)
 	DoLowMemoryConversionIconPlane();
 }
 
-// int freeSlot = 0;
-// Queue enemiesToRes;
-Queue* enemiesToRes[8]; // 8 "Organic enemy Types"
-
-void SetupZomROTTStuff()
-{
-	int x;
-	for (x = 0; x < 8; x++)
-	{
-		// if (enemiesToRes[x]->head != NULL && enemiesToRes[x]->tail != NULL)
-		//{
-		// clearQueue(enemiesToRes[x]);
-		//}
-		Queue* enemyQueue = malloc(sizeof(Queue));
-		InitQueue(enemyQueue, sizeof(objtype));
-		enemiesToRes[x] = enemyQueue;
-	}
-}
-
 /*
 ==================
 =
@@ -5284,8 +5390,6 @@ void SetupZomROTTStuff()
 =
 ==================
 */
-
-extern boolean enableZomROTT;
 
 void SetupGameLevel(void)
 {
@@ -5439,10 +5543,6 @@ void SetupGameLevel(void)
 	else
 	{
 		FixTiles();
-	}
-	if (enableZomROTT)
-	{
-		SetupZomROTTStuff();
 	}
 
 	if (gamestate.SpawnEluder || gamestate.SpawnDeluder)

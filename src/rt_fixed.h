@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -22,8 +22,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <stdint.h>
 
-typedef int32_t fixed;
-typedef uint32_t ufixed;
+typedef int32_t fixed_t;
+typedef uint32_t ufixed_t;
 
 /*
 FUNCTION:
@@ -33,11 +33,11 @@ DESCRIPTION:
 	8.16 bit accuracy.
 */
 
-fixed FixedSqrtHP(fixed n); // High Precision (8.16)
+fixed_t FixedSqrtHP(fixed_t n); // High Precision (8.16)
 
-fixed FixedMul(fixed a, fixed b);
-fixed FixedDiv2(fixed a, fixed b);
-fixed FixedScale(fixed orig, fixed factor, fixed divisor);
-fixed FixedMulShift(fixed a, fixed b, fixed shift);
+fixed_t FixedMul(fixed_t a, fixed_t b);
+fixed_t FixedDiv2(fixed_t a, fixed_t b);
+fixed_t FixedScale(fixed_t orig, fixed_t factor, fixed_t divisor);
+fixed_t FixedMulShift(fixed_t a, fixed_t b, fixed_t shift);
 
 #endif
