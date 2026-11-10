@@ -662,7 +662,7 @@ int32_t LoadFile(char* filename, void** bufferptr)
 	int32_t length;
 
 	handle = SafeOpenRead(filename);
-	length = filelength(handle);
+	length = safe_filelength(handle);
 	*bufferptr = SafeMalloc(length);
 	SafeRead(handle, *bufferptr, length);
 	close(handle);

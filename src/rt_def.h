@@ -137,7 +137,7 @@ char* itoa(int, char*, int);
 char* safe_ltoa(int32_t, char*, int);
 char* safe_ultoa(uint32_t, char*, int);
 char getch(void);
-int32_t filelength(int handle);
+int32_t safe_filelength(int handle);
 #else
 #error please define for your platform.
 #endif

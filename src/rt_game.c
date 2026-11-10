@@ -4512,7 +4512,7 @@ int32_t CalculateSaveGameCheckSum(char* filename)
 	// Open the savegame file
 
 	handle = SafeOpenRead(filename);
-	lengthleft = filelength(handle);
+	lengthleft = safe_filelength(handle);
 
 	while (lengthleft > 0)
 	{

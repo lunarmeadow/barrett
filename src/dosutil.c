@@ -32,13 +32,13 @@ int _argc;
 char** _argv;
 
 #if PLATFORM_UNIX
-int32_t filelength(int handle)
+int32_t safe_filelength(int handle)
 {
 	struct stat buf;
 
 	if (fstat(handle, &buf) == -1)
 	{
-		perror("filelength");
+		perror("safe_filelength");
 		exit(EXIT_FAILURE);
 	}
 
