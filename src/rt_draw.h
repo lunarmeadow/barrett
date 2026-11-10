@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -28,9 +28,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "rt_fixed.h"
 
-#define MAXVISIBLE 256
-
-extern int whereami;
+#define MAXVISIBLE 1024
 
 extern byte* shadingtable; // Shading table for DrawPost
 
@@ -102,6 +100,7 @@ extern int firstcoloffset;
 
 //=========================== functions =============================
 
+void GenerateSkyScalerTable(void);
 void BuildTables(void);
 void CalcTics(void);
 void ThreeDRefresh(void);
@@ -113,8 +112,8 @@ void DoLoadGameSequence(void);
 void RotateBuffer(int startangle, int endangle, int startscale, int endscale,
 				  int time);
 void RotateScreenScaleFloat(float startAngle, float endAngle, float startScale,
-							float endScale, int time, boolean fadeOut,
-							boolean drawPlayScreen);
+							float endScale, int time, bool fadeOut,
+							bool drawPlayScreen);
 void ApogeeTitle(void);
 void DopefishTitle(void);
 void RotationFun(void);

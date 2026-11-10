@@ -3,11 +3,17 @@
 #include <string.h>
 #include <ctype.h>
 
+// mingw uses a different mkdir function
+#if defined(__MINGW32__) || defined(_MSC_VER)
+    #include <direct.h>
+#endif
+
 #include <sys/stat.h>
+
 #if PLATFORM_UNIX
-#include <sys/types.h>
-#include <errno.h>
-#include <unistd.h>
+	#include <sys/types.h>
+	#include <errno.h>
+	#include <unistd.h>
 #endif
 
 #include <fcntl.h>
@@ -70,12 +76,18 @@ int setup_homedir(void)
 	char fetchCWD[160];
 	getcwd(fetchCWD, sizeof(fetchCWD));
 
-#if PLATFORM_UNIX && !defined(__MINGW32__)
+// ashley: as this uses CWD now, it should work on windows.
+// #if PLATFORM_UNIX && !defined(__MINGW32__)
 	int err;
 
 	/* try to create the root directory */
 	snprintf(ApogeePath, sizeof(ApogeePath), "%s/userdata/", fetchCWD);
-	err = mkdir(ApogeePath, S_IRWXU);
+
+	#if defined(__MINGW32__) || defined(_MSC_VER)
+		err = _mkdir(ApogeePath);
+	#else
+		err = mkdir(ApogeePath, S_IRWXU);
+	#endif
 
 	if (err == -1 && errno != EEXIST)
 	{
@@ -83,9 +95,9 @@ int setup_homedir(void)
 				strerror(errno));
 		return -1;
 	}
-#else
-	sprintf(ApogeePath, "./data/");;
-#endif
+// #else
+// 	sprintf(ApogeePath, "./data/");;
+// #endif
 
 	return 0;
 }
@@ -123,6 +135,7 @@ int CountDigits(const int number)
 	return lenResult;
 }
 
+#ifndef _MSC_VER
 char* strlwr(char* s)
 {
 	char* p = s;
@@ -182,6 +195,7 @@ char* ltoa(long value, char* string, int radix)
 
 	return string;
 }
+#endif
 
 /* from Dan Olson */
 void put_dos2ansi(byte attrib)
@@ -228,7 +242,7 @@ void DisplayTextSplash(byte* text, int l)
 	printf("\033[m");
 }
 
-#if !defined(__CYGWIN__) && !defined(__MINGW32__) && !defined(__ANDROID__)
+#if !defined(__CYGWIN__) && !defined(__MINGW32__) && !defined(__ANDROID__) && !defined(_MSC_VER)
 #include <execinfo.h>
 
 void print_stack(int level)

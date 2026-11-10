@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -241,12 +241,12 @@ typedef struct
 	byte Product;
 	byte mode;
 	unsigned Version;
-	boolean teamplay;
+	bool teamplay;
 	specials SpecialsTimes;
 	battle_cfg_t options;
 	char battlefilename[20];
 	int randomseed;
-	boolean ludicrousgibs;
+	bool ludicrousgibs;
 	COM_PlayerDescriptionType players[MAXPLAYERS];
 } COM_GameMasterType;
 
@@ -280,9 +280,9 @@ typedef struct
 	int time;
 } COM_UnPauseType;
 
-extern boolean demorecord, demoplayback;
+extern bool demorecord, demoplayback;
 extern byte *demoptr, *lastdemoptr, *demobuffer;
-extern boolean demodone;
+extern bool demodone;
 extern int predemo_violence;
 
 void ControlPlayer(void);
@@ -308,7 +308,7 @@ void LoadDemo(int demonumber);
 void RecordDemo(void);
 void SetupDemo(void);
 void FreeDemo(void);
-boolean DemoExists(int demonumber);
+bool DemoExists(int demonumber);
 
 void AddEndGameCommand(void);
 void AddTextMessage(char* message, int length, int towho);
@@ -323,22 +323,22 @@ void SyncToServer(void);
 void AddQuitCommand(void);
 void AddExitCommand(void);
 void AddGameEndCommand(void);
-boolean PlayerInGame(int p);
-boolean ConsoleIsServer(void);
+bool PlayerInGame(int p);
+bool ConsoleIsServer(void);
 
-extern boolean IsServer;
-extern boolean standalone;
-extern boolean playerdead;
+extern bool IsServer;
+extern bool standalone;
+extern bool playerdead;
 
-extern boolean modemgame;
-extern boolean networkgame;
+extern bool modemgame;
+extern bool networkgame;
 extern int numplayers;
 extern int server;
 
-extern boolean GamePaused;
-extern boolean battlegibs;
+extern bool GamePaused;
+extern bool battlegibs;
 
-extern boolean remoteridicule;
+extern bool remoteridicule;
 
 #if (SYNCCHECK == 1)
 extern int lastsynccheck;

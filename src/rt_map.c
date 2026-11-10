@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -588,7 +588,7 @@ void DrawFullMap(void)
 	{
 		buf = (byte*)bufferofs + ylookup[37] + ((96 + mapx));
 
-		for (mapy = 0; mapy < mapheight; mapy++, buf += iGLOBAL_SCREENWIDTH)
+		for (mapy = 0; mapy < mapheight; mapy++, buf += FRAMEBUFFERWIDTH)
 		{
 			if ((mapx == player->tilex) && (mapy == player->tiley))
 			{
@@ -844,7 +844,7 @@ void DoMap(int cx, int cy)
 	int x, y;
 	int dx;
 	int dy;
-	boolean done;
+	bool done;
 	int quitkey;
 	ControlInfo control;
 
@@ -971,7 +971,7 @@ void DoMap(int cx, int cy)
 	{ // bna++
 		pic_t* shape;
 		shape = (pic_t*)W_CacheLumpName("backtile", PU_CACHE, Cvt_pic_t, 1);
-		DrawTiledRegion(0, 16, iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT - 32,
+		DrawTiledRegion(0, 16, FRAMEBUFFERWIDTH, FRAMEBUFFERHEIGHT - 32,
 						0, 16, shape); // bna++
 		DisableScreenStretch();		   // dont strech when we go BACK TO GAME
 		VW_UpdateScreen();

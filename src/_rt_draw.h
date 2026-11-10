@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -28,7 +28,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define GOLOWER	 0x38000
 #define GOHIGHER 0x20000
 
-#define MAXVISIBLEDOORS 30
+#define MAXVISIBLEDOORS 64
 
 #define DHEIGHTFRACTION 8
 
@@ -65,7 +65,7 @@ typedef struct
 } screensaver_t;
 
 void DrawPlayerWeapon(void);
-boolean TransformPlane(int x1, int y1, int x2, int y2, visobj_t* plane);
+bool TransformPlane(int x1, int y1, int x2, int y2, visobj_t* plane);
 int CalcRotate(objtype* ob);
 void DrawScaleds(void);
 void FixOfs(void);

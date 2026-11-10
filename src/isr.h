@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -51,18 +51,20 @@ extern volatile int Keyboard[MAXKEYBOARDSCAN]; // Keyboard status array
 extern volatile int Keystate[MAXKEYBOARDSCAN]; // Keyboard state array
 
 int GetTicCount(void);
+int GetCachedTic(void);
+void SetCachedTic(int newTics);
 
 extern int KeyboardStarted;
 
 extern const int ASCIINames[];		  // Ascii -> scan code conversion
 extern const int ShiftNames[];		  // Shifted Ascii->scancode conversion
-extern volatile boolean PausePressed; // Game paused variable
-extern volatile boolean PanicPressed; // Panic key variable
+extern volatile bool PausePressed; // Game paused variable
+extern volatile bool PanicPressed; // Panic key variable
 
 void I_StartupTimer(void);	 // Start up timer isr
 void I_SetTimer0(int speed); // Set the timer to a given speed
 void I_ShutdownTimer(void);	 // Shutdown timer isr
-void I_SetKeyboardLEDs(int which, boolean val); // Turns LED's on or off
+void I_SetKeyboardLEDs(int which, bool val); // Turns LED's on or off
 void I_StartupKeyboard(void);					// Startup Keyboard isr
 void I_ShutdownKeyboard(void);					// Shutdown keyboard isr
 void I_Delay(int delay);

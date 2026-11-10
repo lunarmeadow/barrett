@@ -39,8 +39,8 @@
 *.x86_64
 *.hex
 
-rott
-barrett
+rott*
+barrett*
 
 rott.exe
 barrett.exe
@@ -51,6 +51,7 @@ barrett.exe
 *.RTL
 *.DMO
 *.WAD
+*.ROT
 
 # Debug files
 *.dSYM/
@@ -80,3 +81,8 @@ compile_commands.json
 CMakeCache.txt
 Makefile
 cmake_install.cmake
+
+userdata/
+*.DOC
+
+.kateproject.build

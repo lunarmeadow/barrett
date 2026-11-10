@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -287,9 +287,15 @@ void InitialCast(void)
 
 			index = (cnt >= 0);
 			cnt += incr[index];
-			spotvis[grid[0]][grid[1]] = 1;
+
+			// ashley added: fix ASAN detection in GADStorm
+			if(grid[0] < 128 && grid[1] < 128)
+				spotvis[grid[0]][grid[1]] = 1;
+			
 			grid[index] += thedir[index];
 
+			// ashley added: fix ASAN detection in GADStorm
+			if(grid[0] < 128 && grid[1] < 128)
 			if ((tile = tilemap[grid[0]][grid[1]]) != 0)
 			{
 				if (tile & 0x8000)

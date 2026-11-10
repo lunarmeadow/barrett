@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,7 +17,9 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #include "rt_def.h"
+#include "rt_cfg.h"
 #include "rt_view.h"
 #include "z_zone.h"
 #include "w_wad.h"
@@ -53,11 +55,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 =============================================================================
 */
-extern int G_weaponscale;
 
 int StatusBar = 0;
 int lightninglevel = 0;
-boolean lightning = false;
+bool lightning = false;
 int normalshade;
 int darknesslevel;
 int maxshade;
@@ -76,6 +77,7 @@ int fulllight;
 int weaponscale;
 int viewsize;
 byte* colormap;
+byte* blckmap;
 byte* redmap;
 byte* greenmap;
 byte* playermaps[MAXPLAYERCOLORS];
@@ -83,7 +85,7 @@ byte* playermaps[MAXPLAYERCOLORS];
 short pixelangle[MAXSCREENWIDTH];
 byte gammatable[GAMMAENTRIES];
 int gammaindex;
-int focalwidth = 160;
+int focallength = 160;
 int yzangleconverter;
 byte uniformcolors[MAXPLAYERCOLORS] = {25,	222, 29, 206, 52, 6,
 									   155, 16,	 90, 129, 109};
@@ -108,35 +110,79 @@ static int lightningtime = 0;
 static int lightningdelta = 0;
 static int lightningdistance = 0;
 static int lightningsoundtime = 0;
-static boolean periodic = false;
+static bool periodic = false;
 static int periodictime = 0;
 
-void SetViewDelta(void);
 void UpdatePeriodicLighting(void);
 
 /*
 ====================
 =
-= ResetFocalWidth
+= FOVToFocalLength
 =
 ====================
 */
-void ResetFocalWidth(void)
+
+extern int vfov;
+
+// https://wojtsterna.com/2024/01/09/field-of-view-horizontal-and-vertical-conversion/
+// https://stackoverflow.com/questions/18176215/how-to-select-focal-lengh-in-ray-tracing
+// this is the distance to the projection plane
+// we need to do our math in the original 320x200 viewport
+int FOVToFocalLength(int fov)
 {
-	focalwidth = iGLOBAL_FOCALWIDTH; // FOCALWIDTH;
+	// calculate horizontal fov from vertical fov
+	float hfov;
+	float f;
+	float aspectRatio = ((double)320 / 200);
+	float degToRad = M_PI / 180;
+
+	hfov = 2 * (atan((tan((double)(fov * degToRad) / 2)) * aspectRatio));
+
+	// printf("fov: %d, hfov: %f\n", fov, (hfov * 180 / M_PI));
+
+	// GooberMan mentioned in LE discord to divide by 1.1 to get true FOV
+	// because ROTT is strange
+	f = (((double)200 / 2) / (tan((double)hfov / 2))) / 1.1;
+
+	// printf("len: %f\n", f);
+
+	return (int)round(f);
+}
+
+/*
+====================
+=
+= ResetFocalLength
+=
+====================
+*/
+void ResetFocalLength(void)
+{
+	focallength = FOVToFocalLength(vfov);
 	SetViewDelta();
 }
 
 /*
 ====================
 =
-= ChangeFocalWidth
+= ChangeFocalLength
 =
 ====================
 */
-void ChangeFocalWidth(int amount)
+void ChangeFocalLength(int amount)
 {
-	focalwidth = iGLOBAL_FOCALWIDTH + amount; // FOCALWIDTH+amount;
+	int min = FOVToFocalLength(MAXFOV);
+	int max = FOVToFocalLength(MAXFOV);
+
+	focallength = FOVToFocalLength(vfov) - amount;
+
+	// clamp fov for shroom mode etc
+	if(focallength < min)
+		focallength = min;
+	if(focallength < max)
+		focallength = max;
+
 	SetViewDelta();
 }
 
@@ -150,19 +196,19 @@ void ChangeFocalWidth(int amount)
 
 void SetViewDelta(void)
 {
-	// iGLOBAL_SCREENHEIGHT
-	// iGLOBAL_SCREENWIDTH
+	// FRAMEBUFFERHEIGHT
+	// FRAMEBUFFERWIDTH
 	//
 	//  calculate scale value for vertical height calculations
 	//  and sprite x calculations
 	//
 
-	scale = (centerx * focalwidth) / (160);
+	scale = (fixed_t)((centerx / (float)160) * focallength);
 	//
 	// divide heightnumerator by a posts distance to get the posts height for
 	// the heightbuffer.  The pixel height is height>>HEIGHTFRACTION
 	//
-	heightnumerator = (((focalwidth / 10) * centerx * 4096) << HEIGHTFRACTION);
+	heightnumerator = ((uint64_t)(((float)focallength / 10) * centerx * 4096) * 64);
 }
 
 /*
@@ -182,9 +228,6 @@ void CalcProjection(void)
 	byte* ptr;
 	int length;
 	int* pangle;
-
-	// Already being called in ResetFocalWidth
-	//    SetViewDelta();
 
 	//
 	// load in tables file
@@ -237,6 +280,19 @@ void SetViewSize(int size)
 	int screenx;
 	int screeny;
 	int topy;
+	int sW = FRAMEBUFFERWIDTH;
+	int sH = FRAMEBUFFERHEIGHT;
+
+	// scale screen boundaries for diff ARC modes
+	// VGA pixels are 1:1.2
+
+	// ARC mode 1 is fast, which affects height.
+	// as such height must be recalculated.
+	// this doesn't apply to ARC mode 2 which downscales width
+	int scaleConstant = 16;
+	if(aspectRatioCorrection == 1 && hudRescaleFactor != 1)
+		scaleConstant = 13;
+
 	/*
 	if (size>=10){
 
@@ -249,8 +305,8 @@ void SetViewSize(int size)
 	height = 0;
 	for (height = 0; height < 21;)
 	{
-		viewsizes[height++] = iGLOBAL_SCREENWIDTH;
-		viewsizes[height++] = iGLOBAL_SCREENHEIGHT;
+		viewsizes[height++] = sW;
+		viewsizes[height++] = sH;
 	}
 
 	if ((size < 0) || (size >= MAXVIEWSIZES))
@@ -266,7 +322,7 @@ void SetViewSize(int size)
 	viewwidth = viewsizes[size << 1];		 // must be divisable by 16
 	viewheight = viewsizes[(size << 1) + 1]; // must be even
 
-	maxheight = iGLOBAL_SCREENHEIGHT;
+	maxheight = sH;
 	topy = 0;
 
 	// Only keep the kills flag
@@ -283,8 +339,8 @@ void SetViewSize(int size)
 		StatusBar |= TOP_STATUS_BAR;
 
 		// Account for height of top status bar
-		maxheight -= 16 * hudRescaleFactor;
-		topy += 16 * hudRescaleFactor;
+		maxheight -= scaleConstant * hudRescaleFactor;
+		topy += scaleConstant * hudRescaleFactor;
 	}
 
 	//   if ( size == 7 ){maxheight -= 16;}//bna++
@@ -295,7 +351,7 @@ void SetViewSize(int size)
 		// Turn on health and ammo bar
 		StatusBar |= BOTTOM_STATUS_BAR;
 
-		maxheight -= 16 * hudRescaleFactor;
+		maxheight -= scaleConstant * hudRescaleFactor;
 	}
 	else if (size < 10)
 	{
@@ -305,10 +361,10 @@ void SetViewSize(int size)
 	//   SetTextMode (  );
 	//   viewheight=viewheight;
 	height = viewheight;
-	if (height > 168 * iGLOBAL_SCREENHEIGHT / 200)
+	if (height > 168 * sH / 200)
 	{
 		// Prevent weapon from being scaled too big
-		height = 168 * iGLOBAL_SCREENHEIGHT / 200;
+		height = 168 * sH / 200;
 	}
 
 	weaponscale = (height << 16) / 168; //( height << 16 ) = 170 * 65536
@@ -316,10 +372,13 @@ void SetViewSize(int size)
 	centerx = viewwidth >> 1;
 	centery = viewheight >> 1;
 	centeryfrac = (centery << 16);
-	yzangleconverter = (0xaf85 * viewheight) / 300;
+
+	int anglescale = (int)(16384 * ((float)sW / sH) + 8192);
+
+	yzangleconverter = (int)((anglescale * ((float)focallength / 160)) * ((float)viewheight / 200));
 
 	// Center the view horizontally
-	screenx = (iGLOBAL_SCREENWIDTH - viewwidth) >> 1;
+	screenx = (sW - viewwidth) >> 1;
 
 	if (viewheight >= maxheight)
 	{
@@ -339,10 +398,7 @@ void SetViewSize(int size)
 	// calculate trace angles and projection constants
 	//
 
-	ResetFocalWidth();
-
-	// Already being called in ResetFocalWidth
-	//   SetViewDelta();
+	ResetFocalLength();
 
 	CalcProjection();
 }
@@ -374,18 +430,18 @@ void DrawCPUJape(void)
 ==========================
 */
 
-void SetupScreen(boolean flip)
+void SetupScreen(bool flip)
 {
 	pic_t* shape;
 
 	SetViewSize(viewsize);
 
-	if (viewsize < 7)
+	if (viewsize <= 7)
 	{
 		shape = (pic_t*)W_CacheLumpName("backtile", PU_CACHE, Cvt_pic_t, 1);
 		// DrawTiledRegion( 0, 16, 320, 200 - 32, 0, 16, shape );
-		DrawTiledRegion(0, 16 * hudRescaleFactor, iGLOBAL_SCREENWIDTH,
-						iGLOBAL_SCREENHEIGHT - 16 * hudRescaleFactor, 0, 16,
+		DrawTiledRegion(0, 16 * hudRescaleFactor, FRAMEBUFFERWIDTH,
+						FRAMEBUFFERHEIGHT - 16 * hudRescaleFactor, 0, 16,
 						shape); // bna++
 	}
 
@@ -395,7 +451,7 @@ void SetupScreen(boolean flip)
 	}
 	if (flip == true)
 	{
-		boolean wasStretched = false;
+		bool wasStretched = false;
 
 		if (StretchScreen)
 		{
@@ -411,10 +467,15 @@ void SetupScreen(boolean flip)
 	}
 }
 
+// ashley added: this table remaps blue palette indexes to another palette index for weapon recolours.
+// blue palette is 26 entries long, thus the length
+byte bluRemapper[26] = {35, 16, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 35, 36, 36, 0};
+
 void LoadColorMap(void)
 {
 	int i, j;
 	int lump, length;
+	byte colour;
 
 	if (ColorMapLoaded == 1)
 		Error("Called LoadColorMap twice\n");
@@ -427,7 +488,16 @@ void LoadColorMap(void)
 	lump = W_GetNumForName("colormap");
 	length = W_LumpLength(lump) + 255;
 	colormap = SafeMalloc(length);
-	colormap = (byte*)(((long)colormap + 255) & ~0xff);
+
+	// this pattern is pretty suspect, after evaluating what this operation does it appears to align pointers to the nearest 256 boundary.
+	// for instance, (925 & ~0xFF) = 768. the cast itself is pretty strange,
+	// and I worry is shifting colormap outside of its allocated boundary or corrupting the pointer.
+	// Windows builds crash in this function in the W_ReadLump call,
+	// and investigating with -fsanitize=undefined after removing this line shows no unaligned accesses or anything of the sort
+	// in addition to colormap still being perfectly functional.
+
+	// colormap = (byte*)(((long)colormap + 255) & ~0xff);
+
 	W_ReadLump(lump, colormap);
 
 	// Fix fire colors in colormap
@@ -436,12 +506,45 @@ void LoadColorMap(void)
 		for (j = 0xea; j < 0xf9; j++)
 			colormap[i * 256 + j] = colormap[(((i - 16) / 4 + 16)) * 256 + j];
 
+	// -- ashley added: get black colourmap for weapon recolouring
+
+	blckmap = SafeMalloc(length);
+
+	// first and last blu palette entries in PAL
+	int firstblu = 142;
+	int lastblu = 168;
+
+	int blusize = lastblu - firstblu;
+
+	for(int idx = 0; idx < length; idx++)
+	{
+		colour = colormap[idx];
+
+		// copy colormap palette index without remapping for all non-blu colours
+		if(colour < firstblu || colour > lastblu)
+		{
+			blckmap[idx] = colormap[idx];
+		}
+
+		// remappin time (colour is blue)
+		if(colour >= firstblu && colour <= lastblu)
+		{
+			// grab wrapped index into blu palette table (colour - firstblu). index is relative to base pointer of blue table
+			// modulo by size to wrap relative pointer back into table in case of overflows.
+			colour = bluRemapper[(colour - firstblu) % blusize];
+			
+			blckmap[idx] = colour;			
+		}
+	}
+
+	// -- ashley end
+
 	// Get special maps
 
 	lump = W_GetNumForName("specmaps");
 	length = W_LumpLength(lump + 1) + 255;
 	redmap = SafeMalloc(length);
-	redmap = (byte*)(((long)redmap + 255) & ~0xff);
+	// redmap = (byte*)(((long)redmap + 255) & ~0xff);
 	W_ReadLump(lump + 1, redmap);
 	greenmap = redmap + (16 * 256);
 
@@ -454,7 +557,7 @@ void LoadColorMap(void)
 		{
 			length = W_LumpLength(lump + i) + 255;
 			playermaps[i] = SafeMalloc(length);
-			playermaps[i] = (byte*)(((long)playermaps[i] + 255) & ~0xff);
+			// playermaps[i] = (byte*)(((long)playermaps[i] + 255) & ~0xff);
 			W_ReadLump(lump + i, playermaps[i]);
 		}
 	}

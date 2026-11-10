@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -30,8 +30,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "rt_def.h"
 #include "SDL.h"
 /*
-int iGLOBAL_SCREENWIDTH;//bna val 800
-int iGLOBAL_SCREENHEIGHT;//bna val 600
+int FRAMEBUFFERWIDTH;//bna val 800
+int FRAMEBUFFERHEIGHT;//bna val 600
 
 
 #define MAXSCREENHEIGHT    600//     200*2
@@ -47,7 +47,7 @@ screen width in bytes
 //
 //***************************************************************************
 
-extern boolean StretchScreen; // bn�++
+extern bool StretchScreen; // bn�++
 
 // extern  int      ylookup[MAXSCREENHEIGHT];      // Table of row offsets
 extern int ylookup[MAXSCREENHEIGHT]; // just set to max res
@@ -58,11 +58,16 @@ extern byte* page3start;
 extern int screensize;
 extern byte* bufferofs;
 extern byte* displayofs;
-extern boolean graphicsmode;
+extern bool graphicsmode;
 
 // extern SDL_Window* window;
 
 extern SDL_Surface* sdl_surface;
+
+void FitWindowToScreen(void);
+
+void FreeFramebuffer(void);
+void AllocateFramebuffer(void);
 
 void GraphicsMode(void);
 void ChangeResolution(int, int);

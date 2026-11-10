@@ -170,7 +170,7 @@ static int music_loopflag = MUSIC_PlayOnce;
 static char* music_songdata = NULL;
 static Mix_Music* music_musicchunk = NULL;
 
-extern boolean useoplmusic;
+extern bool useoplmusic;
 
 int MUSIC_Init(void)
 {
@@ -191,8 +191,7 @@ int MUSIC_Init(void)
 
 	SDL_SetHint("SDL_HINT_AUDIO_RESAMPLING_MODE", "best");
 
-	if(useoplmusic)
-		OPL_Init();
+	OPL_Init();
 
     if (soundfonts)
     {
@@ -308,6 +307,8 @@ int MUSIC_StopSong(void)
 
 int MUSIC_PlaySong(char* song, int size, int loopflag)
 {
+	OPL_CheckForStateChange();
+
 	if(useoplmusic)
 	{
 		if(!OPL_Play(song, size, loopflag))

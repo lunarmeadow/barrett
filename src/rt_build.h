@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -36,7 +36,7 @@ void ClearMenuBuf(void);
 void SetAlternateMenuBuf(void);
 void SetMenuTitle(const char* menutitle);
 
-void PositionMenuBuf(int angle, int distance, boolean drawbackground);
+void PositionMenuBuf(int angle, int distance, bool drawbackground);
 void RefreshMenuBuf(int time);
 void FlipMenuBuf(void);
 
@@ -53,8 +53,8 @@ void DrawMenuBufPropString(int px, int py, const char* string);
 void DrawTMenuBufPropString(int px, int py, const char* string);
 
 void DrawTMenuBufBox(int x, int y, int width, int height);
-void DrawTMenuBufHLine(int x, int y, int width, boolean up);
-void DrawTMenuBufVLine(int x, int y, int height, boolean up);
+void DrawTMenuBufHLine(int x, int y, int width, bool up);
+void DrawTMenuBufVLine(int x, int y, int height, bool up);
 void MenuBufCPrintLine(const char* s);
 void MenuBufCPrint(const char* s);
 void MenuBufPrint(const char* s);

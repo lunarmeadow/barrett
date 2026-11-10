@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -33,7 +33,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "rt_fixed.h"
 #include <stdio.h>
 #include <stdlib.h>
+#if PLATFORM_UNIX
 #include <unistd.h>
+#endif
 
 #include "rt_cfg.h"
 #include "isr.h"
@@ -41,6 +43,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "rt_net.h"
 
 #include "rt_str.h"
+
+#include "opl.h"
 
 #if (SHAREWARE == 0)
 #include "snd_reg.h"
@@ -53,22 +57,32 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 static int soundstart;
 static int soundtype;
 int SD_Started = false;
-static boolean PositionStored = false;
+static bool PositionStored = false;
 static int NumBadSounds = 0;
 static int remotestart;
-static boolean SoundsRemapped = false;
+static bool SoundsRemapped = false;
+
+extern bool useoplmusic;
 
 int MUSIC_GetPosition(void)
 {
-	songtic pos;
+	if(!useoplmusic || !OPL_IsHooked())
+	{
+		songtic pos;
 
-	MUSIC_GetSongPosition(&pos);
-	return pos.milliseconds;
+		MUSIC_GetSongPosition(&pos);
+		return pos.milliseconds;
+	}
+
+	return 0;
 }
 
 void MUSIC_SetPosition(int time)
 {
-	MUSIC_SetSongTime((unsigned long)time);
+	if(!useoplmusic || !OPL_IsHooked())
+	{
+		MUSIC_SetSongTime((unsigned long)time);
+	}
 }
 
 //***************************************************************************
@@ -148,7 +162,7 @@ int SD_SetupFXCard(int* numvoices, int* numbits, int* numchannels)
 //
 //***************************************************************************
 
-int SD_Startup(boolean bombonerror)
+int SD_Startup(bool bombonerror)
 {
 	int status;
 	int voices;
@@ -226,7 +240,7 @@ int SD_Startup(boolean bombonerror)
 //
 //***************************************************************************
 
-boolean SD_SoundOkay(int sndnum)
+bool SD_SoundOkay(int sndnum)
 {
 	if (SD_Started == false)
 		return false;
@@ -277,15 +291,18 @@ int SD_PlayIt(int sndnum, int angle, int distance, int pitch)
 
 	snd = W_CacheLumpNum(SoundNumber(sndnum), PU_STATIC, CvtNull, 1);
 
-	if (*snd == 'C')
+	if (strncmp("Creative", (const char *)snd, 8) == 0)
 	{
 		voice = FX_PlayVOC3D((char*)snd, pitch, angle, distance,
 							 sounds[sndnum].priority, (unsigned long)sndnum);
 	}
-	else
+	else if(strncmp("RIFF", (const char *)snd, 4) == 0)
 	{
 		voice = FX_PlayWAV3D((char*)snd, pitch, angle, distance,
 							 sounds[sndnum].priority, (unsigned long)sndnum);
+	}
+	else {
+		Error("Invalid audio format for %s!", W_GetNameForNum(SoundNumber(sndnum)));
 	}
 
 	if (voice < FX_Ok)
@@ -699,8 +716,9 @@ void SD_PreCacheSoundGroup(int lo, int hi)
 		SD_PreCacheSound(i);
 }
 
-#define MAXSHAREWARESONGS 18
-static song_t rottsharewaresongs[MAXSHAREWARESONGS] = {
+#if (SHAREWARE == 1)
+#define MAXSONGS 18
+static song_t rottsongs[MAXSONGS] = {
 	{loop_no, song_apogee, "FANFARE2", "Apogee Fanfare"},
 	{loop_yes, song_title, "RISE", "Rise"},
 	{loop_yes, song_menu, "MMMENU", "MMMenu"},
@@ -720,9 +738,9 @@ static song_t rottsharewaresongs[MAXSHAREWARESONGS] = {
 	{loop_yes, song_level, "SMOOTH", "Havana Smooth"},
 	{loop_yes, song_level, "CHANT", "Chant"}
 };
-
-#define MAXREGISTEREDSONGS 34
-static song_t rottregisteredsongs[MAXREGISTEREDSONGS] = {
+#else
+#define MAXSONGS 34
+static song_t rottsongs[MAXSONGS] = {
 	{loop_no, song_apogee, "FANFARE2", "Apogee Fanfare"},
 	{loop_yes, song_title, "RISE", "Rise"},
 	{loop_yes, song_menu, "MMMENU", "MMMenu"},
@@ -758,9 +776,7 @@ static song_t rottregisteredsongs[MAXREGISTEREDSONGS] = {
 	{loop_yes, song_youwin, "VICTORY", "Victory!"},
 	{loop_yes, song_dogend, "HERE_BOY", "Here Boy"}
 };
-
-static int MAXSONGS = 0;
-static song_t *rottsongs = NULL;
+#endif
 
 static char* currentsong;
 static int MU_Started = false;
@@ -829,7 +845,7 @@ void MU_JukeBoxMenu(void)
 // MusicStarted - see if the music is started
 //
 //***************************************************************************
-boolean MusicStarted(void)
+bool MusicStarted(void)
 {
 	return MU_Started;
 }
@@ -840,7 +856,7 @@ boolean MusicStarted(void)
 //
 //***************************************************************************
 
-int MU_Startup(boolean bombonerror)
+int MU_Startup(bool bombonerror)
 {
 	int status;
 
@@ -873,6 +889,7 @@ int MU_Startup(boolean bombonerror)
 
 	MU_SetVolume(MUvolume);
 
+#if 0
 	if (IS_SHAREWARE)
 	{
 		rottsongs = rottsharewaresongs;
@@ -883,6 +900,7 @@ int MU_Startup(boolean bombonerror)
 		rottsongs = rottregisteredsongs;
 		MAXSONGS = MAXREGISTEREDSONGS;
 	}
+#endif
 
 	return (0);
 }
@@ -1256,7 +1274,7 @@ void MU_LoadMusic(byte* buf, int size)
 	byte* ptr;
 	int i;
 	int songnumber;
-	boolean differentsong = false;
+	bool differentsong = false;
 	int vsize;
 
 	//

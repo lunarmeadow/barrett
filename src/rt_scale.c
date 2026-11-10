@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include "rt_def.h"
+#include "rt_cfg.h"
 #include "rt_fixed.h"
 #include <stdio.h>
 #include <string.h>
@@ -52,6 +53,7 @@ int dc_invscale;
 int sprtopoffset;
 int dc_yl;
 int dc_yh;
+int ylcmp, yhcmp;
 // byte * dc_firstsource;
 byte* dc_source;
 int centeryclipped;
@@ -72,7 +74,6 @@ void SetPlayerLightLevel(void)
 	int intercept;
 	int height;
 
-	whereami = 23;
 	if (MISCVARS->GASON == 1)
 	{
 		shadingtable = greenmap + (MISCVARS->gasindex << 8);
@@ -101,14 +102,14 @@ void SetPlayerLightLevel(void)
 		lv = (((LightSourceAt(player->x >> 16, player->y >> 16) >> intercept) &
 			   0xf) >>
 			  1);
-		i = maxshade - ((height * 200 / iGLOBAL_SCREENHEIGHT) >> normalshade) - lv;
+		i = maxshade - ((height * 200 / FRAMEBUFFERHEIGHT) >> normalshade) - lv;
 		if (i < minshade)
 			i = minshade;
 		shadingtable = colormap + (i << 8);
 	}
 	else
 	{
-		i = maxshade - ((height * 200 / iGLOBAL_SCREENHEIGHT) >> normalshade);
+		i = maxshade - ((height * 200 / FRAMEBUFFERHEIGHT) >> normalshade);
 		if (i < minshade)
 			i = minshade;
 		shadingtable = colormap + (i << 8);
@@ -127,7 +128,6 @@ void SetLightLevel(int height)
 {
 	int i;
 
-	whereami = 24;
 	if (MISCVARS->GASON == 1)
 	{
 		shadingtable = greenmap + (MISCVARS->gasindex << 8);
@@ -141,14 +141,14 @@ void SetLightLevel(int height)
 	}
 	if (fog)
 	{
-		i = ((height * 200 / iGLOBAL_SCREENHEIGHT) >> normalshade) + minshade;
+		i = ((height * 200 / FRAMEBUFFERHEIGHT) >> normalshade) + minshade;
 		if (i > maxshade)
 			i = maxshade;
 		shadingtable = colormap + (i << 8);
 	}
 	else
 	{
-		i = maxshade - ((height * 200 / iGLOBAL_SCREENHEIGHT) >> normalshade);
+		i = maxshade - ((height * 200 / FRAMEBUFFERHEIGHT) >> normalshade);
 		if (i < minshade)
 			i = minshade;
 		shadingtable = colormap + (i << 8);
@@ -171,18 +171,19 @@ void ScaleTransparentPost(byte* src, byte* buf, int level)
 	byte* oldlevel;
 	byte* seelevel;
 
-	whereami = 25;
-
 	seelevel = colormap + (((level + 64) >> 2) << 8);
 	oldlevel = shadingtable;
 	offset = *(src++);
-	for (; offset != 255;)
+
+	for (; offset != 255 ;)
 	{
 		length = *(src++);
 		topscreen = sprtopoffset + (dc_invscale * offset);
 		bottomscreen = topscreen + (dc_invscale * length);
-		dc_yl = (topscreen + SFRACUNIT) >> SFRACBITS;
-		dc_yh = ((bottomscreen - 1) >> SFRACBITS);
+
+		// fuck you john carmack
+		dc_yl = (topscreen + (dc_invscale/64) + SFRACUNIT) >> SFRACBITS;
+		dc_yh = ((bottomscreen - (dc_invscale/64)) >> SFRACBITS);
 		if (dc_yh >= viewheight)
 			dc_yh = viewheight - 1;
 		if (dc_yl < 0)
@@ -208,7 +209,6 @@ void ScaleTransparentPost(byte* src, byte* buf, int level)
 		}
 	}
 
-	whereami = -2;
 }
 
 void ScaleMaskedPost(byte* src, byte* buf)
@@ -218,15 +218,15 @@ void ScaleMaskedPost(byte* src, byte* buf)
 	int topscreen;
 	int bottomscreen;
 
-	whereami = 26;
 	offset = *(src++);
-	for (; offset != 255;)
+	for (; offset != 255 ;)
 	{
 		length = *(src++);
 		topscreen = sprtopoffset + (dc_invscale * offset);
 		bottomscreen = topscreen + (dc_invscale * length);
-		dc_yl = (topscreen + SFRACUNIT) >> SFRACBITS;
-		dc_yh = ((bottomscreen - 1) >> SFRACBITS);
+
+		dc_yl = (topscreen + (dc_invscale/64) + SFRACUNIT) >> SFRACBITS;
+		dc_yh = ((bottomscreen - (dc_invscale/64)) >> SFRACBITS);
 		if (dc_yh >= viewheight)
 			dc_yh = viewheight - 1;
 		if (dc_yl < 0)
@@ -241,6 +241,112 @@ void ScaleMaskedPost(byte* src, byte* buf)
 	}
 }
 
+// fix for stacked masked walls
+void ScaleTransparentTallPost(byte* src, byte* buf, int level)
+{
+	int offset;
+	int length;
+	int topscreen;
+	int bottomscreen;
+	byte* oldlevel;
+	byte* seelevel;
+
+	seelevel = colormap + (((level + 64) >> 2) << 8);
+	oldlevel = shadingtable;
+	offset = *(src++);
+
+	for (; offset != 255 ;)
+	{
+		length = *(src++);
+		topscreen = sprtopoffset + (dc_invscale * offset);
+		bottomscreen = topscreen + (dc_invscale * length);
+
+		// find out how many pixels to duplicate to cover sparkles
+		dc_yl = (topscreen + SFRACUNIT) >> SFRACBITS;
+		dc_yh = ((bottomscreen - (dc_invscale/64)) >> SFRACBITS);
+		ylcmp = (topscreen + (dc_invscale>>6) + SFRACUNIT) >> SFRACBITS;
+		yhcmp = ((bottomscreen - (dc_invscale>>6)) >> SFRACBITS);
+
+		if (yhcmp >= viewheight)
+			yhcmp = viewheight - 1;
+		if (ylcmp < 0)
+			ylcmp = 0;
+		
+		if ((*src) == 254)
+		{
+			shadingtable = seelevel;
+
+			dc_yl = (topscreen - (dc_invscale/64) + SFRACUNIT) >> SFRACBITS;
+			dc_yh = ((bottomscreen + (dc_invscale/64)) >> SFRACBITS);
+
+			if (dc_yh >= viewheight)
+				dc_yh = viewheight - 1;
+			if (dc_yl < 0)
+				dc_yl = 0;
+
+			if (dc_yl <= dc_yh)
+				R_TransColumn(buf);
+			src++;
+			offset = *(src++);
+			shadingtable = oldlevel;
+		}
+		else
+		{
+			if (dc_yh >= viewheight)
+				dc_yh = viewheight - 1;
+			if (dc_yl < 0)
+				dc_yl = 0;
+
+			if (dc_yl <= dc_yh)
+			{
+				dc_source = src - offset;
+				R_DrawTallColumn(buf);
+			}
+			src += length;
+			offset = *(src++);
+		}
+	}
+
+}
+
+// fix for stacked masked walls
+void ScaleMaskedTallPost(byte* src, byte* buf)
+{
+	int offset;
+	int length;
+	int topscreen;
+	int bottomscreen;
+
+	offset = *(src++);
+	for (; offset != 255 ;)
+	{
+		length = *(src++);
+		topscreen = sprtopoffset + (dc_invscale * offset);
+		bottomscreen = topscreen + (dc_invscale * length);
+
+		dc_yl = (topscreen + SFRACUNIT) >> SFRACBITS;
+		dc_yh = ((bottomscreen) >> SFRACBITS);
+		ylcmp = (topscreen + (dc_invscale/64) + SFRACUNIT) >> SFRACBITS;
+		yhcmp = ((bottomscreen - (dc_invscale/64)) >> SFRACBITS);
+
+		if (dc_yh >= viewheight)
+			dc_yh = viewheight - 1;
+		if (dc_yl < 0)
+			dc_yl = 0;
+		if (yhcmp >= viewheight)
+			yhcmp = viewheight - 1;
+		if (ylcmp < 0)
+			ylcmp = 0;
+		if (dc_yl <= dc_yh)
+		{
+			dc_source = src - offset;
+			R_DrawTallColumn(buf);
+		}
+		src += length;
+		offset = *(src++);
+	}
+}
+
 void ScaleClippedPost(byte* src, byte* buf)
 {
 	int offset;
@@ -248,15 +354,14 @@ void ScaleClippedPost(byte* src, byte* buf)
 	int topscreen;
 	int bottomscreen;
 
-	whereami = 27;
 	offset = *(src++);
 	for (; offset != 255;)
 	{
 		length = *(src++);
 		topscreen = sprtopoffset + (dc_invscale * offset);
 		bottomscreen = topscreen + (dc_invscale * length);
-		dc_yl = (topscreen + SFRACUNIT - 1) >> SFRACBITS;
-		dc_yh = ((bottomscreen - 1) >> SFRACBITS);
+		dc_yl = (topscreen + (dc_invscale/64) + SFRACUNIT - 1) >> SFRACBITS;
+		dc_yh = ((bottomscreen - (dc_invscale/64)) >> SFRACBITS);
 		if (dc_yh >= viewheight)
 			dc_yh = viewheight - 1;
 		if (dc_yl < 0)
@@ -278,7 +383,6 @@ void ScaleSolidMaskedPost(int color, byte* src, byte* buf)
 	int topscreen;
 	int bottomscreen;
 
-	whereami = 28;
 	offset = *(src++);
 	for (; offset != 255;)
 	{
@@ -310,7 +414,6 @@ void ScaleTransparentClippedPost(byte* src, byte* buf, int level)
 	byte* oldlevel;
 	byte* seelevel;
 
-	whereami = 29;
 
 	seelevel = colormap + (((level + 64) >> 2) << 8);
 	oldlevel = shadingtable;
@@ -387,7 +490,6 @@ void ScaleShape(visobj_t* sprite)
 	int tx;
 	int size;
 
-	whereami = 32;
 	shape = W_CacheLumpNum(sprite->shapenum, PU_CACHE, Cvt_patch_t, 1);
 	p = (patch_t*)shape;
 	size = p->origsize >> 7;
@@ -545,7 +647,6 @@ void ScaleTransparentShape(visobj_t* sprite)
 	int startfrac;
 	int startx;
 
-	whereami = 33;
 	shape = W_CacheLumpNum(sprite->shapenum, PU_CACHE, Cvt_transpatch_t, 1);
 	p = (transpatch_t*)shape;
 	size = p->origsize >> 7;
@@ -621,7 +722,6 @@ void ScaleSolidShape(visobj_t* sprite)
 	int startfrac;
 	int startx;
 
-	whereami = 34;
 	shape = W_CacheLumpNum(sprite->shapenum, PU_CACHE, Cvt_patch_t, 1);
 	p = (patch_t*)shape;
 	size = p->origsize >> 7;
@@ -700,7 +800,6 @@ void ScaleWeapon(int xoff, int y, int shapenum)
 	int startfrac;
 	int startx;
 
-	whereami = 35;
 	SetPlayerLightLevel();
 	shape = W_CacheLumpNum(shapenum, PU_CACHE, Cvt_patch_t, 1);
 	p = (patch_t*)shape;
@@ -771,7 +870,6 @@ void DrawUnScaledSprite(int x, int y, int shapenum, int shade)
 	int startfrac;
 	int startx;
 
-	whereami = 36;
 	shadingtable = colormap + (shade << 8);
 	centeryclipped = y;
 	xcent = x;
@@ -831,7 +929,6 @@ void DrawUnScaledSprite(int x, int y, int shapenum, int shade)
 
 void DrawScreenSprite(int x, int y, int shapenum)
 {
-	whereami = 37;
 	ScaleWeapon(x - 160, y - 200, shapenum);
 }
 
@@ -858,7 +955,6 @@ void DrawPositionedScaledSprite(int x, int y, int shapenum, int height,
 	int startx;
 	int size;
 
-	whereami = 38;
 	shadingtable = colormap + (1 << 12);
 	centeryclipped = y;
 	xcent = x;
@@ -949,7 +1045,6 @@ void DrawScreenSizedSprite(int lump)
 	byte *cnt, *Ycnt;
 
 	// SetTextMode (  );
-	whereami = 39;
 	shadingtable = colormap + (1 << 12);
 	shape = W_CacheLumpNum(lump, PU_CACHE, Cvt_patch_t, 1);
 	p = (patch_t*)shape;
@@ -994,7 +1089,7 @@ void DrawScreenSizedSprite(int lump)
 		// a new buffer (size=800x600) and slowed the game down so ?
 
 		// if its the gasmask, paint black patches at hires
-		if ((lump == G_gmasklump) && (iGLOBAL_SCREENWIDTH > 320))
+		if ((lump == G_gmasklump) && (FRAMEBUFFERWIDTH > 320))
 		{
 			src = ((p->collumnofs[frac >> SFRACBITS]) + shape);
 			offset = *(src++);
@@ -1008,18 +1103,18 @@ void DrawScreenSizedSprite(int lump)
 			// paint upper black patch in gasmask
 			for (cnt = b; cnt < b + viewwidth; cnt++)
 			{
-				for (Ycnt = cnt; Ycnt < cnt + (dc_yl * iGLOBAL_SCREENWIDTH);
-					 Ycnt += iGLOBAL_SCREENWIDTH)
+				for (Ycnt = cnt; Ycnt < cnt + (dc_yl * FRAMEBUFFERWIDTH);
+					 Ycnt += FRAMEBUFFERWIDTH)
 				{
 					*Ycnt = 36;
 				}
 			}
 			// paint lower black patch in gasmask
-			for (cnt = b + (dc_yh * iGLOBAL_SCREENWIDTH);
-				 cnt < b + (dc_yh * iGLOBAL_SCREENWIDTH) + viewwidth; cnt++)
+			for (cnt = b + (dc_yh * FRAMEBUFFERWIDTH);
+				 cnt < b + (dc_yh * FRAMEBUFFERWIDTH) + viewwidth; cnt++)
 			{
-				for (Ycnt = cnt; Ycnt < b + (viewheight * iGLOBAL_SCREENWIDTH);
-					 Ycnt += iGLOBAL_SCREENWIDTH)
+				for (Ycnt = cnt; Ycnt < b + (viewheight * FRAMEBUFFERWIDTH);
+					 Ycnt += FRAMEBUFFERWIDTH)
 				{
 					*Ycnt = 36;
 				}
@@ -1046,7 +1141,6 @@ void DrawNormalPost(byte* src, byte* buf)
 	int length;
 	int s;
 
-	whereami = 40;
 
 	while (1)
 	{
@@ -1085,17 +1179,16 @@ void DrawNormalSprite(int x, int y, int shapenum)
 	byte* b;
 	int startx;
 
-	whereami = 41;
 
 	shape = W_CacheLumpNum(shapenum, PU_CACHE, Cvt_patch_t, 1);
 	p = (patch_t*)shape;
 
 	if (((x - p->leftoffset) < 0) ||
-		((x - p->leftoffset + p->width) > iGLOBAL_SCREENWIDTH))
+		((x - p->leftoffset + p->width) > FRAMEBUFFERWIDTH))
 		Error("DrawNormalSprite: x is out of range x=%d\n",
 			  x - p->leftoffset + p->width);
 	if (((y - p->topoffset) < 0) ||
-		((y - p->topoffset + p->height) > iGLOBAL_SCREENHEIGHT))
+		((y - p->topoffset + p->height) > FRAMEBUFFERHEIGHT))
 		Error("DrawNormalSprite: y is out of range y=%d\n",
 			  y - p->topoffset + p->height);
 
@@ -1112,8 +1205,13 @@ void R_DrawColumn(byte* buf)
 {
 	// This is *NOT* 100% correct - DDOI
 	int count;
-	int frac, fracstep;
+	uint32_t frac, fracstep;
 	byte* dest;
+
+	// force compiler to preload globals in a register
+	const int screenW = FRAMEBUFFERWIDTH;
+	const byte* restrict colormap = shadingtable;
+	const byte* restrict texture = dc_source;
 
 	count = dc_yh - dc_yl + 1;
 	if (count < 0)
@@ -1127,9 +1225,67 @@ void R_DrawColumn(byte* buf)
 	while (count--)
 	{
 		//*dest = test++;
-		*dest = shadingtable[dc_source[(frac >> SFRACBITS)]];
-		dest += iGLOBAL_SCREENWIDTH;
+		*dest = colormap[texture[(frac >> SFRACBITS)]];
+		dest += screenW;
 		frac += fracstep;
+	}
+}
+
+// used to draw stacked masked walls without gaps and handle specific edge cases
+void R_DrawTallColumn(byte* buf)
+{
+	// This is *NOT* 100% correct - DDOI
+	int scalecount, texcount;
+	uint32_t frac, fracstep;
+	bool sparkleMask = false;
+	byte* dest;
+
+	// force compiler to preload globals in a register
+	const int screenW = FRAMEBUFFERWIDTH;
+	const byte* restrict colormap = shadingtable;
+	const byte* restrict texture = dc_source;
+
+	// ylcmp varies wildly if a sparklie is rendered. otherwise, a difference of one.
+	// explicitly checking for a difference of 1 breaks GCC somehow.
+	if (ylcmp - dc_yl == 1)
+		sparkleMask = true;
+
+	scalecount = dc_yh - dc_yl + 1;
+
+	// seperate, virtual texture indexing. 
+	// count is valid for actual screen boundary, but not for texture indexing.
+	// that would cause gaps and other such graphical artifacts.
+	texcount = yhcmp - ylcmp;
+
+	if (scalecount < 0)
+		return;
+
+	dest = buf + ylookup[dc_yl];
+
+	fracstep = dc_iscale;
+	frac = dc_texturemid + (dc_yl - centery) * fracstep;
+
+	if(sparkleMask && scalecount--)
+	{
+		// move pixel back over by 1/64th
+		*dest = colormap[texture[((frac + (dc_invscale >> 6)) >> SFRACBITS)]];
+
+		dest += screenW;
+		
+		// fetch next texture
+		if(texcount--)
+			frac += fracstep;
+	}
+
+	while (scalecount--)
+	{
+		*dest = colormap[texture[(frac >> SFRACBITS)]];
+
+		dest += screenW;
+		
+		// fetch next texture
+		if(texcount--)
+			frac += fracstep;
 	}
 }
 
@@ -1137,6 +1293,10 @@ void R_TransColumn(byte* buf)
 {
 	int count;
 	byte* dest;
+
+	// force compiler to preload globals in a register
+	const int screenW = FRAMEBUFFERWIDTH;
+	const byte* restrict colormap = shadingtable;
 
 	count = dc_yh - dc_yl + 1;
 	if (count < 0)
@@ -1146,8 +1306,48 @@ void R_TransColumn(byte* buf)
 
 	while (count--)
 	{
-		*dest = shadingtable[*dest];
-		dest += iGLOBAL_SCREENWIDTH;
+		*dest = colormap[*dest];
+		dest += screenW;
+	}
+}
+
+void R_DrawUpperDoorColumn(byte* buf)
+{
+	// This is *NOT* 100% correct - DDOI
+	int count, texcount;
+	uint32_t frac, fracstep;
+	byte* dest;
+	//bool sparkleMask;
+
+	// force compiler to preload globals in a register
+	const int screenW = FRAMEBUFFERWIDTH;
+	const byte* restrict colormap = shadingtable;
+	const byte* restrict texture = dc_source;
+
+	count = dc_yh - dc_yl;
+	texcount = yhcmp - ylcmp;
+
+	// if (ylcmp - dc_yl == 1)
+	// 	count = dc_yh - dc_yl + 1;
+
+	if (count < 0)
+		return;
+
+	dest = buf + ylookup[dc_yl];
+
+	fracstep = dc_iscale;
+	frac = dc_texturemid + (dc_yl - centery) * fracstep;
+	frac <<= 10;
+	fracstep <<= 10;
+
+	while (count--)
+	{
+		//*dest = 6;
+		*dest = colormap[texture[(frac >> 26)]];
+		dest += screenW;
+
+		if(texcount--)
+			frac += fracstep;
 	}
 }
 
@@ -1155,8 +1355,13 @@ void R_DrawWallColumn(byte* buf)
 {
 	// This is *NOT* 100% correct - DDOI
 	int count;
-	int frac, fracstep;
+	uint32_t frac, fracstep;
 	byte* dest;
+
+	// force compiler to preload globals in a register
+	const int screenW = FRAMEBUFFERWIDTH;
+	const byte* restrict colormap = shadingtable;
+	const byte* restrict texture = dc_source;
 
 	count = dc_yh - dc_yl;
 	if (count < 0)
@@ -1172,8 +1377,8 @@ void R_DrawWallColumn(byte* buf)
 	while (count--)
 	{
 		//*dest = 6;
-		*dest = shadingtable[dc_source[(((unsigned)frac) >> 26)]];
-		dest += iGLOBAL_SCREENWIDTH;
+		*dest = colormap[texture[(frac >> 26)]];
+		dest += screenW;
 		frac += fracstep;
 	}
 }
@@ -1182,9 +1387,14 @@ void R_DrawClippedColumn(byte* buf)
 {
 	// This is *NOT* 100% correct - DDOI zxcv
 	int count;
-	int frac, fracstep;
+	uint32_t frac, fracstep;
 	byte* dest;
 	//		byte *b;int y;
+
+	// force compiler to preload globals in a register
+	const int screenW = FRAMEBUFFERWIDTH;
+	byte* restrict colormap = shadingtable;
+	const byte* restrict texture = dc_source;
 
 	count = dc_yh - dc_yl + 1;
 	if (count < 0)
@@ -1195,10 +1405,13 @@ void R_DrawClippedColumn(byte* buf)
 	fracstep = dc_iscale;
 	frac = dc_texturemid + (dc_yl - centeryclipped) * fracstep;
 
+	if(blackwpns)
+		colormap = blckmap + (1 << 12);
+
 	while (count--)
 	{
-		*dest = shadingtable[dc_source[(((unsigned)frac) >> SFRACBITS)]];
-		dest += iGLOBAL_SCREENWIDTH;
+		*dest = colormap[texture[(frac >> SFRACBITS)]];
+		dest += screenW;
 		frac += fracstep;
 	}
 }
@@ -1212,11 +1425,14 @@ void R_DrawSolidColumn(int color, byte* buf)
 	if (count < 0)
 		return;
 
+	// force compiler to preload globals in a register
+	const int screenW = FRAMEBUFFERWIDTH;
+
 	dest = buf + ylookup[dc_yl];
 
 	while (count--)
 	{
 		*dest = (byte)color;
-		dest += iGLOBAL_SCREENWIDTH;
+		dest += screenW;
 	}
 }

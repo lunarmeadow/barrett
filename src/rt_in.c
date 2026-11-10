@@ -2,8 +2,8 @@
 Copyright (C) 1994-1995 Apogee Software, Ltd.
 Copyright (C) 2002-2015 icculus.org, GNU/Linux port
 Copyright (C) 2017-2018 Steven LeVesque
-Copyright (C) 2025 lunarmeadow (she/her)
-Copyright (C) 2025 erysdren (it/its)
+Copyright (C) 2025-2026 lunarmeadow (she/her)
+Copyright (C) 2025-2026 erysdren (it/its)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,6 +17,9 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+#include <SDL_mouse.h>
+#include <SDL_stdinc.h>
+#include <SDL_video.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -57,13 +60,13 @@ int IgnoreMouse = 0;
 
 // configuration variables
 //
-boolean MousePresent;
-boolean JoysPresent[MaxJoys];
-boolean JoyPadPresent = 0;
+bool MousePresent;
+bool JoysPresent[MaxJoys];
+bool JoyPadPresent = 0;
 
 //    Global variables
 //
-boolean Paused;
+bool Paused;
 char LastASCII;
 volatile int LastScan;
 
@@ -82,7 +85,9 @@ static word sdl_sticks_joybits = 0;
 // static unsigned int scancodes[SDL_NUM_SCANCODES]; //TODO: replace with a
 // hashtable if possible
 static HashTable* scancodes;
-extern boolean sdl_fullscreen;
+extern bool sdl_fullscreen;
+
+extern SDL_Window* window;
 
 //   'q','w','e','r','t','y','u','i','o','p','[',']','\\', 0 ,'a','s',
 
@@ -120,7 +125,7 @@ static KeyboardDef KbdDefs = {0x1d, 0x38, 0x47, 0x48, 0x49,
 static JoystickDef JoyDefs[MaxJoys];
 static ControlType Controls[MAXPLAYERS];
 
-static boolean IN_Started;
+static bool IN_Started;
 
 static Direction DirTable[] = // Quick lookup for total direction
 	{dir_NorthWest, dir_North,	   dir_NorthEast, dir_West,		dir_None,
@@ -368,8 +373,11 @@ void IN_PumpEvents(void)
 void INL_GetMouseDelta(int* x, int* y)
 {
 	IN_PumpEvents();
-
-	SDL_GetRelativeMouseState(x, y);
+	
+	if((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0)
+		SDL_GetRelativeMouseState(x, y);
+	else
+		*x = *y = 0;
 }
 
 //******************************************************************************
@@ -386,7 +394,10 @@ word IN_GetMouseButtons(void)
 
 	IN_PumpEvents();
 
-	buttons = sdl_mouse_button_mask;
+	if((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0)
+		buttons = sdl_mouse_button_mask;
+	else
+	 	buttons = 0;
 
 	return (buttons);
 }
@@ -517,10 +528,10 @@ word INL_GetJoyButtons(word joy)
 //
 //******************************************************************************
 
-boolean INL_StartMouse(void)
+bool INL_StartMouse(void)
 {
 
-	boolean retval = false;
+	bool retval = false;
 
 	/* no-op. */
 	retval = true;
@@ -583,7 +594,7 @@ void IN_SetupJoy(word joy, word minx, word maxx, word miny, word maxy)
 //
 //******************************************************************************
 
-boolean INL_StartJoy(word joy)
+bool INL_StartJoy(word joy)
 {
 	word x, y;
 
@@ -644,7 +655,7 @@ void INL_ShutJoy(word joy)
 
 void IN_Startup(void)
 {
-	boolean checkjoys, checkmouse;
+	bool checkjoys, checkmouse;
 
 	word i;
 
@@ -858,7 +869,7 @@ void IN_ClearKeysDown(void)
 
 void IN_ReadControl(int player, ControlInfo* info)
 {
-	boolean realdelta;
+	bool realdelta;
 	word buttons;
 	int dx, dy;
 	Motion mx, my;
@@ -941,7 +952,7 @@ ScanCode IN_WaitForKey(void)
 //
 //******************************************************************************
 
-boolean btnstate[8];
+bool btnstate[8];
 
 void IN_StartAck(void)
 {
@@ -972,7 +983,7 @@ void IN_StartAck(void)
 //
 //******************************************************************************
 
-boolean IN_CheckAck(void)
+bool IN_CheckAck(void)
 {
 	unsigned i, buttons = 0;
 
@@ -1023,18 +1034,18 @@ void IN_Ack(void)
 //
 //******************************************************************************
 
-boolean IN_UserInput(long delay)
+bool IN_UserInput(long delay)
 {
 	long lasttime;
 
-	lasttime = GetTicCount();
+	lasttime = GetCachedTic();
 
 	IN_StartAck();
 	do
 	{
 		if (IN_CheckAck())
 			return true;
-	} while ((GetTicCount() - lasttime) < delay);
+	} while ((GetCachedTic() - lasttime) < delay);
 
 	return (false);
 }
@@ -1124,7 +1135,7 @@ int IN_InputUpdateKeyboard(void)
 {
 	int key;
 	int returnval = 0;
-	boolean done = false;
+	bool done = false;
 
 	//   _disable ();
 
@@ -1186,7 +1197,7 @@ void QueueLetterInput(void)
 	int tail = Keytail;
 	char c;
 	int scancode;
-	boolean send = false;
+	bool send = false;
 
 	/* HACK HACK HACK */
 	/*
