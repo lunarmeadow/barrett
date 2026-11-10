@@ -30,7 +30,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <stdlib.h>
 // #include <math.h>
-#include "standard.h"
 #include "pitch.h"
 
 #define MAXDETUNE 25
