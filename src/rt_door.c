@@ -1803,7 +1803,7 @@ void DoorOpening(int door)
 {
 	int area1, area2;
 	word* map;
-	long position;
+	int32_t position;
 	int tilex, tiley;
 
 	position = doorobjlist[door]->position;
@@ -1873,7 +1873,7 @@ void DoorClosing(int door)
 {
 	int area1, area2;
 	word* map;
-	long position;
+	int32_t position;
 	int tilex, tiley;
 	doorobj_t* dptr;
 
@@ -4026,8 +4026,8 @@ void SaveDoors(byte** buf, int* size)
 	int doorsave;
 	byte doorflag;
 	byte doorlocked;
-	signed char dooreindex;
-	short int doortime;
+	int8_t dooreindex;
+	int16_t doortime;
 	int unitsize;
 	byte* ptr;
 
@@ -4090,8 +4090,8 @@ void LoadDoors(byte* buf, int size)
 	int doorsave;
 	byte doorflag;
 	byte doorlocked;
-	signed char dooreindex;
-	short int doortime;
+	int8_t dooreindex;
+	int16_t doortime;
 	byte* ptr;
 	int unitsize;
 	int num;

@@ -53,7 +53,7 @@ extern bool iG_aimCross;
 extern bool sdl_fullscreen;
 extern int iG_X_center;
 extern int iG_Y_center;
-char* iG_buf_center;
+byte* iG_buf_center;
 
 SDL_Surface* sdl_surface = NULL;
 
@@ -81,8 +81,8 @@ int screensize;
 byte* bufferofs;
 byte* displayofs;
 bool graphicsmode = false;
-char* bufofsTopLimit;
-char* bufofsBottomLimit;
+byte* bufofsTopLimit;
+byte* bufofsBottomLimit;
 
 void DrawCenterAim(void);
 
@@ -295,12 +295,12 @@ void VL_SetVGAPlaneMode(void)
 	iG_Y_center = (FRAMEBUFFERHEIGHT / 2); //+10 = move aim down a bit
 
 	iG_buf_center =
-		(char*)(bufferofs +
+		(byte*)(bufferofs +
 				(screensize /
 				 2)); //(iG_Y_center*FRAMEBUFFERWIDTH);//+iG_X_center;
 
-	bufofsTopLimit = (char*)(bufferofs + screensize - FRAMEBUFFERWIDTH);
-	bufofsBottomLimit = (char*)(bufferofs + FRAMEBUFFERWIDTH);
+	bufofsTopLimit = (byte*)(bufferofs + screensize - FRAMEBUFFERWIDTH);
+	bufofsBottomLimit = (byte*)(bufferofs + FRAMEBUFFERWIDTH);
 
 	// start stretched
 	EnableScreenStretch();
@@ -535,8 +535,8 @@ void DrawCenterAim(void)
 	const int xcenter = iG_X_center;
 	const int ycenter = iG_Y_center;
 	const int screenW = FRAMEBUFFERWIDTH;
-	const char* backbufferTop = bufofsTopLimit;
-	const char* backbufferBottom = bufofsBottomLimit;
+	const byte* backbufferTop = bufofsTopLimit;
+	const byte* backbufferBottom = bufofsBottomLimit;
 	const playertype* ply = locplayerstate;
 
 	// dynamic health
@@ -570,7 +570,7 @@ void DrawCenterAim(void)
 			colour = hpcolour;
 
 		// get center of back buffer as char pointer
-		iG_buf_center = (char*)(bufferofs + ((ycenter) * screenW));
+		iG_buf_center = (byte*)(bufferofs + ((ycenter) * screenW));
 
 		if(dynamicSpread)
 		{

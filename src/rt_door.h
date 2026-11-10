@@ -26,6 +26,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 //***************************************************************************
 
+#include <stdint.h>
 #define MAXTOUCHPLATES 128
 #define MAXMASKED	   1024 // max masked walls
 #define MAXDOORS	   256 // max number of sliding doors
@@ -77,15 +78,15 @@ typedef enum
 
 typedef struct elevator
 {
-	short sx, sy;
-	short dx, dy;
-	short esx, esy, edx, edy;
-	short door1, door2;
-	signed char state;
-	short doortoopen;
-	short doorclosing;
-	short ticcount;
-	short nextaction;
+	int16_t sx, sy;
+	int16_t dx, dy;
+	int16_t esx, esy, edx, edy;
+	int16_t door1, door2;
+	int8_t state;
+	int16_t doortoopen;
+	int16_t doorclosing;
+	int16_t ticcount;
+	int16_t nextaction;
 } elevator_t;
 
 typedef struct doorstruct
@@ -98,8 +99,8 @@ typedef struct doorstruct
 	word basetexture;
 	byte lock;
 	byte flags;
-	short int ticcount;
-	signed char eindex;
+	int16_t ticcount;
+	int8_t eindex;
 	bool vertical;
 	int soundhandle;
 	int position;
@@ -171,10 +172,10 @@ typedef struct mwall
 {
 	thingtype which;
 	byte tilex, tiley;
-	signed char areanumber;
-	signed short toptexture;
-	signed short midtexture;
-	signed short bottomtexture;
+	int8_t areanumber;
+	int16_t toptexture;
+	int16_t midtexture;
+	int16_t bottomtexture;
 	word flags;
 	bool vertical;
 	int sidepic;
@@ -188,7 +189,7 @@ typedef struct animmwall
 {
 	word num;
 	byte count;
-	signed char ticcount;
+	int8_t ticcount;
 	struct animmwall* next;
 	struct animmwall* prev;
 

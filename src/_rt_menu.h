@@ -140,7 +140,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define ACTIVECOLOR		  241
 #define HIGHLIGHTCOLOR	  1
 
-#define MouseInt 0x33
 #define GAMESVD                                                                \
 	"There's already a game\n"                                                 \
 	"saved at this position.\n"                                                \

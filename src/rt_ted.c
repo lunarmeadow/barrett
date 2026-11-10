@@ -1269,7 +1269,7 @@ void PreCache(void)
 ======================
 */
 
-void CA_RLEWexpand(word* source, word* dest, long length, unsigned rlewtag)
+void CA_RLEWexpand(word* source, word* dest, int32_t length, unsigned rlewtag)
 {
 	word value, count, i;
 	word* end;
@@ -1444,9 +1444,9 @@ void ReadROTTMap(char* filename, int mapnum)
 {
 	RTLMAP RTLMap;
 	int filehandle;
-	long pos;
-	long compressed;
-	long expanded;
+	int32_t pos;
+	int32_t compressed;
+	int32_t expanded;
 	int plane;
 	byte* buffer;
 	size_t mapsoffset;
@@ -1504,7 +1504,7 @@ void ReadROTTMap(char* filename, int mapnum)
 		lseek(filehandle, pos, SEEK_SET);
 		SafeRead(filehandle, buffer, compressed);
 
-		mapplanes[plane] = Z_Malloc(expanded, PU_LEVEL, &mapplanes[plane]);
+		mapplanes[plane] = Z_Malloc(expanded, PU_LEVEL, (void **)&mapplanes[plane]);
 
 		//
 		// unRLEW, skipping expanded length
@@ -1791,9 +1791,9 @@ void GetMapInfo(mapfileinfo_t* mapinfo)
 void LoadTedMap(const char* extension, int mapnum)
 
 {
-	long pos;
-	long compressed;
-	long expanded;
+	int32_t pos;
+	int32_t compressed;
+	int32_t expanded;
 	int plane;
 	int i;
 	int maphandle;
@@ -1867,7 +1867,7 @@ void LoadTedMap(const char* extension, int mapnum)
 		buffer = SafeMalloc(compressed);
 		SafeRead(maphandle, buffer, compressed);
 
-		mapplanes[plane] = Z_Malloc(expanded, PU_LEVEL, &mapplanes[plane]);
+		mapplanes[plane] = Z_Malloc(expanded, PU_LEVEL, (void **)&mapplanes[plane]);
 
 		//
 		// unRLEW, skipping expanded length
@@ -2005,7 +2005,7 @@ void SetupWalls(void)
 			}
 			if ((loadedgame == false) && (MAPSPOT(i, j, 2) == 0xeeee))
 			{
-				_2Dpoint* tdptr;
+				vec2i_t* tdptr;
 
 				tdptr = &(MISCVARS->EPOP[MISCVARS->nextpop]);
 				tdptr->x = i;
@@ -2075,7 +2075,7 @@ void SetupWalls(void)
 */
 word GetNearestAreaNumber(int tilex, int tiley)
 {
-	int up, dn, lt, rt;
+	int up = 0, dn = 0, lt = 0, rt = 0;
 	int tile;
 
 	tile = MAPSPOT(tilex, tiley, 0) - AREATILE;
@@ -2083,10 +2083,14 @@ word GetNearestAreaNumber(int tilex, int tiley)
 	if ((tile <= NUMAREAS) && (tile > 0))
 		return (tile + AREATILE);
 
-	up = MAPSPOT(tilex, tiley - 1, 0) - AREATILE;
-	dn = MAPSPOT(tilex, tiley + 1, 0) - AREATILE;
-	lt = MAPSPOT(tilex - 1, tiley, 0) - AREATILE;
-	rt = MAPSPOT(tilex + 1, tiley, 0) - AREATILE;
+	if (tiley > 0)
+		up = MAPSPOT(tilex, tiley - 1, 0) - AREATILE;
+	if (tiley < MAPSIZE - 1)
+		dn = MAPSPOT(tilex, tiley + 1, 0) - AREATILE;
+	if (tilex > 0)
+		lt = MAPSPOT(tilex - 1, tiley, 0) - AREATILE;
+	if (tilex < MAPSIZE - 1)
+		rt = MAPSPOT(tilex + 1, tiley, 0) - AREATILE;
 
 	up = ((up > 0) && (up <= NUMAREAS));
 	dn = ((dn > 0) && (dn <= NUMAREAS));
@@ -5603,7 +5607,8 @@ void SetupGameLevel(void)
 		SetModemLightLevel(gamestate.BattleOptions.LightLevel);
 	}
 
-	if (player != NULL)
+	// ! TODO: this sucks
+	if (player != NULL && !loadedgame)
 	{
 		for (i = 0; i < 100; i++)
 		{
@@ -5673,7 +5678,7 @@ void SetupRandomActors(void)
 	word *map, tile;
 	int starti, totalrandom = 0, count = 0, ambush, locindex, orig;
 	byte actorpresent[10] = {0}, index = 0, randomtype, used[100] = {0};
-	_2Dpoint randloc[100];
+	vec2i_t randloc[100];
 
 	map = mapplanes[1];
 	map += 5;

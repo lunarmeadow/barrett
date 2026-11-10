@@ -97,6 +97,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #endif
 
 #define PI		3.141592657
+#define LONG(a) ((int32_t)a)
 #define M_PI	3.14159
 
 #ifndef O_BINARY
@@ -133,10 +134,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 char* strupr(char*);
 char* itoa(int, char*, int);
-char* ltoa(long, char*, int);
-char* ultoa(unsigned long, char*, int);
+char* safe_ltoa(int32_t, char*, int);
+char* safe_ultoa(uint32_t, char*, int);
 char getch(void);
-long filelength(int handle);
+int32_t safe_filelength(int handle);
 #else
 #error please define for your platform.
 #endif

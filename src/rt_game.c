@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "rt_game.h"
 #include "_rt_game.h"
 #include "rt_menu.h"
+#include "rt_stat.h"
 #include "z_zone.h"
 #include "w_wad.h"
 #include "lumpy.h"
@@ -67,7 +68,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int PlayerSnds[5] = {SD_PLAYERTCSND, SD_PLAYERTBSND, SD_PLAYERDWSND,
 					 SD_PLAYERLNSND, SD_PLAYERIPFSND};
 
-unsigned short SHAKETICS = 0xFFFF; // bna++
+uint16_t SHAKETICS = 0xFFFF; // bna++
 // int SHAKETICS   = 0xFFFF;
 int damagecount = 0;
 HighScore Scores[MaxScores] = {
@@ -632,7 +633,7 @@ void DrawKills(bool bufferofsonly)
 				temp = DisplayPoints;
 			}
 
-			ltoa(temp % 1000, KillStr.str, 10);
+			safe_ltoa(temp % 1000, KillStr.str, 10);
 			KillStr.length = strlen(KillStr.str);
 			DrawNumber(TRIAD_X - 6, TRIAD_Y, 3, 5, bufferofsonly);
 		}
@@ -648,7 +649,7 @@ void DrawKills(bool bufferofsonly)
 			{
 				temp = -temp;
 			}
-			ltoa(temp, KillStr.str, 10);
+			safe_ltoa(temp, KillStr.str, 10);
 			KillStr.length = strlen(KillStr.str);
 
 			DrawNumber(LIVES_X - 12, LIVES_Y, 3, 4, bufferofsonly);
@@ -693,7 +694,7 @@ void DrawKills(bool bufferofsonly)
 			{
 				temp = -temp;
 			}
-			ltoa(temp, KillStr.str, 10);
+			safe_ltoa(temp, KillStr.str, 10);
 			KillStr.length = strlen(KillStr.str);
 			DrawNumber(LEADER_NUM_X, LEADER_NUM_Y, 3, 4, bufferofsonly);
 		}
@@ -777,7 +778,7 @@ void DrawKills(bool bufferofsonly)
 			{
 				temp = -temp;
 			}
-			ltoa(temp, KillStr.str, 10);
+			safe_ltoa(temp, KillStr.str, 10);
 			KillStr.length = strlen(KillStr.str);
 			width = 2;
 			if (temp > 99)
@@ -1188,7 +1189,7 @@ void DrawScore(bool bufferofsonly)
 //
 //******************************************************************************
 
-void GivePoints(long points)
+void GivePoints(int32_t points)
 {
 	gamestate.score += points;
 
@@ -1390,7 +1391,7 @@ void DrawTimeNumber(int x, int y, int number, bool seconds,
 {
 	char str[20];
 
-	ltoa(number, str, 10);
+	safe_ltoa(number, str, 10);
 
 	if (seconds)
 	{
@@ -1624,7 +1625,7 @@ void UpdateScore(unsigned int num)
 		gamestate.score = 999999999;
 	}
 
-	ltoa(num, ScoreStr.str, 10);
+	safe_ltoa(num, ScoreStr.str, 10);
 	ScoreStr.length = strlen(ScoreStr.str);
 }
 
@@ -1636,7 +1637,7 @@ void UpdateScore(unsigned int num)
 
 void UpdateLives(int num)
 {
-	ltoa(num, LivesStr.str, 10);
+	safe_ltoa(num, LivesStr.str, 10);
 	LivesStr.length = strlen(LivesStr.str);
 }
 
@@ -1648,7 +1649,7 @@ void UpdateLives(int num)
 void ClearTriads(playertype* pstate)
 {
 	pstate->triads = 0;
-	ltoa(pstate->triads, TriadStr.str, 10);
+	safe_ltoa(pstate->triads, TriadStr.str, 10);
 	TriadStr.length = strlen(TriadStr.str);
 }
 
@@ -1679,7 +1680,7 @@ void UpdateTriads(objtype* ob, int num)
 
 	if (ob == player)
 	{
-		ltoa(pstate->triads, TriadStr.str, 10);
+		safe_ltoa(pstate->triads, TriadStr.str, 10);
 		TriadStr.length = strlen(TriadStr.str);
 	}
 }
@@ -2429,7 +2430,7 @@ void DrawEpisodeLevel(int x, int y)
 
 	if (!BATTLEMODE)
 	{
-		ltoa(gamestate.episode, str, 10);
+		safe_ltoa(gamestate.episode, str, 10);
 
 		// bna-- Drawpic (x+29, y+16, 8>>2, 16, (byte
 		// *)&timenums[str[0]-'0']->data);
@@ -2459,7 +2460,7 @@ void DrawEpisodeLevel(int x, int y)
 			level = GetLevel(gamestate.episode, gamestate.mapon);
 
 		level = abs(level);
-		ltoa(level, str, 10);
+		safe_ltoa(level, str, 10);
 
 		if (level < 10)
 		{
@@ -2487,7 +2488,7 @@ void DrawEpisodeLevel(int x, int y)
 		VL_MemToScreenClipped((byte*)&p->data, 32 >> 2, 16, x + 16, y + 15);
 
 		level = abs(gamestate.mapon + 1);
-		ltoa(level, str, 10);
+		safe_ltoa(level, str, 10);
 
 		if (level < 10)
 		{
@@ -2671,7 +2672,7 @@ void DrawHighScores(void)
 		//
 		// level
 		//
-		ultoa(s->completed, buffer, 10);
+		safe_ultoa(s->completed, buffer, 10);
 
 		PrintX = (17 * 8) - 10;
 		if (IS_NOT_SHAREWARE)
@@ -2708,7 +2709,7 @@ void DrawHighScores(void)
 		//
 		// score
 		//
-		ultoa(s->score, buffer, 10);
+		safe_ultoa(s->score, buffer, 10);
 
 		VW_MeasurePropString(buffer, &w, &h);
 		PrintX = (33 * 8) - w;
@@ -2722,7 +2723,7 @@ void DrawHighScores(void)
 //
 //******************************************************************************
 
-void CheckHighScore(long score, word other, bool INMENU)
+void CheckHighScore(int32_t score, word other, bool INMENU)
 {
 	word i, j;
 	int n;
@@ -4078,7 +4079,7 @@ bool ZoomDeathOkay(void)
 extern bool dopefish;
 void Died(void)
 {
-	long dx, dy;
+	int32_t dx, dy;
 	int iangle, curangle, clockwise, change;
 	int da;
 	int rate;
@@ -4477,10 +4478,10 @@ void DoLoadGameAction(void)
 //
 //******************************************************************************
 
-long DoCheckSum(byte* source, int size, long csum)
+int32_t DoCheckSum(byte* source, int size, int32_t csum)
 {
 	int i;
-	long checksum;
+	int32_t checksum;
 
 	checksum = csum;
 
@@ -4497,13 +4498,13 @@ long DoCheckSum(byte* source, int size, long csum)
 //******************************************************************************
 
 #define SAVECHECKSUMSIZE (10000)
-long CalculateSaveGameCheckSum(char* filename)
+int32_t CalculateSaveGameCheckSum(char* filename)
 {
 	int handle;
 	int lengthleft;
 	int length;
 	byte* altbuffer;
-	long checksum;
+	int32_t checksum;
 
 	altbuffer = SafeMalloc(SAVECHECKSUMSIZE);
 
@@ -4512,7 +4513,7 @@ long CalculateSaveGameCheckSum(char* filename)
 	// Open the savegame file
 
 	handle = SafeOpenRead(filename);
-	lengthleft = filelength(handle);
+	lengthleft = safe_filelength(handle);
 
 	while (lengthleft > 0)
 	{
@@ -4912,7 +4913,7 @@ bool LoadTheGame(int num, gamestorage_t* game)
 	if (game->version != ROTTVERSION)
 		return false;
 
-	// Fix for crash when loading a save on a custom map pack
+	//Fix for crash when loading a save on a custom map pack
 	if (GameLevels.avail)
 	{
 		memcpy(&game->info.file, &GameLevels.file, sizeof(GameLevels.file));
@@ -4937,6 +4938,9 @@ bool LoadTheGame(int num, gamestorage_t* game)
 
 	// Free up the current level
 	Z_FreeTags(PU_LEVELSTRUCT, PU_LEVELEND); // Free current level
+
+	// fix, was not reallocating statics on load
+	InitStaticList();
 
 	gamestate.battlemode = battle_StandAloneGame;
 	BATTLE_SetOptions(&BATTLE_Options[battle_StandAloneGame]);

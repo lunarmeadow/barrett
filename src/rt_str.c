@@ -471,11 +471,11 @@ void US_BufPrint(const char* string)
 //
 //******************************************************************************
 
-void US_PrintUnsigned(unsigned long int n)
+void US_PrintUnsigned(uint32_t n)
 {
 	char buffer[32];
 
-	US_Print(ultoa(n, buffer, 10));
+	US_Print(safe_ultoa(n, buffer, 10));
 }
 
 //******************************************************************************
@@ -484,11 +484,11 @@ void US_PrintUnsigned(unsigned long int n)
 //
 //******************************************************************************
 
-void US_PrintSigned(long int n)
+void US_PrintSigned(int32_t n)
 {
 	char buffer[32];
 
-	US_Print(ltoa(n, buffer, 10));
+	US_Print(safe_ltoa(n, buffer, 10));
 }
 
 //******************************************************************************
@@ -497,16 +497,14 @@ void US_PrintSigned(long int n)
 //
 //******************************************************************************
 
-void USL_PrintInCenter(const char* s, Rect r)
+void USL_PrintInCenter(const char* s, SDL_Rect *r)
 {
-	int w, h, rw, rh;
+	int w, h;
 
 	USL_MeasureString(s, &w, &h, CurrentFont);
-	rw = r.lr.x - r.ul.x;
-	rh = r.lr.y - r.ul.y;
 
-	px = r.ul.x + ((rw - w) / 2);
-	py = r.ul.y + ((rh - h) / 2);
+	px = r->x + ((r->w - w) / 2);
+	py = r->y + ((r->h - h) / 2);
 	USL_DrawString(s);
 }
 
@@ -518,14 +516,14 @@ void USL_PrintInCenter(const char* s, Rect r)
 
 void US_PrintCentered(const char* s)
 {
-	Rect r;
+	SDL_Rect r;
 
-	r.ul.x = WindowX;
-	r.ul.y = WindowY;
-	r.lr.x = r.ul.x + WindowW;
-	r.lr.y = r.ul.y + WindowH;
+	r.x = WindowX;
+	r.y = WindowY;
+	r.w = WindowW;
+	r.h = WindowH;
 
-	USL_PrintInCenter(s, r);
+	USL_PrintInCenter(s, &r);
 }
 
 //******************************************************************************
@@ -1431,7 +1429,7 @@ int GetColor(int num)
 static int oldfontcolor = 0;
 static bool highlight = false;
 
-void DrawIString(unsigned short int x, unsigned short int y, const char* string,
+void DrawIString(uint16_t x, uint16_t y, const char* string,
 				 int flags)
 {
 	char ch;
@@ -1530,7 +1528,7 @@ void DrawIString(unsigned short int x, unsigned short int y, const char* string,
 //
 //******************************************************************************
 
-void DrawIntensityString(unsigned short int x, unsigned short int y,
+void DrawIntensityString(uint16_t x, uint16_t y,
 						 const char* string, int color)
 {
 	char ch;

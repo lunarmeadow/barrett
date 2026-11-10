@@ -60,7 +60,7 @@ typedef struct
 typedef struct
 {
 	char name[MaxHighName + 1];
-	long score;
+	int32_t score;
 	word completed, episode;
 } HighScore;
 
@@ -73,7 +73,7 @@ typedef struct
 extern int PlayerSnds[5];
 
 // extern int SHAKETICS;
-extern unsigned short SHAKETICS; // bna++
+extern uint16_t SHAKETICS; // bna++
 extern int damagecount;
 
 extern HighScore Scores[MaxScores];
@@ -99,7 +99,7 @@ void HealPlayer(int points, objtype* ob);
 void DrawLives(bool bufferofsonly);
 void GiveExtraMan(void);
 void DrawScore(bool bufferofsonly);
-void GivePoints(long points);
+void GivePoints(int32_t points);
 void DrawKeys(bool bufferofsonly);
 void GiveKey(int key);
 void GiveWeapon(objtype* ob, int weapon);
@@ -118,7 +118,7 @@ void GetSavedMessage(int num, char* message);
 void GetSavedHeader(int num, gamestorage_t* game);
 
 void DrawHighScores(void);
-void CheckHighScore(long score, word other, bool INMENU);
+void CheckHighScore(int32_t score, word other, bool INMENU);
 void LevelCompleted(exit_t playstate);
 void BattleLevelCompleted(int localplayer);
 void Died(void);

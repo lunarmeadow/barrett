@@ -47,10 +47,10 @@ typedef struct objstruct objtype;
 typedef struct statestruct
 {
 	byte rotate;
-	short shapenum; // a shapenum of -1 means get from ob->temp1
-	short tictime;
+	int16_t shapenum; // a shapenum of -1 means get from ob->temp1
+	int16_t tictime;
 	void (*think)(objtype *);
-	signed char condition;
+	int8_t condition;
 	struct statestruct* next;
 } statetype;
 

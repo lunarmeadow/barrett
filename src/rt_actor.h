@@ -134,15 +134,14 @@ typedef enum
 
 typedef struct bas
 {
-	short operate, see, fire, hit, die;
+	int16_t operate, see, fire, hit, die;
 } basic_actor_sounds;
 
 extern basic_actor_sounds BAS[NUMCLASSES + 3];
 
-typedef struct
-{
+typedef struct vec2i {
 	int x, y;
-} _2Dpoint;
+} vec2i_t;
 
 typedef enum
 {
@@ -210,25 +209,25 @@ typedef struct objstruct
 {
 	thingtype which;
 	byte tilex, tiley;
-	fixed_t x, y, z;
+	fix32_t x, y, z;
 	int shapenum;
 	unsigned flags;
-	short ticcount;
-	signed short hitpoints;
+	int16_t ticcount;
+	int16_t hitpoints;
 	word whichactor;
 
-	signed short dirchoosetime;
-	fixed_t drawx, drawy;
+	int16_t dirchoosetime;
+	fix32_t drawx, drawy;
 	classtype obclass;
 	statetype* state;
-	signed char door_to_open;
+	int8_t door_to_open;
 	byte areanumber;
-	signed short shapeoffset;
+	int16_t shapeoffset;
 	int targettilex, targettiley;
 
 	dirtype dir;
-	short int angle;
-	short int yzangle;
+	int16_t angle;
+	int16_t yzangle;
 
 	int soundhandle;
 	int speed;
@@ -262,7 +261,7 @@ typedef struct b_struct
 	int gasindex;
 	bool NET_IN_FLIGHT;
 	bool madenoise;
-	_2Dpoint ETOUCH[MAXTOUCH], EPOP[MAXPOP], TOMLOC;
+	vec2i_t ETOUCH[MAXTOUCH], EPOP[MAXPOP], TOMLOC;
 	int NUMWEAPONS;
 	int BulletHoleNum;
 	int NUMBEGGINGKEVINS;
@@ -291,7 +290,7 @@ extern objtype *lastactive, *firstactive;
 extern objtype* new, **objlist, *killerobj;
 extern void* actorat[MAPSIZE][MAPSIZE];
 extern int angletodir[ANGLES];
-extern _2Dpoint SNAKEPATH[512];
+extern vec2i_t SNAKEPATH[512];
 /* extern  int              STOPSPEED; */
 extern int FRICTION;
 

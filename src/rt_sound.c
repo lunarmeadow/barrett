@@ -299,12 +299,12 @@ int SD_PlayIt(int sndnum, int angle, int distance, int pitch)
 	else 
 	 	snd = W_CacheLumpNum(SoundNumber(sndnum), PU_STATIC, CvtNull, 1);
 
-	if (*snd == 'C')
+	if (strncmp("Creative", (const char *)snd, 8) == 0)
 	{
 		voice = FX_PlayVOC3D((char*)snd, pitch, angle, distance,
 							 sounds[sndnum].priority, (unsigned long)sndnum);
 	}
-	else
+	else if(strncmp("RIFF", (const char *)snd, 4) == 0)
 	{
 		// voice = FX_PlayWAV3D((char*)snd, pitch, angle, distance,
 		// 					 sounds[sndnum].priority, (unsigned long)sndnum);
@@ -323,6 +323,9 @@ int SD_PlayIt(int sndnum, int angle, int distance, int pitch)
 		}
 
 		voice = FX_Ok;			
+	}
+	else {
+		Error("Invalid audio format for %s!", W_GetNameForNum(SoundNumber(sndnum)));
 	}
 
 	if (voice < FX_Ok)

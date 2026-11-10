@@ -30,12 +30,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "SDL.h"
+
 #include "multivoc.h"
 
-#include "dsl.h"
-
-#include "ll_man.h"
-#include "user.h"
 #include "fx_man.h"
 
 #define TRUE  (1 == 1)
@@ -79,7 +77,7 @@ char* FX_ErrorString(int ErrorNumber)
 		break;
 
 	case FX_SoundCardError:
-		ErrorString = DSL_ErrorString(DSL_Error);
+		ErrorString = "Sound Card Error.";
 		break;
 
 	case FX_InvalidCard:
@@ -109,22 +107,12 @@ char* FX_ErrorString(int ErrorNumber)
 ---------------------------------------------------------------------*/
 
 int FX_SetupCard(fx_device* device)
-
 {
-	int status;
-	int DeviceStatus;
+	int status = FX_Ok;
 
-	if (USER_CheckParameter("ASSVER"))
-	{
-		FX_SetErrorCode(FX_ASSVersion);
-		return (FX_Error);
-	}
+	FX_SetErrorCode(status);
 
-	status = FX_Ok;
-	FX_SetErrorCode(FX_Ok);
-
-	DeviceStatus = DSL_Init();
-	if (DeviceStatus != DSL_Ok)
+	if (SDL_WasInit(SDL_INIT_AUDIO) == 0 && SDL_InitSubSystem(SDL_INIT_AUDIO) != 0)
 	{
 		FX_SetErrorCode(FX_SoundCardError);
 		status = FX_Error;
@@ -137,33 +125,6 @@ int FX_SetupCard(fx_device* device)
 	}
 
 	return (status);
-}
-
-/*---------------------------------------------------------------------
-   Function: FX_GetBlasterSettings
-
-   Returns the current BLASTER environment variable settings.
----------------------------------------------------------------------*/
-
-int FX_GetBlasterSettings(fx_blaster_config* blaster)
-
-{
-
-	return (FX_Ok);
-}
-
-/*---------------------------------------------------------------------
-   Function: FX_SetupSoundBlaster
-
-   Handles manual setup of the Sound Blaster information.
----------------------------------------------------------------------*/
-
-int FX_SetupSoundBlaster(fx_blaster_config blaster, int* MaxVoices,
-						 int* MaxSampleBits, int* MaxChannels)
-
-{
-
-	return (FX_Ok);
 }
 
 /*---------------------------------------------------------------------
@@ -182,19 +143,6 @@ int FX_Init(int numvoices, int numchannels, int samplebits, unsigned mixrate)
 		FX_Shutdown();
 	}
 
-	if (USER_CheckParameter("ASSVER"))
-	{
-		FX_SetErrorCode(FX_ASSVersion);
-		return (FX_Error);
-	}
-
-	status = LL_LockMemory();
-	if (status != LL_Ok)
-	{
-		FX_SetErrorCode(FX_DPMI_Error);
-		return (FX_Error);
-	}
-
 	FX_MixRate = mixrate;
 
 	status = FX_Ok;
@@ -205,11 +153,7 @@ int FX_Init(int numvoices, int numchannels, int samplebits, unsigned mixrate)
 		status = FX_Error;
 	}
 
-	if (status != FX_Ok)
-	{
-		LL_UnlockMemory();
-	}
-	else
+	if (status == FX_Ok)
 	{
 		FX_Installed = TRUE;
 	}
@@ -241,7 +185,6 @@ int FX_Shutdown(void)
 	}
 
 	FX_Installed = FALSE;
-	LL_UnlockMemory();
 
 	return (status);
 }
@@ -778,32 +721,4 @@ int FX_StartDemandFeedPlayback(void (*function)(char** ptr,
 	}
 
 	return (handle);
-}
-
-/*---------------------------------------------------------------------
-   Function: FX_StartRecording
-
-   Starts the sound recording engine.
----------------------------------------------------------------------*/
-
-int FX_StartRecording(int MixRate, void (*function)(char* ptr, int length))
-
-{
-	int status;
-
-	FX_SetErrorCode(FX_InvalidCard);
-	status = FX_Warning;
-
-	return (status);
-}
-
-/*---------------------------------------------------------------------
-   Function: FX_StopRecord
-
-   Stops the sound record engine.
----------------------------------------------------------------------*/
-
-void FX_StopRecord(void)
-
-{
 }
