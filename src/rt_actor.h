@@ -259,8 +259,8 @@ typedef struct b_struct
 	int KEYACTORSLEFT;
 	int GASON;
 	int gasindex;
-	boolean NET_IN_FLIGHT;
-	boolean madenoise;
+	bool NET_IN_FLIGHT;
+	bool madenoise;
 	vec2i_t ETOUCH[MAXTOUCH], EPOP[MAXPOP], TOMLOC;
 	int NUMWEAPONS;
 	int BulletHoleNum;

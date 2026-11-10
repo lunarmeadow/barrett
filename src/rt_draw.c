@@ -121,10 +121,10 @@ int skyScalers[MAXSCREENHEIGHT];
 // refresh variables
 //
 
-fixed_t viewx, viewy; // the focal point
+fix32_t viewx, viewy; // the focal point
 int viewangle;
 int c_startx, c_starty;
-fixed_t viewsin, viewcos;
+fix32_t viewsin, viewcos;
 int tics;
 
 //
@@ -154,7 +154,7 @@ static int nonbobpheight;
 
 static visobj_t* sortedvislist[MAXVISIBLE];
 
-static const fixed_t mindist = 0x1000;
+static const fix32_t mindist = 0x1000;
 
 static int weaponbobx, weaponboby;
 
