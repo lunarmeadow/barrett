@@ -75,7 +75,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 bool ludicrousgibs = false;
 
-short colheight[15];
+int16_t colheight[15];
 
 byte deathshapeoffset[8] = {0, 7, 7, 8, 8, 9, 8, 7};
 
@@ -558,7 +558,7 @@ void LoadActors(byte* buffer, int size)
 	int numactors, i, playerindex;
 	saved_actor_t dummy;
 	objtype* temp;
-	short *targetindices, *whateverindices;
+	int16_t *targetindices, *whateverindices;
 
 	InitActorList();
 
@@ -575,8 +575,8 @@ void LoadActors(byte* buffer, int size)
 	numactors = size / sizeof(saved_actor_t);
 
 	objlist = (objtype**)SafeMalloc(numactors * sizeof(objtype*));
-	targetindices = (short*)SafeMalloc(numactors * sizeof(short));
-	whateverindices = (short*)SafeMalloc(numactors * sizeof(short));
+	targetindices = (int16_t*)SafeMalloc(numactors * sizeof(int16_t));
+	whateverindices = (int16_t*)SafeMalloc(numactors * sizeof(int16_t));
 
 	for (i = 0; i < numactors; i++)
 	{
@@ -4258,7 +4258,7 @@ void T_PlayDead(objtype* ob)
 	}
 }
 
-void AdjustAngle(int maxadjust, short int* currangle, int targetangle)
+void AdjustAngle(int maxadjust, int16_t* currangle, int targetangle)
 {
 	int dangle, i, magangle;
 

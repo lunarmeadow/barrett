@@ -46,8 +46,8 @@ typedef struct
 
 typedef struct
 {
-	short width, height;
-	short orgx, orgy;
+	int16_t width, height;
+	int16_t orgx, orgy;
 	byte data;
 } lpic_t;
 
@@ -61,9 +61,9 @@ typedef struct
 
 typedef struct
 {
-	short height;
+	int16_t height;
 	char width[256];
-	short charofs[256];
+	int16_t charofs[256];
 	byte data; // as much as required
 } font_t;
 
@@ -79,8 +79,8 @@ typedef struct
 
 typedef struct
 {
-	short width;
-	short height;
+	int16_t width;
+	int16_t height;
 	byte palette[768];
 	byte data;
 } lbm_t;
@@ -93,13 +93,12 @@ typedef struct
 
 typedef struct
 {
-	short origsize; // the orig size of "grabbed" gfx
-	short width;	// bounding box size
-	short height;
-	short leftoffset; // pixels to the left of origin
-	short topoffset;  // pixels above the origin
-	unsigned short
-		collumnofs[320]; // only [width] used, the [0] is &collumnofs[width]
+	int16_t origsize; // the orig size of "grabbed" gfx
+	int16_t width;	// bounding box size
+	int16_t height;
+	int16_t leftoffset; // pixels to the left of origin
+	int16_t topoffset;  // pixels above the origin
+	uint16_t collumnofs[320]; // only [width] used, the [0] is &collumnofs[width]
 } patch_t;
 
 #define CONVERT_ENDIAN_patch_t(pp)                                             \
@@ -112,19 +111,19 @@ typedef struct
 		SwapIntelShort(&pp->topoffset);                                        \
 		for (i = 0; i < pp->width; i++)                                        \
 		{                                                                      \
-			SwapIntelShort((short*)&pp->collumnofs[i]);                        \
+			SwapIntelShort((int16_t*)&pp->collumnofs[i]);                        \
 		}                                                                      \
 	}
 
 typedef struct
 {
-	short origsize; // the orig size of "grabbed" gfx
-	short width;	// bounding box size
-	short height;
-	short leftoffset; // pixels to the left of origin
-	short topoffset;  // pixels above the origin
-	short translevel;
-	short collumnofs[320]; // only [width] used, the [0] is &collumnofs[width]
+	int16_t origsize; // the orig size of "grabbed" gfx
+	int16_t width;	// bounding box size
+	int16_t height;
+	int16_t leftoffset; // pixels to the left of origin
+	int16_t topoffset;  // pixels above the origin
+	int16_t translevel;
+	int16_t collumnofs[320]; // only [width] used, the [0] is &collumnofs[width]
 } transpatch_t;
 
 #define CONVERT_ENDIAN_transpatch_t(pp)                                        \
@@ -138,16 +137,16 @@ typedef struct
 		SwapIntelShort(&pp->translevel);                                       \
 		for (i = 0; i < pp->width; i++)                                        \
 		{                                                                      \
-			SwapIntelShort((short*)&pp->collumnofs[i]);                        \
+			SwapIntelShort((int16_t*)&pp->collumnofs[i]);                        \
 		}                                                                      \
 	}
 
 typedef struct
 {
 	byte color;
-	short height;
+	int16_t height;
 	char width[256];
-	short charofs[256];
+	int16_t charofs[256];
 	byte pal[0x300];
 	byte data; // as much as required
 } cfont_t;

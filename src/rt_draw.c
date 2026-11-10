@@ -109,7 +109,7 @@ const int dirangle16[16] = {0,
 // math tables
 //
 
-short tantable[FINEANGLES];
+int16_t tantable[FINEANGLES];
 int sintable[FINEANGLES + FINEANGLEQUAD + 1],
 	*costable = sintable + (FINEANGLES / 4);
 
@@ -260,9 +260,9 @@ void BuildTables(void)
 	//
 	// get tangent table
 	//
-	memcpy(tantable, ptr, length * sizeof(short));
+	memcpy(tantable, ptr, length * sizeof(int16_t));
 	SwapIntelShortArray(tantable, length);
-	ptr += (length) * sizeof(short);
+	ptr += (length) * sizeof(int16_t);
 
 	//
 	// get size of gamma table

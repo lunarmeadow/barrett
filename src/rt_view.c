@@ -82,7 +82,7 @@ byte* redmap;
 byte* greenmap;
 byte* playermaps[MAXPLAYERCOLORS];
 // short  pixelangle[MAXVIEWWIDTH];
-short pixelangle[MAXSCREENWIDTH];
+int16_t pixelangle[MAXSCREENWIDTH];
 byte gammatable[GAMMAENTRIES];
 int gammaindex;
 int focallength = 160;
@@ -254,8 +254,8 @@ void CalcProjection(void)
 		// start 1/2 pixel over, so viewangle bisects two middle pixels
 		intang = pangle[frac >> 16];
 		SwapIntelLong(&intang);
-		pixelangle[centerx - 1 - i] = (short)intang;
-		pixelangle[centerx + i] = (short)-intang;
+		pixelangle[centerx - 1 - i] = (int16_t)intang;
+		pixelangle[centerx + i] = (int16_t)-intang;
 		frac += (length * 65536 / centerx);
 	}
 	table = W_CacheLumpName("tables", PU_CACHE, CvtNull, 1);

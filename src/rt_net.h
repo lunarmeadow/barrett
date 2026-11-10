@@ -81,8 +81,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 typedef struct DemoType
 {
 	int time;
-	short momx;
-	short momy;
+	int16_t momx;
+	int16_t momy;
 	word dangle;
 	word buttons;
 } DemoType;
@@ -98,8 +98,8 @@ typedef struct MoveType
 {
 	byte type;
 	int time;
-	short momx;
-	short momy;
+	int16_t momx;
+	int16_t momy;
 	word dangle;
 	word buttons;
 	char Sounddata[];

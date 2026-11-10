@@ -1429,7 +1429,7 @@ int GetColor(int num)
 static int oldfontcolor = 0;
 static bool highlight = false;
 
-void DrawIString(unsigned short int x, unsigned short int y, const char* string,
+void DrawIString(uint16_t x, uint16_t y, const char* string,
 				 int flags)
 {
 	char ch;
@@ -1528,7 +1528,7 @@ void DrawIString(unsigned short int x, unsigned short int y, const char* string,
 //
 //******************************************************************************
 
-void DrawIntensityString(unsigned short int x, unsigned short int y,
+void DrawIntensityString(uint16_t x, uint16_t y,
 						 const char* string, int color)
 {
 	char ch;

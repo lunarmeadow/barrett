@@ -134,7 +134,7 @@ typedef enum
 
 typedef struct bas
 {
-	short operate, see, fire, hit, die;
+	int16_t operate, see, fire, hit, die;
 } basic_actor_sounds;
 
 extern basic_actor_sounds BAS[NUMCLASSES + 3];
@@ -212,22 +212,22 @@ typedef struct objstruct
 	fix32_t x, y, z;
 	int shapenum;
 	unsigned flags;
-	short ticcount;
-	signed short hitpoints;
+	int16_t ticcount;
+	int16_t hitpoints;
 	word whichactor;
 
-	signed short dirchoosetime;
+	int16_t dirchoosetime;
 	fix32_t drawx, drawy;
 	classtype obclass;
 	statetype* state;
 	signed char door_to_open;
 	byte areanumber;
-	signed short shapeoffset;
+	int16_t shapeoffset;
 	int targettilex, targettiley;
 
 	dirtype dir;
-	short int angle;
-	short int yzangle;
+	int16_t angle;
+	int16_t yzangle;
 
 	int soundhandle;
 	int speed;

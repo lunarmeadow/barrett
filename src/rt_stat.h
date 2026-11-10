@@ -149,9 +149,9 @@ typedef struct statstruct
 	signed char count;
 	byte numanims;
 	stat_t itemnumber;
-	short int hitpoints;
-	short int whichstat;
-	short int areanumber;
+	int16_t hitpoints;
+	int16_t whichstat;
+	int16_t areanumber;
 
 	intptr_t linked_to;
 	struct statstruct* statnext;
@@ -174,7 +174,7 @@ typedef struct respstruct
 
 typedef struct
 {
-	short heightoffset;
+	int16_t heightoffset;
 	int picnum;
 	stat_t type;
 	unsigned flags;
