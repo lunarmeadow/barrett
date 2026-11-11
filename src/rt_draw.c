@@ -1631,7 +1631,7 @@ void DrawWallPost(wallcast_t* post, byte* buf)
 	// when each WALB is called to be precached by the level data, 
 	// thats when you load it from the zip, convert from PNG to raw pixel buffer, then save the result
 	if (post->lump)
-		src = W_CacheLumpNum(post->lump & 0x3ff, PU_CACHE, CvtNull, 1);
+		src = W_CacheLumpNum(post->lump, PU_CACHE, CvtNull, 1);
 	if (post->alttile != 0)
 	{
 		if (post->alttile == -1)
@@ -1662,7 +1662,7 @@ void DrawWallPost(wallcast_t* post, byte* buf)
 		else
 		{
 			ht = nominalheight;
-			src2 = W_CacheLumpNum(post->alttile & 0x3ff, PU_CACHE, CvtNull, 1);
+			src2 = W_CacheLumpNum(post->alttile, PU_CACHE, CvtNull, 1);
 		}
 	}
 	else
@@ -2000,7 +2000,7 @@ void TransformPushWalls(void)
 		//
 		if (sortedvislist[i]->shapenum & 0x20000)
 			sortedvislist[i]->shapenum =
-				animwalls[sortedvislist[i]->shapenum & 0x3ff].texture;
+				animwalls[sortedvislist[i]->shapenum].texture;
 		sortedvislist[i]->altshapenum = 0;
 		InterpolateWall(sortedvislist[i]);
 	}
@@ -2292,8 +2292,8 @@ void InterpolateDoor(visobj_t* plane)
 	dx = (plane->x2 - plane->x1 + 1);
 	if (plane->h1 <= 0 || plane->h2 <= 0 || dx == 0)
 		return;
-	shape = W_CacheLumpNum(plane->shapenum & 0x3ff, PU_CACHE, Cvt_patch_t, 1);
-	shape2 = W_CacheLumpNum(plane->altshapenum & 0x3ff, PU_CACHE, Cvt_patch_t, 1);
+	shape = W_CacheLumpNum(plane->shapenum, PU_CACHE, Cvt_patch_t, 1);
+	shape2 = W_CacheLumpNum(plane->altshapenum, PU_CACHE, Cvt_patch_t, 1);
 	p = (patch_t*)shape;
 	d1 = (1 << (18 + HEIGHTFRACTION)) / plane->h1;
 	d2 = (1 << (18 + HEIGHTFRACTION)) / plane->h2;
@@ -2399,7 +2399,7 @@ void InterpolateMaskedWall(visobj_t* plane)
 	if (plane->altshapenum >= 0)
 	{
 		drawmiddle = true;
-		shape2 = W_CacheLumpNum(plane->altshapenum & 0x3ff, PU_CACHE, Cvt_patch_t, 1);
+		shape2 = W_CacheLumpNum(plane->altshapenum, PU_CACHE, Cvt_patch_t, 1);
 		p2 = (patch_t*)shape2;
 		topoffset = p2->topoffset;
 	}
@@ -2410,7 +2410,7 @@ void InterpolateMaskedWall(visobj_t* plane)
 	if (plane->viewx >= 0)
 	{
 		drawtop = true;
-		shape3 = W_CacheLumpNum(plane->viewx & 0x3ff, PU_CACHE, Cvt_patch_t, 1);
+		shape3 = W_CacheLumpNum(plane->viewx, PU_CACHE, Cvt_patch_t, 1);
 		p3 = (patch_t*)shape3;
 		topoffset = p3->topoffset;
 	}
@@ -2421,7 +2421,7 @@ void InterpolateMaskedWall(visobj_t* plane)
 	if (plane->shapenum >= 0)
 	{
 		drawbottom = true;
-		shape = W_CacheLumpNum(plane->shapenum & 0x3ff, PU_CACHE, Cvt_transpatch_t, 1);
+		shape = W_CacheLumpNum(plane->shapenum, PU_CACHE, Cvt_transpatch_t, 1);
 		p = (transpatch_t*)shape;
 		topoffset = p->topoffset;
 	}
