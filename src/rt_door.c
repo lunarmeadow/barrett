@@ -3548,7 +3548,7 @@ void FinishPushWall(pwallobj_t* pw)
 void ResetPushWall(pwallobj_t* pw)
 {
 	SetActorat(pw);
-	tilemap[pw->tilex][pw->tiley] = pw->texture | 0x800;
+	tilemap[pw->tilex][pw->tiley] = pw->texture | 0x10000;
 }
 
 /*
