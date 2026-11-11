@@ -150,7 +150,7 @@ void HitWall(int curx, int vertical, int xtile, int ytile)
 					posts[curx].lump &= 0x3ff;
 			}
 		}
-		else if (posts[curx].lump & 0x2000)
+		else if (posts[curx].lump & 0x40000)
 		{
 			if (IsWindow(xtile, ytile))
 				posts[curx].alttile = -1;
@@ -206,7 +206,7 @@ void HitWall(int curx, int vertical, int xtile, int ytile)
 					posts[curx].lump &= 0x3ff;
 			}
 		}
-		else if (posts[curx].lump & 0x2000)
+		else if (posts[curx].lump & 0x40000)
 		{
 			if (IsWindow(xtile, ytile))
 				posts[curx].alttile = -1;

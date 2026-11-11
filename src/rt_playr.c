@@ -1687,7 +1687,7 @@ void Cmd_Use(objtype* ob)
 		tempactor = (objtype*)actorat[checkx][checky];
 		tempwall = (wall_t*)actorat[checkx][checky];
 	}
-	doorn = tilemap[checkx][checky] & ~0x2000;
+	doorn = tilemap[checkx][checky] & ~0x40000;
 	//      if (sprites[checkx][checky])
 	//       tempsprite = sprites[checkx][checky];
 	if (doorn == (elevatorstart + 6))

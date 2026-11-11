@@ -2043,7 +2043,7 @@ void SetupWalls(void)
 				PreCacheLump(elevatorstart + 5, PU_CACHEWALLS, cache_pic_t);
 				PreCacheLump(elevatorstart + 6, PU_CACHEWALLS, cache_pic_t);
 				PreCacheLump(elevatorstart + 7, PU_CACHEWALLS, cache_pic_t);
-				tilemap[i][j] |= 0x2000;
+				tilemap[i][j] |= 0x40000;
 				if (MAPSPOT(i, j, 2) == 0)
 					MAPSPOT(i, j, 2) = 21;
 			}
@@ -2051,7 +2051,7 @@ void SetupWalls(void)
 			{
 				lump = tilemap[i][j] = GetLumpForTile(tile);
 				InitWall(lump, index, i, j);
-				tilemap[i][j] |= 0x2000;
+				tilemap[i][j] |= 0x40000;
 				if (MAPSPOT(i, j, 2) == 0)
 					MAPSPOT(i, j, 2) = 21;
 			}
@@ -2060,7 +2060,7 @@ void SetupWalls(void)
 				lump = tilemap[i][j] = GetLumpForTile(tile);
 				InitWall(lump, index, i, j);
 				if (MAPSPOT(i, j, 2))
-					tilemap[i][j] |= 0x2000;
+					tilemap[i][j] |= 0x40000;
 			}
 		}
 	}
@@ -2136,7 +2136,7 @@ void SetupWindows(void)
 				actorat[i][j] = 0;
 				if (skythere == true)
 				{
-					tilemap[i][j] |= 0x2000;
+					tilemap[i][j] |= 0x40000;
 				}
 				else
 				{
