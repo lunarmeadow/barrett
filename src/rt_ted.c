@@ -2033,6 +2033,9 @@ void SetupWalls(void)
 			{
 				index = tile;
 			}
+			else if((tile >= 512) && (tile < 512 + 32))
+				// remap to 105-137 range
+				index = (tile - 512) + 105;
 			else
 				index = tile - 3;
 
@@ -2212,8 +2215,12 @@ int GetWallIndex(int texture)
 	//      return (texture - specialstart + 41);
 	else if (texture > exitstart)
 		return (texture - exitstart + 43);
+
+	// rtlx beta wall indexes in wall_t array
+	// old array ends at 105, so this remaps the 512 <-> 512+32 range into
+	// 105 <-> 137 range
 	else if (walbstart != -1 && texture > walbstart)
-		return (texture - walbstart + 512);
+		return ((texture - 512) + 105);
 	else
 	{
 		if (texture > wallstart + 63)

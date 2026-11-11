@@ -230,7 +230,8 @@ table
 #define MINACTORDIST 0x9000l
 #define MAXSTATS	 400 // max number of lamps, bonus, etc
 
-#define MAXWALLTILES 105 // max number of wall tiles
+// was 105, but expanded to 137 bc of 32 beta walls
+#define MAXWALLTILES 137 // max number of wall tiles
 #define MAXACTORS	 600
 #define NORTH		 0
 #define EAST		 1
