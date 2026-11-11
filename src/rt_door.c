@@ -3063,12 +3063,12 @@ void MoveDoors(void)
 */
 int GetAreaNumber(int tilex, int tiley, int dir)
 {
-	int up, dn, lt, rt;
+	int up = 0, dn = 0, lt = 0, rt = 0;
 
-	up = MAPSPOT(tilex, tiley - 1, 0) - AREATILE;
-	dn = MAPSPOT(tilex, tiley + 1, 0) - AREATILE;
-	lt = MAPSPOT(tilex - 1, tiley, 0) - AREATILE;
-	rt = MAPSPOT(tilex + 1, tiley, 0) - AREATILE;
+	if (tiley>0) up=MAPSPOT(tilex,tiley-1,0)-AREATILE;
+	if (tiley<MAPSIZE-1) dn=MAPSPOT(tilex,tiley+1,0)-AREATILE;
+	if (tilex>0) lt=MAPSPOT(tilex-1,tiley,0)-AREATILE;
+	if (tilex<MAPSIZE-1) rt=MAPSPOT(tilex+1,tiley,0)-AREATILE;
 	if ((up <= 0) || (up > NUMAREAS))
 		up = 0;
 	if ((dn <= 0) || (dn > NUMAREAS))
