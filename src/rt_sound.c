@@ -294,7 +294,7 @@ int SD_PlayIt(int sndnum, int angle, int distance, int pitch)
 	sounds[sndnum].count++;
 
 	if(ludicrousaudio && (sounds[sndnum].flags & SD_HASALT))
-		//snd = KPF_GetAudioForEnum(sndnum, &len);
+		snd = W_CacheLumpNum(SoundNumber(sndnum), PU_STATIC, CvtNull, 1);
 	else 
 	 	snd = W_CacheLumpNum(SoundNumber(sndnum), PU_STATIC, CvtNull, 1);
 
