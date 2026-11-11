@@ -26,6 +26,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <fcntl.h>
 #include <string.h>
 #include <signal.h>
+#include <time.h>
 #include <wchar.h>
 
 /* Need to redefine main to SDL_main on some platforms... */
@@ -1350,6 +1351,9 @@ void GameLoop(void)
 				ShutdownClientControls();
 
 				Z_FreeTags(PU_LEVELSTRUCT, PU_LEVELEND); // Free current level
+
+				// fix asan crash on dereference of freed player's guntarget
+				locplayerstate->guntarget = NULL;
 
 				if (CheckForQuickLoad() == false)
 				{
