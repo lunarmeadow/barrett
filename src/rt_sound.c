@@ -22,7 +22,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "_rt_soun.h"
 #include "fx_man.h"
 #include "music.h"
-#include "w_kpf.h"
 #include "z_zone.h"
 #include "w_wad.h"
 #include "rt_main.h"
@@ -295,7 +294,7 @@ int SD_PlayIt(int sndnum, int angle, int distance, int pitch)
 	sounds[sndnum].count++;
 
 	if(ludicrousaudio && (sounds[sndnum].flags & SD_HASALT))
-		snd = KPF_GetAudioForEnum(sndnum, &len);
+		//snd = KPF_GetAudioForEnum(sndnum, &len);
 	else 
 	 	snd = W_CacheLumpNum(SoundNumber(sndnum), PU_STATIC, CvtNull, 1);
 

@@ -49,7 +49,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "rt_build.h"
 #include "rt_in.h"
 #include "isr.h"
-#include "w_kpf.h"
 #include "z_zone.h"
 #include "w_wad.h"
 #include "rt_util.h"

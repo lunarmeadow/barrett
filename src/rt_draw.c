@@ -37,7 +37,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "isr.h"
 #include "rt_util.h"
 #include "engine.h"
-#include "w_kpf.h"
 #include "z_zone.h"
 #include "w_wad.h"
 #include "lumpy.h"
