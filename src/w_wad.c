@@ -132,7 +132,8 @@ void W_AddFile(char* _filename)
 		type = WAD_TYPE_KPF;
 
 		// open archive as zip
-		if (!mz_zip_reader_init_cfile(&zip, handle, 0, 0))
+		fseek(handle, 0, SEEK_SET);
+		if (!mz_zip_reader_init_cfile(&zip, handle, file_size(handle), 0))
 			Error("Failed to open %s as zip file: %s!\n", filename, mz_zip_get_error_string(zip.m_last_error));
 
 		// manually add WALBs
@@ -205,10 +206,12 @@ void W_AddFile(char* _filename)
 		free(fileinfo);
 
 	wadcache = realloc(wadcache, sizeof(wadInfo_t) * (num_wads + 1));
-	strncpy(wadcache[num_wads].path, filename, sizeof(filename));
+	memset(&wadcache[num_wads], 0, sizeof(wadInfo_t));
+	strncpy(wadcache[num_wads].path, filename, sizeof(wadcache[num_wads].path));
 	wadcache[num_wads].handle = handle;
 	wadcache[num_wads].type = type;
-	memcpy(&wadcache[num_wads].zip, &zip, sizeof(zip));
+	memcpy(&wadcache[num_wads].zip, &zip, sizeof(mz_zip_archive));
+	wadcache[num_wads].zip.m_pIO_opaque = &wadcache[num_wads].zip; // fucking piece of shit
 	num_wads++;
 }
 
