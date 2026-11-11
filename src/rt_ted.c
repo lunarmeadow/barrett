@@ -2168,9 +2168,9 @@ int GetWallIndex(int texture)
 	exitstart = W_GetNumForName("EXITSTRT");
 	elevatorstart = W_GetNumForName("ELEVSTRT");
 
-	if (texture & 0x1000)
+	if (texture & 0x20000)
 	{
-		texture &= ~0x1000;
+		texture &= ~0x20000;
 		if (texture == 0)
 			return 41;
 		else if (texture == 1)
@@ -2260,7 +2260,7 @@ void SetupAnimatedWalls(void)
 				tempwall->flags = FL_W_DAMAGE;
 				SetupAnimatedWall(0);
 				tilemap[i][j] = 0;
-				tilemap[i][j] |= 0x1000;
+				tilemap[i][j] |= 0x20000;
 			}
 			else if (tile == 45)
 			{
@@ -2270,7 +2270,7 @@ void SetupAnimatedWalls(void)
 				tempwall->tile = tile - 3;
 				SetupAnimatedWall(3);
 				tilemap[i][j] = 3;
-				tilemap[i][j] |= 0x1000;
+				tilemap[i][j] |= 0x20000;
 			}
 			else if ((tile >= 106) && (tile <= 107))
 			{
@@ -2280,7 +2280,7 @@ void SetupAnimatedWalls(void)
 				tempwall->tile = tile - 16;
 				SetupAnimatedWall(tile - 105);
 				tilemap[i][j] = tile - 105;
-				tilemap[i][j] |= 0x1000;
+				tilemap[i][j] |= 0x20000;
 			}
 			else if ((tile >= 224) && (tile <= 233))
 			{
@@ -2292,7 +2292,7 @@ void SetupAnimatedWalls(void)
 					tempwall->flags = FL_W_DAMAGE;
 				SetupAnimatedWall(tile - 224 + 4);
 				tilemap[i][j] = tile - 224 + 4;
-				tilemap[i][j] |= 0x1000;
+				tilemap[i][j] |= 0x20000;
 			}
 			else if ((tile >= 242) && (tile <= 244))
 			{
@@ -2302,7 +2302,7 @@ void SetupAnimatedWalls(void)
 				tempwall->tile = tile - 242 + 102;
 				SetupAnimatedWall(tile - 242 + 14);
 				tilemap[i][j] = tile - 242 + 14;
-				tilemap[i][j] |= 0x1000;
+				tilemap[i][j] |= 0x20000;
 			}
 		}
 	}

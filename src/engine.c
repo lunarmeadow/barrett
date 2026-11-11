@@ -143,7 +143,7 @@ void HitWall(int curx, int vertical, int xtile, int ytile)
 			}
 			else
 			{
-				if (posts[curx].lump & 0x1000)
+				if (posts[curx].lump & 0x20000)
 					posts[curx].lump =
 						animwalls[posts[curx].lump & 0x3ff].texture;
 				else
@@ -158,7 +158,7 @@ void HitWall(int curx, int vertical, int xtile, int ytile)
 				posts[curx].alttile = (MAPSPOT(xtile, ytile, 2)) + 1;
 			posts[curx].lump &= 0x3ff;
 		}
-		else if (posts[curx].lump & 0x1000)
+		else if (posts[curx].lump & 0x20000)
 			posts[curx].lump = animwalls[posts[curx].lump & 0x3ff].texture;
 		else if (posts[curx].lump & 0x10000)
 		{
@@ -199,7 +199,7 @@ void HitWall(int curx, int vertical, int xtile, int ytile)
 			}
 			else
 			{
-				if (posts[curx].lump & 0x1000)
+				if (posts[curx].lump & 0x20000)
 					posts[curx].lump =
 						animwalls[posts[curx].lump & 0x3ff].texture;
 				else
@@ -214,7 +214,7 @@ void HitWall(int curx, int vertical, int xtile, int ytile)
 				posts[curx].alttile = (MAPSPOT(xtile, ytile, 2)) + 1;
 			posts[curx].lump &= 0x3ff;
 		}
-		else if (posts[curx].lump & 0x1000)
+		else if (posts[curx].lump & 0x20000)
 			posts[curx].lump = animwalls[posts[curx].lump & 0x3ff].texture;
 		else if (posts[curx].lump & 0x10000)
 		{

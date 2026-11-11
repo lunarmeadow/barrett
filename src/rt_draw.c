@@ -1998,7 +1998,7 @@ void TransformPushWalls(void)
 		//
 		// draw farthest
 		//
-		if (sortedvislist[i]->shapenum & 0x1000)
+		if (sortedvislist[i]->shapenum & 0x20000)
 			sortedvislist[i]->shapenum =
 				animwalls[sortedvislist[i]->shapenum & 0x3ff].texture;
 		sortedvislist[i]->altshapenum = 0;

@@ -270,7 +270,7 @@ void DrawMap_Door(int x, int y, int tile)
 
 void DrawMap_PushWall(int x, int y, pwallobj_t* pw)
 {
-	if (pw->texture & 0x1000)
+	if (pw->texture & 0x20000)
 		DrawMap_AnimatedWall(x, y, pw->texture & 0x3ff);
 	else
 		DrawMap_Wall(x, y, pw->texture & 0x3ff);
@@ -485,7 +485,7 @@ void DrawMap(int cx, int cy)
 
 				// Check to see if it is an animating wall
 
-				else if (wall & 0x1000)
+				else if (wall & 0x20000)
 				{
 					DrawMap_AnimatedWall(i, j, wall & 0x3ff);
 				}
@@ -631,7 +631,7 @@ void DrawFullMap(void)
 
 				// Check to see if it is an animating wall
 
-				else if (wall & 0x1000)
+				else if (wall & 0x20000)
 				{
 					*(buf) = egacolor[MAP_AWALLCOLOR];
 				}
