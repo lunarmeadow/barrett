@@ -306,23 +306,8 @@ int SD_PlayIt(int sndnum, int angle, int distance, int pitch)
 	}
 	else if(strncmp("RIFF", (const char *)snd, 4) == 0)
 	{
-		// voice = FX_PlayWAV3D((char*)snd, pitch, angle, distance,
-		// 					 sounds[sndnum].priority, (unsigned long)sndnum);
-		
-		SDL_RWops* rw = SDL_RWFromMem(snd, len);
-
-		if(rw == nullptr)
-			Error("SD_PlayIt: can't load audio into mem!");
-
-		Mix_Chunk *sfx = Mix_LoadWAV_RW(rw, 1);
-
-		int channel = Mix_PlayChannel(-1, sfx, 0);
-
-		if (channel == -1) {
-			Error("SD_PlayIt: can't alloc a channel!");
-		}
-
-		voice = FX_Ok;			
+		voice = FX_PlayWAV3D((char*)snd, pitch, angle, distance,
+							 sounds[sndnum].priority, (unsigned long)sndnum);		
 	}
 	else {
 		Error("Invalid audio format for %s!", W_GetNameForNum(SoundNumber(sndnum)));

@@ -77,6 +77,7 @@ void SafeWriteString(int handle, char* buffer);
 void* SafeMalloc(int32_t size);
 void* SafeLevelMalloc(int32_t size);
 void SafeFree(void* ptr);
+void *safe_realloc(void *ptr, size_t size);
 int32_t LoadFile(char* filename, void** bufferptr);
 void SaveFile(char* filename, void* buffer, int32_t count);
 void GetPathFromEnvironment(char* fullname, const char* envname,
