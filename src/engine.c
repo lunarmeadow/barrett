@@ -126,6 +126,12 @@ void HitWall(int curx, int vertical, int xtile, int ytile)
 		if (xtilestep < 0)
 			xintercept += 0xffff;
 		yintercept = FixedScale(xintercept - viewx, c_vy, c_vx) + viewy;
+
+		// add alt upper tex
+		if(posts[curx].lump & 0xc000)
+		{
+			posts[curx].alttile = MAPSPOT(xtile, ytile, 2) & ~0xc000;
+		}
 		if (posts[curx].lump & 0x4000)
 		{
 			if (tilemap[xtile - (xtilestep >> 7)][ytile] & 0x8000)

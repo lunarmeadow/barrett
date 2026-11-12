@@ -1631,7 +1631,7 @@ void DrawWallPost(wallcast_t* post, byte* buf)
 	// when each WALB is called to be precached by the level data, 
 	// thats when you load it from the zip, convert from PNG to raw pixel buffer, then save the result
 	if (post->lump)
-		src = W_CacheLumpNum(post->lump, PU_CACHE, CvtNull, 1);
+		src = W_CacheLumpNum(post->lump & ~0xc000, PU_CACHE, CvtNull, 1);
 	if (post->alttile != 0)
 	{
 		if (post->alttile == -1)
@@ -1662,7 +1662,7 @@ void DrawWallPost(wallcast_t* post, byte* buf)
 		else
 		{
 			ht = nominalheight;
-			src2 = W_CacheLumpNum(post->alttile, PU_CACHE, CvtNull, 1);
+			src2 = W_CacheLumpNum((post->alttile - 1) & ~0xc000, PU_CACHE, CvtNull, 1);
 		}
 	}
 	else
